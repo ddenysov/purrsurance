@@ -41,13 +41,6 @@ export const useChat = () => {
       sender: 'user'
     })
 
-    // Check if message contains policy ID and unlock pet details
-    if (containsPolicyId(text)) {
-      // Get access to pet profile composable
-      const { unlockPetDetails } = usePetProfile()
-      unlockPetDetails()
-    }
-
     // Show typing indicator
     isTyping.value = true
 
@@ -56,9 +49,16 @@ export const useChat = () => {
 
     // Generate AI response
     const aiResponse = generateAIResponse(text)
-    
+
     // Hide typing indicator
     isTyping.value = false
+
+      // Check if message contains policy ID and unlock pet details
+      if (containsPolicyId(text)) {
+          // Get access to pet profile composable
+          const { unlockPetDetails } = usePetProfile()
+          unlockPetDetails()
+      }
 
     // Add AI response
     addMessage({
