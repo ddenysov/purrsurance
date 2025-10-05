@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="min-h-screen bg-gradient-to-br from-mint-50 to-brand-50">
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />
@@ -8,9 +8,9 @@
 </template>
 
 <script setup lang="ts">
-// TBD: Add global app logic here
+// Global app logic
 </script>
 
 <style>
-/* TBD: Add global styles here */
+/* Global styles are handled in assets/css/main.css */
 </style>

@@ -1,9 +1,5 @@
 <template>
   <div class="default-layout">
-    <header>
-      <h1>TBD: Application Header</h1>
-    </header>
-    
     <main>
       <slot />
     </main>

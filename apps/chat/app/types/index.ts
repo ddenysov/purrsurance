@@ -1,13 +1,38 @@
-/**
- * TBD: TypeScript type definitions
- * This file contains placeholder type definitions for the application
- */
-
-// TBD: Add type definitions here
-export interface PlaceholderType {
+export interface Pet {
   id: string
   name: string
-  // TBD: Add more properties as needed
+  species: string
+  age: string
+  gender: string
+  avatar: string
+  policyId: string
+  coveragePlan: string
 }
 
-// TBD: Add more type definitions here
+export interface Vaccination {
+  id: string
+  name: string
+  status: 'completed' | 'due' | 'overdue'
+}
+
+export interface Appointment {
+  id: string
+  title: string
+  location: string
+  date: string
+  time: string
+}
+
+export interface ChatMessage {
+  id: string
+  content: string
+  sender: 'user' | 'assistant'
+  timestamp: Date
+}
+
+export interface QuickAction {
+  id: string
+  label: string
+  color: string
+  prompt: string
+}

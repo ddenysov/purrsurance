@@ -350,18 +350,18 @@ Welcome message with 3 suggestion buttons
 ---
 
 ## Acceptance Criteria
-- [ ] All components are created and properly structured
-- [ ] TypeScript types are defined for all data
-- [ ] Composables manage state correctly
-- [ ] Pet profile displays all information
-- [ ] Chat interface works (send/receive messages)
-- [ ] Typing indicator appears during AI response
-- [ ] Edit modal opens and saves changes
-- [ ] Quick actions populate chat input
-- [ ] Responsive design (mobile and desktop)
-- [ ] All styling matches mockup v2
-- [ ] No console errors or warnings
-- [ ] Code is clean with proper component separation
+- [x] All components are created and properly structured
+- [x] TypeScript types are defined for all data
+- [x] Composables manage state correctly
+- [x] Pet profile displays all information
+- [x] Chat interface works (send/receive messages)
+- [x] Typing indicator appears during AI response
+- [x] Edit modal opens and saves changes
+- [x] Quick actions populate chat input
+- [x] Responsive design (mobile and desktop)
+- [x] All styling matches mockup v2
+- [x] No console errors or warnings
+- [x] Code is clean with proper component separation
 
 ## Technical Notes
 - **Keep components small** - each should do ONE thing
@@ -375,16 +375,16 @@ Welcome message with 3 suggestion buttons
 - **Sanitize ALL user input** before displaying
 
 ## Testing Checklist
-- [ ] Type a message and receive AI response
-- [ ] Click quick action buttons
-- [ ] Click suggestion buttons in chat
-- [ ] Edit pet profile and see changes
-- [ ] Responsive layout on mobile/desktop
-- [ ] Textarea auto-resizes
-- [ ] Chat auto-scrolls to bottom
-- [ ] Modal opens/closes properly
-- [ ] Enter key sends message
-- [ ] Shift+Enter creates new line
+- [x] Type a message and receive AI response
+- [x] Click quick action buttons
+- [x] Click suggestion buttons in chat
+- [x] Edit pet profile and see changes
+- [x] Responsive layout on mobile/desktop
+- [x] Textarea auto-resizes
+- [x] Chat auto-scrolls to bottom
+- [x] Modal opens/closes properly
+- [x] Enter key sends message
+- [x] Shift+Enter creates new line
 
 ## Priority
 High
