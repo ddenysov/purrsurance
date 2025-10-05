@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Purrsurance — Pet Insurance AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#fff6f9',
+                100: '#ffe9f1',
+                200: '#ffd3e4',
+                300: '#ffb6d1',
+                400: '#ff8db6',
+                500: '#ff6fa1',
+                600: '#f05286',
+                700: '#d63d70',
+                800: '#b12f5a',
+                900: '#8f284b',
+              },
+              mint: {
+                50: '#f2fbf7',
+                100: '#dbf7ea',
+                200: '#b7efd6',
+                300: '#8be3be',
+                400: '#59d6a2',
+                500: '#2cc585',
+                600: '#1e9a69',
+                700: '#177956',
+                800: '#145f45',
+                900: '#114e3a',
+              }
+            },
+            boxShadow: {
+              soft: '0 10px 25px -10px rgba(16, 24, 40, .08), 0 6px 12px -6px rgba(16, 24, 40, .06)'
+            },
+            fontFamily: {
+              sans: ['ui-sans-serif','system-ui','-apple-system','Segoe UI','Inter','Roboto','Noto Sans','Ubuntu','Cantarell','Helvetica Neue','Arial','"Apple Color Emoji"','"Segoe UI Emoji"']
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        /* Cute paw pattern corner */
+        .paw-corner:before{
+            content:"";
+            position:absolute; inset:auto 0 0 auto; width:140px; height:140px; opacity:.06;
+            background: radial-gradient(circle at 30% 40%, #000 6px, transparent 7px),
+            radial-gradient(circle at 54% 22%, #000 4px, transparent 5px),
+            radial-gradient(circle at 65% 42%, #000 4px, transparent 5px),
+            radial-gradient(circle at 54% 62%, #000 4px, transparent 5px);
+            filter: blur(.2px);
+            transform: rotate(-15deg) translate(15px,10px);
+            border-radius: 20px;
+        }
+
+        /* Typing indicator */
+        .typing span{ display:inline-block; width:6px; height:6px; margin:0 2px; background:#cbd5e1; border-radius:9999px; animation:blink 1.2s infinite; }
+        .typing span:nth-child(2){ animation-delay:.2s }
+        .typing span:nth-child(3){ animation-delay:.4s }
+        @keyframes blink{ 0%,80%,100%{ opacity:.3 } 40%{ opacity:1 } }
+
+        /* Hide scrollbar for the chat area in WebKit */
+        .no-scrollbar::-webkit-scrollbar{ display:none }
+        .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-white to-slate-50 text-slate-800 antialiased">
+
+<!-- Header -->
+<header class="sticky top-0 z-20 bg-white/70 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="p-2 rounded-2xl bg-mint-50 ring-1 ring-mint-200 shadow-soft">
+                <!-- Paw logo -->
+                <svg viewBox="0 0 64 64" class="w-7 h-7 text-mint-600" fill="currentColor" aria-hidden="true">
+                    <circle cx="20" cy="18" r="7"/>
+                    <circle cx="44" cy="18" r="7"/>
+                    <circle cx="16" cy="36" r="6"/>
+                    <circle cx="48" cy="36" r="6"/>
+                    <path d="M20 48c0-6.627 7.611-12 12-12s12 5.373 12 12-5.373 8-12 8-12-1.373-12-8z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-semibold tracking-tight">Purrsurance</h1>
+                <p class="text-slate-500 text-sm">AI Insurance Assistant for Pets</p>
+            </div>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 text-xs text-slate-500">
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 ring-1 ring-slate-200">Clean UI</span>
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 ring-1 ring-slate-200">Light Theme</span>
+            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-mint-50 ring-1 ring-mint-200 text-mint-700">Pet Friendly</span>
+        </div>
+    </div>
+</header>
+
+<!-- Main -->
+<main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+        <!-- Sidebar: Pet Profile -->
+        <section class="lg:col-span-1">
+            <div class="relative bg-white rounded-3xl ring-1 ring-slate-200 shadow-soft p-6 paw-corner">
+                <div class="flex items-start gap-4">
+                    <img id="petAvatar" alt="Pet avatar" class="size-16 rounded-2xl ring-1 ring-slate-200 object-cover" src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=480&auto=format&fit=crop"/>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h2 id="petName" class="text-lg font-semibold">Luna</h2>
+                            <span id="petSpecies" class="text-xs px-2 py-0.5 rounded-full bg-slate-100 ring-1 ring-slate-200">Cat</span>
+                        </div>
+                        <p id="petAge" class="text-sm text-slate-500">2 years • Female</p>
+                    </div>
+                    <button id="editProfileBtn" class="text-slate-500 hover:text-slate-700" title="Edit profile" aria-label="Edit profile">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mt-5 grid grid-cols-2 gap-3">
+                    <div class="p-3 rounded-2xl bg-slate-50 ring-1 ring-slate-200">
+                        <div class="text-xs text-slate-500">Policy</div>
+                        <div id="policyId" class="font-medium">PS-2578412</div>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-50 ring-1 ring-slate-200">
+                        <div class="text-xs text-slate-500">Coverage</div>
+                        <div id="coveragePlan" class="font-medium">Premium 80%</div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <div class="text-xs text-slate-500 mb-2">Vaccinations</div>
+                    <div id="vaccinations" class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 rounded-full text-xs bg-mint-50 text-mint-800 ring-1 ring-mint-200">Rabies</span>
+                        <span class="px-2 py-1 rounded-full text-xs bg-slate-100 ring-1 ring-slate-200">FVRCP</span>
+                        <span class="px-2 py-1 rounded-full text-xs bg-slate-100 ring-1 ring-slate-200 line-through opacity-60" title="Due soon">FeLV</span>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <div class="text-xs text-slate-500 mb-2">Upcoming</div>
+                    <ul id="upcoming" class="space-y-2 text-sm">
+                        <li class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 ring-1 ring-slate-200">
+                            <div class="flex items-center gap-3">
+                  <span class="inline-flex items-center justify-center size-8 rounded-xl bg-white ring-1 ring-slate-200">
+                    <!-- calendar icon -->
+                    <svg viewBox="0 0 24 24" class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 2v4M8 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>
+                  </span>
+                                <div>
+                                    <div class="font-medium">Check-up • Vet Clinic</div>
+                                    <div class="text-slate-500">Tue, Oct 7 • 10:30</div>
+                                </div>
+                            </div>
+                            <button class="text-xs px-2 py-1 rounded-full ring-1 ring-slate-200 hover:bg-slate-100">Reschedule</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-2">
+                    <button data-quick="coverage" class="quick-btn inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-white ring-1 ring-slate-200 hover:bg-slate-50">
+                        <span class="inline-block size-2 rounded-full bg-mint-500"></span> Check Coverage
+                    </button>
+                    <button data-quick="vet" class="quick-btn inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-white ring-1 ring-slate-200 hover:bg-slate-50">
+                        <span class="inline-block size-2 rounded-full bg-brand-500"></span> Find a Vet
+                    </button>
+                    <button data-quick="pharmacy" class="quick-btn inline-flex items-center gap-2 px-3 py-2 rounded-2xl bg-white ring-1 ring-slate-200 hover:bg-slate-50">
+                        <span class="inline-block size-2 rounded-full bg-slate-400"></span> Order Meds
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chat Panel -->
+        <section class="lg:col-span-2">
+            <div class="bg-white rounded-3xl ring-1 ring-slate-200 shadow-soft flex flex-col h-[72vh]">
+                <!-- Chat header -->
+                <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <div class="size-10 rounded-2xl bg-mint-50 ring-1 ring-mint-200 flex items-center justify-center">
+                                <svg viewBox="0 0 64 64" class="w-6 h-6 text-mint-600" fill="currentColor" aria-hidden="true">
+                                    <circle cx="20" cy="18" r="7"/>
+                                    <circle cx="44" cy="18" r="7"/>
+                                    <circle cx="16" cy="36" r="6"/>
+                                    <circle cx="48" cy="36" r="6"/>
+                                    <path d="M20 48c0-6.627 7.611-12 12-12s12 5.373 12 12-5.373 8-12 8-12-1.373-12-8z"/>
+                                </svg>
+                            </div>
+                            <span class="absolute -bottom-0.5 -right-0.5 inline-flex items-center justify-center size-4 rounded-full bg-mint-500 ring-2 ring-white"></span>
+                        </div>
+                        <div>
+                            <div class="font-medium">Purrsurance Agent</div>
+                            <div class="text-xs text-slate-500">Online • Friendly & HIPAA-ready</div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-500 hidden sm:block">You can close this chat — I’ll email updates.</div>
+                </div>
+
+                <!-- Messages -->
+                <div id="chat" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 no-scrollbar">
+                    <!-- Sample assistant message -->
+                    <div class="flex items-start gap-3">
+                        <div class="size-9 rounded-2xl bg-mint-100 ring-1 ring-mint-200 flex items-center justify-center shrink-0">
+                            <span class="text-lg">🐾</span>
+                        </div>
+                        <div class="bg-slate-50 ring-1 ring-slate-200 rounded-2xl p-3 max-w-[85%]">
+                            <p class="text-sm">Hi! I’m your Purrsurance assistant. Tell me your policy ID or ask a question — for example, “Find a vet for vomiting and lethargy near me”.</p>
+                            <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                                <button data-suggest="coverage" class="px-3 py-1.5 rounded-2xl bg-white ring-1 ring-slate-200 hover:bg-slate-50">Check my coverage</button>
+                                <button data-suggest="vet" class="px-3 py-1.5 rounded-2xl bg-white ring-1 ring-slate-200 hover:bg-slate-50">Book a vet</button>
+                                <button data-suggest="pharmacy" class="px-3 py-1.5 rounded-2xl bg-white ring-1 ring-slate-200 hover:bg-slate-50">Find meds</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Composer -->
+                <div class="p-4 sm:p-5 border-t border-slate-200">
+                    <form id="composer" class="flex items-end gap-3">
+                        <div class="flex-1">
+                            <label for="input" class="sr-only">Message</label>
+                            <div class="relative">
+                  <textarea id="input" rows="1" placeholder="Type a message… e.g., Policy PS-2578412 — find a vet for limping tomorrow morning"
+                            class="w-full resize-none rounded-2xl bg-slate-50 ring-1 ring-slate-200 focus:ring-2 focus:ring-mint-300 focus:bg-white px-4 py-3 text-sm shadow-inner placeholder:text-slate-400"></textarea>
+                                <div class="absolute bottom-2 right-2 flex items-center gap-1.5">
+                                    <button type="button" id="attachBtn" title="Attach file" class="p-2 rounded-xl hover:bg-slate-100 text-slate-500">
+                                        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-8.49 8.49a5 5 0 1 1-7.07-7.07l8.49-8.49a3.5 3.5 0 1 1 4.95 4.95l-8.49 8.49a2 2 0 1 1-2.83-2.83l7.78-7.78"/></svg>
+                                    </button>
+                                    <button type="submit" class="px-3.5 py-2 rounded-xl bg-mint-500 hover:bg-mint-600 text-white font-medium shadow-soft">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <p class="mt-2 text-[11px] text-slate-500">Tip: You can close the chat — I’ll email you when I find an available vet.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<!-- Edit Profile Modal -->
+<div id="modal" class="hidden fixed inset-0 z-30 items-center justify-center">
+    <div class="absolute inset-0 bg-slate-900/30"></div>
+    <div class="relative w-full max-w-lg mx-auto bg-white rounded-3xl ring-1 ring-slate-200 shadow-soft p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Edit Pet Profile</h3>
+            <button id="closeModal" class="text-slate-500 hover:text-slate-700" aria-label="Close">
+                <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="profileForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="block">
+                <span class="text-sm text-slate-600">Pet Name</span>
+                <input name="name" class="mt-1 w-full rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2" value="Luna"/>
+            </label>
+            <label class="block">
+                <span class="text-sm text-slate-600">Species</span>
+                <input name="species" class="mt-1 w-full rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2" value="Cat"/>
+            </label>
+            <label class="block">
+                <span class="text-sm text-slate-600">Age</span>
+                <input name="age" class="mt-1 w-full rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2" value="2 years"/>
+            </label>
+            <label class="block">
+                <span class="text-sm text-slate-600">Gender</span>
+                <input name="gender" class="mt-1 w-full rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2" value="Female"/>
+            </label>
+            <label class="block sm:col-span-2">
+                <span class="text-sm text-slate-600">Policy ID</span>
+                <input name="policy" class="mt-1 w-full rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2" value="PS-2578412"/>
+            </label>
+            <label class="block sm:col-span-2">
+                <span class="text-sm text-slate-600">Coverage Plan</span>
+                <input name="coverage" class="mt-1 w-full rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2" value="Premium 80%"/>
+            </label>
+            <div class="sm:col-span-2 flex items-center justify-end gap-2 mt-2">
+                <button type="button" id="cancelProfile" class="px-3 py-2 rounded-xl ring-1 ring-slate-200">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded-xl bg-mint-500 hover:bg-mint-600 text-white font-medium">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  // --- Minimal state & helpers ---
+  const state = {
+    pet: {
+      name: 'Luna', species: 'Cat', age: '2 years', gender: 'Female',
+      policy: 'PS-2578412', coverage: 'Premium 80%',
+      avatar: document.getElementById('petAvatar').getAttribute('src')
+    }
+  };
+
+  const chatEl = document.getElementById('chat');
+  const inputEl = document.getElementById('input');
+  const composer = document.getElementById('composer');
+
+  function scrollToBottom(){ chatEl.scrollTop = chatEl.scrollHeight; }
+
+  function bubble(content, side='assistant'){
+    const wrap = document.createElement('div');
+    wrap.className = `flex items-start gap-3 ${side==='user'?'justify-end':''}`;
+    const avatar = side==='assistant'
+      ? `<div class="size-9 rounded-2xl bg-mint-100 ring-1 ring-mint-200 flex items-center justify-center shrink-0"><span class="text-lg">🐾</span></div>`
+      : `<img alt="User" class="size-9 rounded-2xl ring-1 ring-slate-200 object-cover shrink-0" src="https://images.unsplash.com/photo-1548095115-45697e51364f?q=80&w=240&auto=format&fit=crop"/>`;
+    const bg = side==='assistant' ? 'bg-slate-50 ring-1 ring-slate-200' : 'bg-mint-500 text-white';
+    const radius = side==='assistant' ? 'rounded-2xl' : 'rounded-2xl';
+    wrap.innerHTML = side==='assistant'
+      ? `${avatar}<div class="${bg} ${radius} p-3 max-w-[85%] text-sm">${content}</div>`
+      : `<div class="${bg} ${radius} p-3 max-w-[85%] text-sm">${content}</div>${avatar}`;
+    chatEl.appendChild(wrap); scrollToBottom();
+  }
+
+  function typing(show=true){
+    const id = 'typing';
+    let t = document.getElementById(id);
+    if(show){
+      if(t) return t;
+      const wrap = document.createElement('div');
+      wrap.id = id;
+      wrap.className = 'flex items-start gap-3';
+      wrap.innerHTML = `
+          <div class="size-9 rounded-2xl bg-mint-100 ring-1 ring-mint-200 flex items-center justify-center shrink-0"><span class="text-lg">🐾</span></div>
+          <div class="bg-slate-50 ring-1 ring-slate-200 rounded-2xl p-3 max-w-[85%]"><div class="typing"><span></span><span></span><span></span></div></div>`;
+      chatEl.appendChild(wrap); scrollToBottom(); return wrap;
+    } else if(t) { t.remove(); }
+  }
+
+  function sanitize(text){
+    const div = document.createElement('div');
+    div.textContent = text; return div.innerHTML;
+  }
+
+  function aiReply(userText){
+    const t = userText.toLowerCase();
+    // very simple intent rules for the demo
+    if(/policy|coverage|insur|ps-/.test(t)){
+      return `Thanks! I’ve confirmed policy <strong>${state.pet.policy}</strong> for <strong>${state.pet.name}</strong>. Your plan is <strong>${state.pet.coverage}</strong>.
+        <br/>Covered today: exam (100%), x-ray (80%), meds (80%).
+        <br/><em>You can ask: “Book a vet for limping tomorrow morning”.</em>`;
+    }
+    if(/vet|doctor|clinic|appointment|book/.test(t)){
+      return `Got it — I’m searching nearby vets that match your case. This may take a moment.
+        <br/>I’ll email the confirmation if you close the chat.
+        <div class="mt-2 text-xs text-slate-500">Query: <code>${sanitize(userText)}</code></div>`;
+    }
+    if(/meds|pharmacy|drug|rx|prescription/.test(t)){
+      return `I’ll locate pharmacies with the prescribed meds in stock and check your coverage share.
+        <br/>You’ll receive an <strong>e‑Prescription Token</strong> by email for pickup.`;
+    }
+    if(/hello|hi|hey|meow/.test(t)){
+      return `Meow! I can check coverage, find a vet, and order meds. Try: <em>“Policy ${state.pet.policy} — find a vet for vomiting”</em>.`;
+    }
+    return `I’m here to help with coverage, vet bookings, and pharmacy orders.
+      <br/>For example: <em>“Policy ${state.pet.policy} — book a dental check for Friday 9am.”</em>`;
+  }
+
+  function simulateAsyncFollowUp(base){
+    // add a delayed follow-up to mimic async search results
+    setTimeout(()=>{
+      typing(false);
+      bubble(`<strong>Found a slot:</strong> Green Paw Vet Clinic — Thu 11:20.
+          <br/>Would you like me to confirm the appointment and send the email ticket?`, 'assistant');
+    }, 1800);
+  }
+
+  composer.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const text = inputEl.value.trim(); if(!text) return;
+    bubble(sanitize(text), 'user');
+    inputEl.value=''; inputEl.style.height='auto';
+    typing(true);
+    setTimeout(()=>{
+      const reply = aiReply(text);
+      typing(false);
+      bubble(reply, 'assistant');
+      if(/vet|doctor|clinic|appointment|book/.test(text.toLowerCase())){
+        typing(true);
+        simulateAsyncFollowUp();
+      }
+    }, 700);
+  });
+
+  // autosize textarea
+  inputEl.addEventListener('input', ()=>{
+    inputEl.style.height = 'auto';
+    inputEl.style.height = (inputEl.scrollHeight) + 'px';
+  });
+
+  // Quick actions
+  document.querySelectorAll('.quick-btn,[data-suggest]')?.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const t = btn.dataset.quick || btn.dataset.suggest;
+      let msg = '';
+      if(t==='coverage') msg = `Check my coverage for policy ${state.pet.policy}`;
+      if(t==='vet') msg = `Find a vet for ${state.pet.name} — limping and lethargic tomorrow morning near me`;
+      if(t==='pharmacy') msg = `Order meds for ${state.pet.name}. Do they qualify for coverage?`;
+      inputEl.value = msg; inputEl.dispatchEvent(new Event('input'));
+      inputEl.focus();
+    })
+  });
+
+  // Profile modal
+  const modal = document.getElementById('modal');
+  const editBtn = document.getElementById('editProfileBtn');
+  const closeModal = document.getElementById('closeModal');
+  const cancelProfile = document.getElementById('cancelProfile');
+  const form = document.getElementById('profileForm');
+
+  function openModal(){ modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  function hideModal(){ modal.classList.add('hidden'); modal.classList.remove('flex'); }
+
+  editBtn.addEventListener('click', openModal);
+  closeModal.addEventListener('click', hideModal);
+  cancelProfile.addEventListener('click', hideModal);
+
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    state.pet.name = data.name || state.pet.name;
+    state.pet.species = data.species || state.pet.species;
+    state.pet.age = data.age || state.pet.age;
+    state.pet.gender = data.gender || state.pet.gender;
+    state.pet.policy = data.policy || state.pet.policy;
+    state.pet.coverage = data.coverage || state.pet.coverage;
+    // update UI
+    document.getElementById('petName').textContent = state.pet.name;
+    document.getElementById('petSpecies').textContent = state.pet.species;
+    document.getElementById('petAge').textContent = `${state.pet.age} • ${state.pet.gender}`;
+    document.getElementById('policyId').textContent = state.pet.policy;
+    document.getElementById('coveragePlan').textContent = state.pet.coverage;
+    hideModal();
+    bubble(`Updated profile for <strong>${state.pet.name}</strong>. Policy is <strong>${state.pet.policy}</strong>, plan <strong>${state.pet.coverage}</strong>.`, 'assistant');
+  });
+
+  // Enter submit with Shift support
+  inputEl.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); composer.requestSubmit(); }
+  });
+</script>
+</body>
+</html>
