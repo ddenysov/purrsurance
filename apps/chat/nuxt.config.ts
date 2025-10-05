@@ -4,7 +4,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   
   // Modules
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: [
+      '@nuxtjs/tailwindcss',
+      '@pinia/nuxt'
+  ],
   
   // CSS Framework
   css: ['~/assets/css/main.css'],
