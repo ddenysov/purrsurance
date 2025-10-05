@@ -6,9 +6,10 @@
         <div class="flex items-center space-x-3">
           <!-- Paw Logo -->
           <div class="flex-shrink-0">
-            <svg class="w-8 h-8 text-brand-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C8.5 2 6 4.5 6 8c0 1.5.5 2.8 1.3 3.8L12 22l4.7-10.2C17.5 10.8 18 9.5 18 8c0-3.5-2.5-6-6-6zm0 8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-            </svg>
+            <PawIcon 
+              size="lg"
+              :shadow="true"
+            />
           </div>
           
           <!-- Title and Subtitle -->
@@ -36,5 +37,5 @@
 </template>
 
 <script setup lang="ts">
-// No props or logic needed for this component
+import PawIcon from '@/components/icons/PawIcon.vue'
 </script>
