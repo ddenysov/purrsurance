@@ -297,28 +297,6 @@ const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile } = 
 - Destructure `isPolicyVerified` from `usePetProfile()`
 - No other changes needed in this file
 
----
-
-## Testing Checklist
-
-After implementation, test these scenarios:
-
-- [ ] **Initial Load**: Open app → Pet details should be HIDDEN, locked state visible
-- [ ] **Locked State Display**: Verify lock icon and message "Pet Details Locked" appears
-- [ ] **Policy ID Detection**: Send "My policy ID is PS-2578412" in chat
-- [ ] **Details Unlock**: After sending policy, pet details should appear immediately
-- [ ] **AI Response**: AI should respond with "Thank you! I've verified your policy ID..."
-- [ ] **State Persistence**: Pet details remain visible after unlocking (don't hide again)
-- [ ] **Policy Variations**: Test with different formats:
-  - "PS-2578412" ✓
-  - "PS2578412" ✓
-  - "ps-2578412" ✓
-  - "My policy number is PS-2578412" ✓
-- [ ] **Regular Messages**: Send regular messages before policy → details stay locked
-- [ ] **Quick Actions**: Quick action buttons should only work when details unlocked
-- [ ] **Edit Profile**: Edit button should not appear in locked state
-- [ ] **Mobile View**: Test locked/unlocked states on mobile layout
-- [ ] **No Console Errors**: Check browser console for any errors
 
 ---
 

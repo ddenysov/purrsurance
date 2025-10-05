@@ -1,5 +1,6 @@
 import type { ChatMessage } from '~/types'
-import { generateAIResponse, generateFollowUpSuggestions } from '~/utils/aiReply'
+import { generateAIResponse, generateFollowUpSuggestions, containsPolicyId } from '~/utils/aiReply'
+import { usePetProfile } from './usePetProfile'
 
 export const useChat = () => {
   // Chat messages state
@@ -39,6 +40,13 @@ export const useChat = () => {
       content: text.trim(),
       sender: 'user'
     })
+
+    // Check if message contains policy ID and unlock pet details
+    if (containsPolicyId(text)) {
+      // Get access to pet profile composable
+      const { unlockPetDetails } = usePetProfile()
+      unlockPetDetails()
+    }
 
     // Show typing indicator
     isTyping.value = true

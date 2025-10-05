@@ -1,11 +1,35 @@
 import type { ChatMessage } from '~/types'
 
 /**
+ * Check if user message contains a policy ID
+ * Policy ID format: PS-XXXXXXX (PS- followed by 7 digits)
+ */
+export function containsPolicyId(message: string): boolean {
+  // Check for pattern: PS- followed by numbers (case insensitive)
+  const policyPattern = /PS-?\d{7}/i
+  
+  // Also check for keywords that indicate user is sharing policy
+  const policyKeywords = ['policy id', 'policy number', 'my policy', 'insurance policy']
+  
+  const containsPattern = policyPattern.test(message)
+  const containsKeyword = policyKeywords.some(keyword => 
+    message.toLowerCase().includes(keyword)
+  )
+  
+  return containsPattern || containsKeyword
+}
+
+/**
  * Generate AI response based on user input
  * Simple pattern matching for demo purposes
  */
 export function generateAIResponse(userMessage: string): string {
   const message = userMessage.toLowerCase()
+  
+  // Policy ID verification
+  if (containsPolicyId(userMessage)) {
+    return `Thank you! I've verified your policy ID. I can now see your pet's complete profile and insurance details. How can I help you today?`
+  }
   
   // Policy-related queries
   if (message.includes('policy') || message.includes('coverage') || message.includes('plan')) {

@@ -10,6 +10,7 @@
             :vaccinations="vaccinations"
             :appointments="appointments"
             :quick-actions="quickActions"
+            :is-policy-verified="isPolicyVerified"
             @edit-profile="openModal"
             @action-click="handleQuickAction"
           />
@@ -44,7 +45,7 @@
 import type { QuickAction } from '~/types'
 
 // Use composables
-const { pet, vaccinations, appointments, updatePetProfile } = usePetProfile()
+const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile } = usePetProfile()
 const { messages, isTyping, sendMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
 

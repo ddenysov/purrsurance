@@ -1,6 +1,9 @@
 import type { Pet, Vaccination, Appointment } from '~/types'
 
 export const usePetProfile = () => {
+  // Policy verification state
+  const isPolicyVerified = ref<boolean>(false)
+
   // Default pet data matching the mockup
   const pet = ref<Pet>({
     id: '1',
@@ -70,14 +73,22 @@ export const usePetProfile = () => {
     }
   }
 
+  // Unlock pet details after policy verification
+  const unlockPetDetails = () => {
+    console.log('Unlocking pet profile');
+    isPolicyVerified.value = true
+  }
+
   return {
     pet: readonly(pet),
     vaccinations: readonly(vaccinations),
     appointments: readonly(appointments),
+    isPolicyVerified: readonly(isPolicyVerified),
     updatePetProfile,
     addVaccination,
     updateVaccinationStatus,
     addAppointment,
-    removeAppointment
+    removeAppointment,
+    unlockPetDetails
   }
 }

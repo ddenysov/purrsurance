@@ -374,17 +374,6 @@ Welcome message with 3 suggestion buttons
 - **Keep styling in template** - use Tailwind classes
 - **Sanitize ALL user input** before displaying
 
-## Testing Checklist
-- [x] Type a message and receive AI response
-- [x] Click quick action buttons
-- [x] Click suggestion buttons in chat
-- [x] Edit pet profile and see changes
-- [x] Responsive layout on mobile/desktop
-- [x] Textarea auto-resizes
-- [x] Chat auto-scrolls to bottom
-- [x] Modal opens/closes properly
-- [x] Enter key sends message
-- [x] Shift+Enter creates new line
 
 ## Priority
 High
