@@ -16,7 +16,13 @@ export const lambdaHandler = async (event, context) => {
       statusCode: 200,
       body: JSON.stringify({
         message: 'hello world',
-      })
+      }),
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': '*',
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Max-Age': '600',
+      },
     };
 
     return response;

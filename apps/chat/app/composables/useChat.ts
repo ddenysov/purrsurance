@@ -1,6 +1,7 @@
 import type { ChatMessage } from '~/types'
 import { generateAIResponse, generateFollowUpSuggestions, containsPolicyId } from '~/utils/aiReply'
 import { usePetProfile } from './usePetProfile'
+import { apiClient } from '~/utils/apiClient'
 
 export const useChat = () => {
   // Chat messages state
@@ -58,6 +59,16 @@ export const useChat = () => {
           // Get access to pet profile composable
           const { unlockPetDetails } = usePetProfile()
           unlockPetDetails()
+          
+          // Send request to backend to verify policy
+          try {
+            const response = await apiClient.get('/hello', {
+              baseURL: 'https://8c3d9z8tl6.execute-api.us-east-1.amazonaws.com/Prod'
+            })
+            console.log('Backend response:', response.data)
+          } catch (error) {
+            console.error('Backend request failed:', error)
+          }
       }
 
     // Add AI response

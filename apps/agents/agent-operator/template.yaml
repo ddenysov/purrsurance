@@ -9,9 +9,9 @@ Description: >
 Globals:
   Api:
     Cors:
-      AllowOrigins: "'*'"
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-      AllowMethods: "'POST, GET, OPTIONS'"
+      AllowOrigin: "'*'"
+      AllowHeaders: "'Content-Type'"
+      AllowMethods: "'GET,POST,OPTIONS'"
   Function:
     Timeout: 3
 
