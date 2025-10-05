@@ -34,6 +34,30 @@ Resources:
             Path: /hello
             Method: get
 
+  GetPolicyDetailsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get-policy-details/
+      Handler: app.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      Events:
+        GetPolicyDetails:
+          Type: Api
+          Properties:
+            Path: /policy
+            Method: get
+
+  BedrockInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt GetPolicyDetailsFunction.Arn
+      Principal: bedrock.amazonaws.com
+      # Теперь SourceArn ссылается на ARN агента, созданного в этом же шаблоне
+      SourceArn: arn:aws:bedrock:us-east-1:057367573361:agent/OLHUNALEOH
+
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:
@@ -61,3 +85,12 @@ Outputs:
   HelloWorldFunctionIamRole:
     Description: Implicit IAM Role created for Hello World function
     Value: !GetAtt HelloWorldFunctionRole.Arn
+  GetPolicyDetailsApi:
+    Description: API Gateway endpoint URL for Prod stage for GetPolicyDetails function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/policy/"
+  GetPolicyDetailsFunction:
+    Description: GetPolicyDetails Lambda Function ARN
+    Value: !GetAtt GetPolicyDetailsFunction.Arn
+  GetPolicyDetailsFunctionIamRole:
+    Description: Implicit IAM Role created for GetPolicyDetails function
+    Value: !GetAtt GetPolicyDetailsFunctionRole.Arn

@@ -18,8 +18,9 @@ confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "agent-operator"
 region = "us-east-1"
-disable_rollback = true
+disable_rollback = false
 image_repositories = []
+parameter_overrides = "BedrockAgentArn=\"arn:aws:bedrock:us-east-1:057367573361:agent/OLHUNALEOH\""
 
 [default.package.parameters]
 resolve_s3 = true

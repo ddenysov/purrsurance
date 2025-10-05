@@ -63,7 +63,7 @@ export const useChat = () => {
           // Send request to backend to verify policy
           try {
             const response = await apiClient.get('/hello', {
-              baseURL: 'https://8c3d9z8tl6.execute-api.us-east-1.amazonaws.com/Prod'
+              baseURL: 'https://cbx2umgj5k.execute-api.us-east-1.amazonaws.com/Prod'
             })
             console.log('Backend response:', response.data)
           } catch (error) {
