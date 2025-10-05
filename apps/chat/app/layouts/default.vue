@@ -1,17 +1,19 @@
 <template>
   <div class="default-layout">
+   <AppHeader />
+
     <main>
       <slot />
     </main>
     
-    <footer>
-      <p>TBD: Application Footer</p>
-    </footer>
+    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 // TBD: Add layout logic here
+import AppHeader from "~/components/layout/AppHeader.vue";
+import AppFooter from "~/components/layout/AppFooter.vue";
 </script>
 
 <style scoped>
