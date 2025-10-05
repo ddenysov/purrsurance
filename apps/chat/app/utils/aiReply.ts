@@ -34,7 +34,7 @@ export function generateAIResponse(userMessage: string): string {
   
   // General greeting
   if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
-    return `Hello! I'm your Purrsurance AI assistant. I'm here to help you with your pet insurance needs. How can I assist you today?`
+    return `Hi! I’m your Purrsurance assistant. Tell me your policy ID or ask a question — for example, “Find a vet for vomiting and lethargy near me”.`
   }
   
   // Default response
