@@ -47,7 +47,7 @@ import type { QuickAction } from '~/types'
 import type { SSEEvent } from '~/composables/useEventBus'
 
 // Use composables
-const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile } = usePetProfile()
+const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile, unlockPetDetails } = usePetProfile()
 const { messages, isTyping, error, sendMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
 const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType } = useEventBus()
@@ -110,44 +110,6 @@ const handleSaveProfile = (petData: typeof pet.value) => {
   closeModal()
 }
 
-// Test function to simulate SSE events
-const testEventBus = () => {
-  const testClaimEvent = {
-    type: 'claim_status',
-    id: 'evt_test_' + Date.now(),
-    timestamp: new Date().toISOString(),
-    data: {
-      pet: 'Mittens',
-      status: 'approved',
-      message: 'Test claim has been processed',
-      details: {
-        eventNumber: Math.floor(Math.random() * 100),
-        randomValue: Math.floor(Math.random() * 1000)
-      }
-    }
-  }
-  
-  const testPolicyEvent = {
-    type: 'policy_update',
-    id: 'evt_test_' + Date.now(),
-    timestamp: new Date().toISOString(),
-    data: {
-      pet: 'Mittens',
-      message: 'Policy coverage has been updated',
-      details: {
-        coverageType: 'premium',
-        newLimit: 50000
-      }
-    }
-  }
-  
-  // Emit test events
-  emitEvent('claim_status', testClaimEvent)
-  setTimeout(() => {
-    emitEvent('policy_update', testPolicyEvent)
-  }, 1000)
-}
-
 // Set page title
 useHead({
   title: 'Purrsurance - AI Pet Insurance Assistant'
@@ -191,8 +153,8 @@ onMounted(() => {
     onEvent('policy_update', (event) => {
       console.log('[EventBus] Policy update:', event)
       latestPolicyEvent.value = event
-      // Here you can add specific logic for policy updates
-      // For example, refresh policy data, show notification, etc.
+      // Set policy as verified when policy_update event is received
+      unlockPetDetails()
     })
 
     // Listen to all events for debugging
