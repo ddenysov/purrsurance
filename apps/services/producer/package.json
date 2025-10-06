@@ -1,0 +1,19 @@
+{
+  "name": "event-producer",
+  "version": "1.0.0",
+  "description": "Event Producer Lambda function for publishing events to SNS",
+  "type": "module",
+  "main": "app.mjs",
+  "author": "Purrsurance Team",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-sns": "^3.600.0"
+  },
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
+

@@ -66,6 +66,9 @@ Resources:
     Properties:
       CodeUri: producer/
       Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
       Environment:
         Variables:
           EVENTS_TOPIC_ARN: !Ref EventsTopic

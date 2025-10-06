@@ -2,10 +2,19 @@
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
-- hello-world - Code for the application's Lambda function.
-- events - Invocation events that you can use to invoke the function.
-- hello-world/tests - Unit tests for the application code. 
-- template.yaml - A template that defines the application's AWS resources.
+## Lambda Functions
+
+- **hello-world** - Main Lambda function with AWS Bedrock Agent integration
+- **producer** - Event Producer Lambda that publishes events to SNS
+- **saver** - Event Saver Lambda that persists events from SNS to DynamoDB
+- **get-policy-details** - Lambda function for retrieving policy information
+- **sse-stream** - Server-Sent Events streaming Lambda
+
+## Project Structure
+
+- events - Invocation events that you can use to invoke functions
+- template.yaml - SAM template that defines the application's AWS resources
+- Makefile - Build and deployment automation
 
 The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
@@ -119,6 +128,57 @@ To delete the sample application that you created, use the AWS CLI. Assuming you
 ```bash
 sam delete --stack-name agent-operator
 ```
+
+## Event Producer Lambda
+
+The Event Producer Lambda (`producer/`) publishes events to SNS for event-driven architecture.
+
+### Quick Start
+
+Test locally:
+```bash
+cd producer
+./test-local.sh
+```
+
+### API Endpoint
+
+After deployment, the producer is available at:
+```
+POST /publish
+```
+
+### Example Request
+
+```bash
+curl -X POST https://your-api-gateway-url/Prod/publish \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventType": "PolicyUpdate",
+    "subject": "Policy updated",
+    "data": {
+      "policyId": "PETS-INS-2025-000123",
+      "action": "update",
+      "changes": {
+        "coverage": 150000
+      }
+    }
+  }'
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Event published successfully",
+  "messageId": "a1b2c3d4-...",
+  "eventType": "PolicyUpdate",
+  "timestamp": "2025-10-06T12:00:00Z"
+}
+```
+
+See `producer/README.md` for detailed documentation.
 
 ## Resources
 

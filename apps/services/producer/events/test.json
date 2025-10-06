@@ -1,0 +1,9 @@
+{
+  "httpMethod": "POST",
+  "path": "/publish",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"eventType\":\"PolicyUpdate\",\"subject\":\"Policy updated\",\"data\":{\"policyId\":\"PETS-INS-2025-000123\",\"action\":\"update\",\"timestamp\":\"2025-10-06T12:00:00Z\",\"changes\":{\"coverage\":150000,\"updatedBy\":\"admin@purrsurance.com\"}}}"
+}
+
