@@ -39,6 +39,65 @@ Parameters:
     Default: TSTALIASID
     Description: AWS Bedrock Agent Alias ID
 Resources:
+  EventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: ApplicationEventsTopic
+
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "partitionKey"
+          AttributeType: "S"
+        - AttributeName: "timestamp"
+          AttributeType: "N"
+      KeySchema:
+        - AttributeName: "partitionKey"
+          KeyType: "HASH"
+        - AttributeName: "timestamp"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+
+    # 3. Функция-Продюсер: Отправляет событие в SNS
+    # (Для примера, будет вызываться через API Gateway)
+  EventProducerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: producer/
+      Handler: app.handler
+      Environment:
+        Variables:
+          EVENTS_TOPIC_ARN: !Ref EventsTopic
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt EventsTopic.TopicName
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /publish
+            Method: post
+
+  # 4. Функция-Сохранялка: Сохраняет событие из SNS в DynamoDB
+  EventSaverFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: saver/
+      Handler: app.handler
+      Environment:
+        Variables:
+          EVENTS_TABLE_NAME: !Ref EventsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties:
+            Topic: !Ref EventsTopic
+
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -109,6 +168,10 @@ Resources:
           SSE_EVENT_INTERVAL: 5000
           SSE_MAX_DURATION: 300000
           SSE_KEEPALIVE_INTERVAL: 30000
+          EVENTS_TABLE_NAME: !Ref EventsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref EventsTable
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
@@ -200,3 +263,7 @@ Outputs:
   SSEStreamFunction:
     Description: "SSE Stream Lambda Function ARN"
     Value: !GetAtt SSEStreamFunction.Arn
+
+  EventProducerApi:
+    Description: "API Gateway endpoint URL to publish events"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/publish"
