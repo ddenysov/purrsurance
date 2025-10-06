@@ -1,12 +1,12 @@
 # SSE Stream Lambda Function
 
-Lambda function that streams Server-Sent Events (SSE) to clients for real-time updates. Currently sends mock events every 10 seconds to demonstrate SSE functionality.
+Lambda function that streams Server-Sent Events (SSE) to clients for real-time updates. Polls DynamoDB for new events and streams them to connected clients.
 
 ## Features
 
 - ✅ Server-Sent Events (SSE) streaming
 - ✅ Lambda Response Streaming
-- ✅ Mock event generator (10-second intervals)
+- ✅ DynamoDB polling for real-time events
 - ✅ Keep-alive heartbeats
 - ✅ Automatic connection management
 - ✅ CORS support
@@ -18,9 +18,11 @@ Lambda function that streams Server-Sent Events (SSE) to clients for real-time u
 ```
 Client → API Gateway (HTTP API) → Lambda Function URL → SSE Stream
                                           ↓
-                                    Event Generator
+                                   Poll DynamoDB
                                           ↓
-                                  Send event every 10s
+                                    EventsTable
+                                          ↑
+                              SNS Topic → Event Saver
 ```
 
 ## SSE Protocol
@@ -73,11 +75,12 @@ npm install
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SSE_EVENT_INTERVAL` | Interval between events (ms) | `10000` (10s) |
+| `EVENTS_TABLE_NAME` | DynamoDB table name | `EventsTable` |
+| `SSE_EVENT_INTERVAL` | Interval between DynamoDB polls (ms) | `5000` (5s) |
 | `SSE_MAX_DURATION` | Max stream duration (ms) | `300000` (5min) |
 | `SSE_KEEPALIVE_INTERVAL` | Keep-alive interval (ms) | `30000` (30s) |
-| `SSE_USE_MOCK` | Use mock events | `true` |
 | `LOG_LEVEL` | Logging level | `info` |
+| `ENVIRONMENT` | Environment name | `local` |
 
 ## Local Testing
 
@@ -283,15 +286,36 @@ sam logs -n SSEStreamFunction --stack-name <stack-name> --filter "ERROR"
 - Monitor for abuse
 - Use AWS WAF if needed
 
+## How It Works
+
+1. **Client connects** to the SSE endpoint via HTTP API or Function URL
+2. **Lambda function** initializes connection and sends `connected` event
+3. **Polling loop** queries DynamoDB every 5 seconds for new events (events with timestamp > last seen)
+4. **New events** are formatted as SSE messages and streamed to client
+5. **Heartbeat messages** sent every 30 seconds to keep connection alive
+6. **Connection closes** after 5 minutes (configurable) or on client disconnect
+
+### DynamoDB Schema
+
+The function queries the `EventsTable` with the following structure:
+
+- **Partition Key:** `partitionKey` (String) - Fixed value `'EVENTS'`
+- **Sort Key:** `timestamp` (Number) - Event timestamp in milliseconds
+- **Attributes:**
+  - `payload` - Event data (object)
+  - `eventType` - Type of event (string)
+  - `messageId` - Unique message ID (string)
+
 ## Future Enhancements
 
-- [ ] Real-time events from DynamoDB Streams
+- [ ] DynamoDB Streams for instant push (no polling delay)
 - [ ] Events from EventBridge
 - [ ] Client authentication
 - [ ] Connection pooling
 - [ ] Event filtering per client
 - [ ] Compression support
 - [ ] Metrics dashboard
+- [ ] Multiple partition keys for better scalability
 
 ## References
 

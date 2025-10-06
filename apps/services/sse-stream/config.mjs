@@ -10,17 +10,20 @@ export const config = {
   
   // SSE Configuration
   sse: {
-    // Interval between mock events (milliseconds)
-    eventInterval: parseInt(process.env.SSE_EVENT_INTERVAL || '5000', 10),
+    // Interval between DynamoDB polls (milliseconds)
+    pollInterval: parseInt(process.env.SSE_EVENT_INTERVAL || '5000', 10),
     
     // Maximum stream duration (milliseconds)
     maxStreamDuration: parseInt(process.env.SSE_MAX_DURATION || '300000', 10), // 5 minutes
     
     // Keep-alive interval (milliseconds)
     keepAliveInterval: parseInt(process.env.SSE_KEEPALIVE_INTERVAL || '30000', 10),
-    
-    // Mock mode
-    useMock: process.env.SSE_USE_MOCK !== 'false', // Default true
+  },
+  
+  // DynamoDB Configuration
+  dynamodb: {
+    tableName: process.env.EVENTS_TABLE_NAME || 'EventsTable',
+    partitionKey: 'EVENTS', // Fixed partition key for all events
   },
   
   // Logging configuration

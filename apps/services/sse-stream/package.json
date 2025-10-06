@@ -7,7 +7,10 @@
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.504.0",
+    "@aws-sdk/lib-dynamodb": "^3.504.0"
+  },
   "devDependencies": {
     "jest": "^29.7.0"
   }

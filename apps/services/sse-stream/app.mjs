@@ -2,9 +2,11 @@
  * Lambda function handler with Server-Sent Events (SSE) streaming
  * 
  * Uses Lambda Response Streaming to send SSE events to clients
- * Supports both local testing and AWS deployment
+ * Polls DynamoDB for new events and streams them via SSE
  */
 
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { config, getPrintableConfig } from './config.mjs';
 import { logger } from './logger.mjs';
 import { 
@@ -14,7 +16,10 @@ import {
   createConnectionMessage,
   createGoodbyeMessage,
 } from './sseFormatter.mjs';
-import { mockEventStream } from './eventGenerator.mjs';
+
+// Initialize DynamoDB client
+const client = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(client);
 
 /**
  * Initialize handler
@@ -29,64 +34,164 @@ function initialize() {
 initialize();
 
 /**
- * Stream mock events using SSE protocol
+ * Query DynamoDB for new events since last timestamp
+ * @param {number} lastTimestamp - Last event timestamp
+ * @returns {Promise<Array>} Array of new events
+ */
+async function queryNewEvents(lastTimestamp) {
+  const params = {
+    TableName: config.dynamodb.tableName,
+    KeyConditionExpression: 'partitionKey = :pk AND #ts > :lastTs',
+    ExpressionAttributeNames: {
+      '#ts': 'timestamp',
+    },
+    ExpressionAttributeValues: {
+      ':pk': config.dynamodb.partitionKey,
+      ':lastTs': lastTimestamp,
+    },
+    ScanIndexForward: true, // Sort by timestamp ascending
+  };
+
+  try {
+    const command = new QueryCommand(params);
+    const result = await docClient.send(command);
+    return result.Items || [];
+  } catch (error) {
+    logger.error('Error querying DynamoDB', {
+      error: error.message,
+      tableName: config.dynamodb.tableName,
+    });
+    throw error;
+  }
+}
+
+/**
+ * Stream events from DynamoDB using SSE protocol
+ * Polls DynamoDB at regular intervals and sends new events to client
  * @param {Object} responseStream - Lambda response stream
  * @param {string} requestId - Request identifier
  */
-async function streamMockEvents(responseStream, requestId) {
+async function streamDynamoDBEvents(responseStream, requestId) {
   let eventCount = 0;
   let keepAliveTimer = null;
-  let streamTimer = null;
+  let pollTimer = null;
+  let maxDurationTimer = null;
+  let isStreamActive = true;
   const startTime = Date.now();
+  
+  // Track last processed timestamp
+  let lastTimestamp = Date.now() - 60000; // Start from 1 minute ago
   
   try {
     // Send connection established message
     const connectionMsg = createConnectionMessage(requestId);
     responseStream.write(connectionMsg);
-    logger.info('SSE connection established', { requestId });
+    logger.info('SSE connection established', { requestId, lastTimestamp });
     
     // Setup keep-alive timer
     keepAliveTimer = setInterval(() => {
+      if (!isStreamActive) return;
+      
       try {
         const heartbeat = createHeartbeat();
         responseStream.write(heartbeat);
         logger.debug('Sent heartbeat', { requestId });
       } catch (error) {
         logger.error('Error sending heartbeat', { requestId, error: error.message });
+        isStreamActive = false;
       }
     }, config.sse.keepAliveInterval);
     
     // Setup max duration timer
-    streamTimer = setTimeout(() => {
+    maxDurationTimer = setTimeout(() => {
       logger.info('Max stream duration reached', { 
         requestId, 
         duration: config.sse.maxStreamDuration 
       });
-      responseStream.end();
+      isStreamActive = false;
     }, config.sse.maxStreamDuration);
     
-    // Calculate max events based on duration and interval
-    const maxEvents = Math.floor(config.sse.maxStreamDuration / config.sse.eventInterval);
+    // Poll DynamoDB for new events
+    const pollForEvents = async () => {
+      if (!isStreamActive) {
+        return;
+      }
+      
+      try {
+        // Query for new events
+        const newEvents = await queryNewEvents(lastTimestamp);
+        
+        if (newEvents.length > 0) {
+          logger.info('Found new events', { 
+            requestId, 
+            count: newEvents.length 
+          });
+          
+          // Send each event via SSE
+          for (const item of newEvents) {
+            if (!isStreamActive) break;
+            
+            eventCount++;
+            
+            // Update last timestamp
+            if (item.timestamp > lastTimestamp) {
+              lastTimestamp = item.timestamp;
+            }
+            
+            // Format event data
+            const eventData = {
+              type: item.eventType || 'event',
+              id: item.messageId,
+              timestamp: item.timestamp,
+              payload: item.payload,
+            };
+            
+            // Format as SSE message
+            const sseMessage = formatSSE({
+              id: eventCount,
+              data: eventData,
+            });
+            
+            // Write to stream
+            responseStream.write(sseMessage);
+            
+            logger.info('Sent SSE event', { 
+              requestId, 
+              eventCount, 
+              eventType: item.eventType,
+              messageId: item.messageId,
+            });
+          }
+        } else {
+          logger.debug('No new events', { requestId, lastTimestamp });
+        }
+        
+      } catch (error) {
+        logger.error('Error polling for events', {
+          requestId,
+          error: error.message,
+          stack: error.stack,
+        });
+      }
+      
+      // Schedule next poll
+      if (isStreamActive) {
+        pollTimer = setTimeout(pollForEvents, config.sse.pollInterval);
+      }
+    };
     
-    // Stream mock events
-    for await (const event of mockEventStream(config.sse.eventInterval, maxEvents)) {
-      eventCount++;
-      
-      // Format as SSE message without event type (unnamed event)
-      const sseMessage = formatSSE({
-        id: eventCount,
-        data: event,
-      });
-      
-      // Write to stream
-      responseStream.write(sseMessage);
-      
-      logger.info('Sent SSE event', { 
-        requestId, 
-        eventCount, 
-        eventType: event.type 
-      });
-    }
+    // Start polling
+    await pollForEvents();
+    
+    // Wait for stream to end
+    await new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (!isStreamActive) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 1000);
+    });
     
     // Send goodbye message
     const goodbyeMsg = createGoodbyeMessage();
@@ -111,11 +216,16 @@ async function streamMockEvents(responseStream, requestId) {
     }
   } finally {
     // Cleanup
+    isStreamActive = false;
+    
     if (keepAliveTimer) {
       clearInterval(keepAliveTimer);
     }
-    if (streamTimer) {
-      clearTimeout(streamTimer);
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+    }
+    if (maxDurationTimer) {
+      clearTimeout(maxDurationTimer);
     }
     
     const duration = Date.now() - startTime;
@@ -170,8 +280,8 @@ export const lambdaHandler = awslambda.streamifyResponse(
         return;
       }
       
-      // Stream events
-      await streamMockEvents(responseStream, requestId);
+      // Stream events from DynamoDB
+      await streamDynamoDBEvents(responseStream, requestId);
       
     } catch (error) {
       logger.error('Error in lambda handler', {
@@ -200,38 +310,54 @@ export const lambdaHandler = awslambda.streamifyResponse(
 export const lambdaHandlerLocal = async (event, context) => {
   const requestId = context.requestId || 'local-' + Date.now();
   
-  logger.info('Local test mode - generating sample events', { requestId });
+  logger.info('Local test mode - checking DynamoDB connection', { requestId });
   
-  // Generate a few sample events for testing
-  const events = [];
-  for (let i = 0; i < 3; i++) {
-    const mockEvent = {
-      type: 'test_event',
-      id: `evt_${Date.now()}_${i}`,
-      timestamp: new Date().toISOString(),
-      data: {
-        message: `Test event ${i}`,
-        eventNumber: i,
+  try {
+    // Try to query recent events from DynamoDB
+    const lastTimestamp = Date.now() - 60000; // Last 1 minute
+    const recentEvents = await queryNewEvents(lastTimestamp);
+    
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        message: 'SSE test response (local mode)',
+        note: 'In production, this will stream SSE events from DynamoDB.',
+        dynamodb: {
+          tableName: config.dynamodb.tableName,
+          connected: true,
+          recentEventsCount: recentEvents.length,
+        },
+        config: {
+          pollInterval: config.sse.pollInterval,
+          maxDuration: config.sse.maxStreamDuration,
+          keepAliveInterval: config.sse.keepAliveInterval,
+        },
+        recentEvents: recentEvents.slice(0, 5), // Show max 5 recent events
+      }),
     };
-    events.push(mockEvent);
-  }
-  
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message: 'SSE test response (local mode)',
-      note: 'In production, this will stream SSE events. Local testing shows sample events.',
-      sampleEvents: events,
-      config: {
-        eventInterval: config.sse.eventInterval,
-        maxDuration: config.sse.maxStreamDuration,
+  } catch (error) {
+    logger.error('Error in local test mode', {
+      requestId,
+      error: error.message,
+    });
+    
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
       },
-    }),
-  };
+      body: JSON.stringify({
+        message: 'Error testing DynamoDB connection',
+        error: error.message,
+        config: {
+          tableName: config.dynamodb.tableName,
+        },
+      }),
+    };
+  }
 };
 
 
