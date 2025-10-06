@@ -71,6 +71,11 @@ Resources:
           Properties:
             Path: /hello
             Method: post
+        HelloWorldGet:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
 
   GetPolicyDetailsFunction:
     Type: AWS::Serverless::Function
