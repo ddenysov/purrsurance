@@ -150,6 +150,12 @@ Resources:
       Runtime: nodejs22.x
       Architectures:
       - x86_64
+      Environment:
+        Variables:
+          EVENTS_TOPIC_ARN: !Ref EventsTopic
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt EventsTopic.TopicName
       Events:
         GetPolicyDetails:
           Type: Api

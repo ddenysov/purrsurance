@@ -7,6 +7,11 @@
  * @param {Object} event - The event payload from the Bedrock Agent.
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+
+const snsClient = new SNSClient({});
+const topicArn = process.env.EVENTS_TOPIC_ARN;
+
 export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
@@ -189,6 +194,47 @@ export const lambdaHandler = async (event, context) => {
     responseBodyContent = {
       error: 'Internal server error while processing the request.'
     };
+  }
+
+  // Publish policy_updated event to SNS
+  if (topicArn && !responseBodyContent.error) {
+    try {
+      const eventPayload = {
+        eventType: 'policy_updated',
+        timestamp: new Date().toISOString(),
+        data: responseBodyContent
+      };
+
+      const params = {
+        TopicArn: topicArn,
+        Message: JSON.stringify(eventPayload),
+        MessageAttributes: {
+          eventType: {
+            DataType: 'String',
+            StringValue: 'policy_updated',
+          },
+          timestamp: {
+            DataType: 'String',
+            StringValue: new Date().toISOString(),
+          },
+          source: {
+            DataType: 'String',
+            StringValue: 'get-policy-details',
+          },
+        },
+      };
+
+      const command = new PublishCommand(params);
+      const snsResponse = await snsClient.send(command);
+
+      console.log('Event published to SNS', {
+        messageId: snsResponse.MessageId,
+        eventType: 'policy_updated',
+      });
+    } catch (snsError) {
+      console.error('Error publishing event to SNS:', snsError);
+      // Don't fail the main response if SNS publish fails
+    }
   }
 
   // This is the required response structure for the `functionResponse` format

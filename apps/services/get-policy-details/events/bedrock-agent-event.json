@@ -1,0 +1,21 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "PetInsuranceAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Get policy details for PETS-INS-2025-000123",
+  "sessionId": "test-session-123",
+  "actionGroup": "PolicyActions",
+  "function": "getPolicyDetails",
+  "parameters": [
+    {
+      "name": "policyId",
+      "type": "string",
+      "value": "PETS-INS-2025-000123"
+    }
+  ]
+}
+
