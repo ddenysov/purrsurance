@@ -72,9 +72,8 @@ async function streamMockEvents(responseStream, requestId) {
     for await (const event of mockEventStream(config.sse.eventInterval, maxEvents)) {
       eventCount++;
       
-      // Format as SSE message
+      // Format as SSE message without event type (unnamed event)
       const sseMessage = formatSSE({
-        event: event.type,
         id: eventCount,
         data: event,
       });
