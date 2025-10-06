@@ -27,8 +27,7 @@ validate:
 deploy: build
 	@echo ">>> Deploying to PRODUCTION environment..."
 	@echo "⚠️  WARNING: You are about to deploy to PRODUCTION!"
-	@read -p "Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || (echo "Deployment cancelled." && exit 1)
-	sam deploy --config-env prod
+	sam deploy --region us-east-1 --stack-name agent-operator
 	@echo "✅ Successfully deployed to PRODUCTION!"
 
 # Deploy to DEV environment

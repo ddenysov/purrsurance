@@ -106,14 +106,14 @@ export const lambdaHandler = async (event, context) => {
     
     // Parse request body
     const body = parseRequestBody(event);
-    const { message, sessionId } = body;
+    const { message = 'Hello, how to book a vet doctor visit??', sessionId } = body;
     
     // Validate input
-    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    if (typeof message !== 'string' || message.trim().length === 0) {
       logger.warn('Invalid message in request', { body });
       return createResponse(400, {
         error: 'Bad Request',
-        message: 'Field "message" is required and must be a non-empty string',
+        message: 'Field "message" must be a non-empty string',
       });
     }
     

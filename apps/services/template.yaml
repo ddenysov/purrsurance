@@ -52,7 +52,6 @@ Resources:
           ENVIRONMENT: !Ref Environment
           BEDROCK_AGENT_ID: !Ref BedrockAgentId
           BEDROCK_AGENT_ALIAS_ID: !Ref BedrockAgentAliasId
-          AWS_REGION: !Ref AWS::Region
           LOG_LEVEL: info
           ENABLE_BEDROCK_TRACE: false
           MAX_TOKENS: 2048
