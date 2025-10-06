@@ -44,11 +44,17 @@
 
 <script setup lang="ts">
 import type { QuickAction } from '~/types'
+import type { SSEEvent } from '~/composables/useEventBus'
 
 // Use composables
 const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile } = usePetProfile()
 const { messages, isTyping, error, sendMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
+const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType } = useEventBus()
+
+// Reactive state for displaying events
+const latestClaimEvent = ref<SSEEvent | null>(null)
+const latestPolicyEvent = ref<SSEEvent | null>(null)
 
 // Quick actions data
 const quickActions = ref<QuickAction[]>([
@@ -104,6 +110,44 @@ const handleSaveProfile = (petData: typeof pet.value) => {
   closeModal()
 }
 
+// Test function to simulate SSE events
+const testEventBus = () => {
+  const testClaimEvent = {
+    type: 'claim_status',
+    id: 'evt_test_' + Date.now(),
+    timestamp: new Date().toISOString(),
+    data: {
+      pet: 'Mittens',
+      status: 'approved',
+      message: 'Test claim has been processed',
+      details: {
+        eventNumber: Math.floor(Math.random() * 100),
+        randomValue: Math.floor(Math.random() * 1000)
+      }
+    }
+  }
+  
+  const testPolicyEvent = {
+    type: 'policy_update',
+    id: 'evt_test_' + Date.now(),
+    timestamp: new Date().toISOString(),
+    data: {
+      pet: 'Mittens',
+      message: 'Policy coverage has been updated',
+      details: {
+        coverageType: 'premium',
+        newLimit: 50000
+      }
+    }
+  }
+  
+  // Emit test events
+  emitEvent('claim_status', testClaimEvent)
+  setTimeout(() => {
+    emitEvent('policy_update', testPolicyEvent)
+  }, 1000)
+}
+
 // Set page title
 useHead({
   title: 'Purrsurance - AI Pet Insurance Assistant'
@@ -123,15 +167,37 @@ onMounted(() => {
 
     eventSource.onmessage = (event) => {
       console.log('[SSE] message', event.data)
+      
+      try {
+        // Parse the event data
+        const eventData = JSON.parse(event.data)
+        
+        // Emit to Vue event bus
+        emitEvent(eventData.type, eventData)
+      } catch (error) {
+        console.error('[SSE] Failed to parse event data:', error)
+        console.log('[SSE] Raw event data:', event.data)
+      }
     }
 
-    // Example of listening to a named event that may be emitted by the server
-    eventSource.addEventListener('policy_update', (event: MessageEvent) => {
-      console.log('[SSE] test_event', event.data)
+    // Set up Vue event bus listeners
+    onEvent('claim_status', (event) => {
+      console.log('[EventBus] Claim status update:', event)
+      latestClaimEvent.value = event
+      // Here you can add specific logic for claim status updates
+      // For example, show a notification, update UI, etc.
     })
 
-    eventSource.addEventListener('claim_status', (event: MessageEvent) => {
-      console.log('[SSE] test_event', event.data)
+    onEvent('policy_update', (event) => {
+      console.log('[EventBus] Policy update:', event)
+      latestPolicyEvent.value = event
+      // Here you can add specific logic for policy updates
+      // For example, refresh policy data, show notification, etc.
+    })
+
+    // Listen to all events for debugging
+    onEvent('*', (event) => {
+      console.log('[EventBus] All events:', event.type, event)
     })
 
     eventSource.onerror = (error) => {
