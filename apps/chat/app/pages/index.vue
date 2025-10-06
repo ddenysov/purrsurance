@@ -52,6 +52,9 @@ const { messages, isTyping, error, sendMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
 const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType } = useEventBus()
 
+// Use pet profile store
+const petProfileStore = usePetProfileStore()
+
 // Reactive state for displaying events
 const latestClaimEvent = ref<SSEEvent | null>(null)
 const latestPolicyEvent = ref<SSEEvent | null>(null)
@@ -110,6 +113,175 @@ const handleSaveProfile = (petData: typeof pet.value) => {
   closeModal()
 }
 
+// Validate and populate pet profile from policy_updated event
+const handlePolicyUpdated = (event: SSEEvent) => {
+  console.log('[PetProfile] Processing policy_updated event:', event)
+  
+  try {
+    // Validate event structure
+    if (!event || typeof event !== 'object') {
+      console.error('[PetProfile] Invalid event structure:', event)
+      return
+    }
+    
+    // Extract data from SSE event structure
+    // SSE events have: { type, id, timestamp, payload }
+    // policy_updated payload contains: { eventType, timestamp, data }
+    let eventData = null
+    
+    // Type guard to check for payload property
+    const eventWithPayload = event as any
+    
+    if (eventWithPayload.payload && typeof eventWithPayload.payload === 'object') {
+      // Data is in payload.data (SSE structure)
+      eventData = eventWithPayload.payload.data || eventWithPayload.payload
+    } else if (event.data && typeof event.data === 'object') {
+      // Fallback: data is directly in event.data
+      eventData = event.data
+    } else {
+      // Last fallback: use event itself
+      eventData = event
+    }
+    
+    // Check if data exists
+    if (!eventData || typeof eventData !== 'object') {
+      console.error('[PetProfile] Missing or invalid event data:', eventData)
+      return
+    }
+    
+    // Validate that we have at least some required fields
+    if (!eventData.pet && !eventData.policy && !eventData.owner) {
+      console.warn('[PetProfile] Event data is missing all primary fields:', eventData)
+      return
+    }
+    
+    // Build validated profile data
+    const profileData: any = {}
+    
+    // Validate and add pet data
+    if (eventData.pet && typeof eventData.pet === 'object') {
+      profileData.pet = {
+        id: eventData.pet.id || '',
+        name: eventData.pet.name || '',
+        species: ['cat', 'dog', 'bird', 'rabbit', 'other'].includes(eventData.pet.species) 
+          ? eventData.pet.species 
+          : 'cat',
+        breed: eventData.pet.breed || '',
+        sex: ['male', 'female'].includes(eventData.pet.sex) ? eventData.pet.sex : 'female',
+        dateOfBirth: eventData.pet.dateOfBirth || '',
+        ageMonths: typeof eventData.pet.ageMonths === 'number' ? eventData.pet.ageMonths : 0,
+        color: eventData.pet.color || '',
+        microchip: eventData.pet.microchip || { number: '', issuer: '', dateImplanted: '' },
+        identifiers: eventData.pet.identifiers || { licenseTag: '', passportNumber: '' },
+        photoUrl: eventData.pet.photoUrl || '',
+        weight: eventData.pet.weight || { currentKg: 0, lastUpdated: '', history: [] },
+        spayedNeutered: Boolean(eventData.pet.spayedNeutered),
+        lifestyle: eventData.pet.lifestyle || { 
+          indoor: false, 
+          outdoor: false, 
+          activityLevel: 'moderate', 
+          diet: 'dry' 
+        }
+      }
+      console.log('[PetProfile] Validated pet data:', profileData.pet)
+    }
+    
+    // Validate and add owner data
+    if (eventData.owner && typeof eventData.owner === 'object') {
+      profileData.owner = {
+        id: eventData.owner.id || '',
+        fullName: eventData.owner.fullName || '',
+        phone: eventData.owner.phone || '',
+        email: eventData.owner.email || '',
+        address: eventData.owner.address || { 
+          country: '', 
+          city: '', 
+          street: '', 
+          postalCode: '' 
+        }
+      }
+      console.log('[PetProfile] Validated owner data:', profileData.owner)
+    }
+    
+    // Validate and add policy data
+    if (eventData.policy && typeof eventData.policy === 'object') {
+      profileData.policy = {
+        policyId: eventData.policy.policyId || '',
+        provider: eventData.policy.provider || '',
+        status: ['active', 'inactive', 'pending', 'expired'].includes(eventData.policy.status)
+          ? eventData.policy.status
+          : 'inactive',
+        startDate: eventData.policy.startDate || '',
+        endDate: eventData.policy.endDate || '',
+        plan: eventData.policy.plan || '',
+        coverage: eventData.policy.coverage || {
+          annualLimitUAH: 0,
+          deductibleUAH: 0,
+          copayPercent: 0,
+          covered: [],
+          exclusions: []
+        }
+      }
+      console.log('[PetProfile] Validated policy data:', profileData.policy)
+    }
+    
+    // Validate and add medical data
+    if (eventData.medical && typeof eventData.medical === 'object') {
+      profileData.medical = {
+        allergies: Array.isArray(eventData.medical.allergies) ? eventData.medical.allergies : [],
+        conditions: Array.isArray(eventData.medical.conditions) ? eventData.medical.conditions : [],
+        vaccinations: Array.isArray(eventData.medical.vaccinations) ? eventData.medical.vaccinations : [],
+        medications: Array.isArray(eventData.medical.medications) ? eventData.medical.medications : [],
+        lastCheckup: eventData.medical.lastCheckup || {
+          date: '',
+          clinic: { id: '', name: '', phone: '' },
+          notes: ''
+        },
+        procedures: Array.isArray(eventData.medical.procedures) ? eventData.medical.procedures : []
+      }
+      console.log('[PetProfile] Validated medical data:', profileData.medical)
+    }
+    
+    // Validate and add claims
+    if (Array.isArray(eventData.claims)) {
+      profileData.claims = eventData.claims
+      console.log('[PetProfile] Added claims data:', profileData.claims)
+    }
+    
+    // Validate and add vet contacts
+    if (Array.isArray(eventData.vetContacts)) {
+      profileData.vetContacts = eventData.vetContacts
+      console.log('[PetProfile] Added vet contacts:', profileData.vetContacts)
+    }
+    
+    // Validate and add audit data
+    if (eventData.audit && typeof eventData.audit === 'object') {
+      profileData.audit = {
+        createdAt: eventData.audit.createdAt || new Date().toISOString(),
+        updatedAt: eventData.audit.updatedAt || new Date().toISOString(),
+        source: eventData.audit.source || 'sse-event',
+        version: typeof eventData.audit.version === 'number' ? eventData.audit.version : 1
+      }
+      console.log('[PetProfile] Validated audit data:', profileData.audit)
+    }
+    
+    // Update the store if we have valid data
+    if (Object.keys(profileData).length > 0) {
+      petProfileStore.updatePetProfile(profileData)
+      console.log('[PetProfile] Successfully updated pet profile store')
+      
+      // Unlock pet details in the UI
+      unlockPetDetails()
+      console.log('[PetProfile] Unlocked pet details in UI')
+    } else {
+      console.warn('[PetProfile] No valid data to update')
+    }
+    
+  } catch (error) {
+    console.error('[PetProfile] Error processing policy_updated event:', error)
+  }
+}
+
 // Set page title
 useHead({
   title: 'Purrsurance - AI Pet Insurance Assistant'
@@ -150,11 +322,11 @@ onMounted(() => {
       // For example, show a notification, update UI, etc.
     })
 
-    onEvent('policy_update', (event) => {
-      console.log('[EventBus] Policy update:', event)
+    onEvent('policy_updated', (event) => {
+      console.log('[EventBus] Policy updated event received:', event)
       latestPolicyEvent.value = event
-      // Set policy as verified when policy_update event is received
-      unlockPetDetails()
+      // Process and validate policy_updated event
+      handlePolicyUpdated(event)
     })
 
     // Listen to all events for debugging

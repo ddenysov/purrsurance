@@ -4,8 +4,9 @@ import { ref, reactive } from 'vue'
 export interface SSEEvent {
   type: string
   id: string
-  timestamp: string
-  data: any
+  timestamp: string | number
+  data?: any
+  payload?: any
 }
 
 // Event bus state
