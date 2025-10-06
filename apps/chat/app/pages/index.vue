@@ -21,6 +21,7 @@
           <ChatContainer
             :messages="messages"
             :is-typing="isTyping"
+            :error="error"
             @send="handleSendMessage"
             @suggestion-click="handleSuggestionClick"
           />
@@ -46,7 +47,7 @@ import type { QuickAction } from '~/types'
 
 // Use composables
 const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile } = usePetProfile()
-const { messages, isTyping, sendMessage } = useChat()
+const { messages, isTyping, error, sendMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
 
 // Quick actions data

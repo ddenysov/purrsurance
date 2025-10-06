@@ -30,6 +30,39 @@ export interface ChatMessage {
   timestamp: Date
 }
 
+/**
+ * Chat session information
+ */
+export interface ChatSession {
+  sessionId: string | null
+  lastMessageTimestamp?: Date
+}
+
+/**
+ * Backend API response structure
+ */
+export interface BackendChatResponse {
+  message: string
+  data: {
+    response: string
+    sessionId: string
+  }
+  metadata: {
+    requestId: string
+    timestamp: string
+    environment: string
+  }
+}
+
+/**
+ * Backend API error response
+ */
+export interface BackendErrorResponse {
+  error: string
+  message: string
+  requestId?: string
+}
+
 export interface QuickAction {
   id: string
   label: string

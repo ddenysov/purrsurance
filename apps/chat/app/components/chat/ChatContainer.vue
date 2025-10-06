@@ -7,7 +7,7 @@
     <ChatMessages 
       :messages="messages"
       :is-typing="isTyping"
-      @suggestion-click="$emit('suggestion-click', $event)"
+      :error="error"
     />
     
     <!-- Chat Composer -->
@@ -21,6 +21,7 @@ import type { ChatMessage } from '~/types'
 interface Props {
   messages: ChatMessage[]
   isTyping: boolean
+  error?: string | null
 }
 
 defineProps<Props>()

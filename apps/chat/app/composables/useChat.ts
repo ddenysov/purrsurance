@@ -1,7 +1,7 @@
-import type { ChatMessage } from '~/types'
-import { generateAIResponse, generateFollowUpSuggestions, containsPolicyId } from '~/utils/aiReply'
+import type { ChatMessage, ChatSession } from '~/types'
 import { usePetProfile } from './usePetProfile'
-import { apiClient } from '~/utils/apiClient'
+import { sendChatMessage } from '~/utils/chatService'
+import { parseMarkdown } from '~/utils/markdown'
 
 export const useChat = () => {
   // Chat messages state
@@ -16,6 +16,15 @@ export const useChat = () => {
 
   // Typing indicator state
   const isTyping = ref(false)
+  
+  // Session tracking
+  const session = ref<ChatSession>({
+    sessionId: null,
+    lastMessageTimestamp: undefined,
+  })
+  
+  // Error state
+  const error = ref<string | null>(null)
 
   // Generate unique ID for messages
   const generateMessageId = (): string => {
@@ -30,11 +39,22 @@ export const useChat = () => {
       timestamp: new Date()
     }
     messages.value.push(newMessage)
+    session.value.lastMessageTimestamp = newMessage.timestamp
   }
 
-  // Send user message and generate AI response
+  // Check if message contains policy ID pattern
+  const containsPolicyId = (text: string): boolean => {
+    // Match patterns like PS-1234567 or similar
+    const policyIdPattern = /\b[A-Z]{2}-?\d{6,8}\b/i
+    return policyIdPattern.test(text)
+  }
+
+  // Send user message and get AI response from backend
   const sendMessage = async (text: string) => {
     if (!text.trim()) return
+
+    // Clear any previous errors
+    error.value = null
 
     // Add user message
     addMessage({
@@ -45,51 +65,73 @@ export const useChat = () => {
     // Show typing indicator
     isTyping.value = true
 
-    // Simulate AI thinking time
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
-
-    // Generate AI response
-    const aiResponse = generateAIResponse(text)
-
-    // Hide typing indicator
-    isTyping.value = false
-
+    try {
+      // Send message to backend
+      const response = await sendChatMessage(
+        text.trim(),
+        session.value.sessionId
+      )
+      
+      // Update session ID
+      if (response.data.sessionId) {
+        session.value.sessionId = response.data.sessionId
+      }
+      
+      // Parse markdown in response
+      const parsedResponse = parseMarkdown(response.data.response)
+      
       // Check if message contains policy ID and unlock pet details
       if (containsPolicyId(text)) {
-          // Get access to pet profile composable
-          const { unlockPetDetails } = usePetProfile()
-          unlockPetDetails()
-          
-          // Send request to backend to verify policy
-          try {
-            const response = await apiClient.post('/hello/', {
-              message: text
-            }, {
-              baseURL: 'https://cbx2umgj5k.execute-api.us-east-1.amazonaws.com/Prod'
-            })
-            console.log('Backend response:', response.data)
-          } catch (error) {
-            console.error('Backend request failed:', error)
-          }
+        const { unlockPetDetails } = usePetProfile()
+        unlockPetDetails()
       }
-
-    // Add AI response
-    addMessage({
-      content: aiResponse,
-      sender: 'assistant'
-    })
+      
+      // Hide typing indicator
+      isTyping.value = false
+      
+      // Add AI response with parsed markdown
+      addMessage({
+        content: parsedResponse,
+        sender: 'assistant'
+      })
+      
+    } catch (err: any) {
+      // Hide typing indicator
+      isTyping.value = false
+      
+      // Store error
+      error.value = err.message || 'Failed to send message'
+      
+      // Add error message to chat
+      addMessage({
+        content: `Sorry, I encountered an error: ${error.value}. Please try again.`,
+        sender: 'assistant'
+      })
+      
+      console.error('Error sending message:', err)
+    }
   }
 
-  // Simulate typing with delay
+  // Simulate typing with delay (for testing purposes)
   const simulateTyping = async (delay: number = 1000) => {
     isTyping.value = true
     await new Promise(resolve => setTimeout(resolve, delay))
     isTyping.value = false
   }
 
-  // Clear all messages
+  // Clear all messages and reset session
   const clearMessages = () => {
-    messages.value = []
+    messages.value = [{
+      id: '1',
+      content: 'Hello! I\'m your Purrsurance AI assistant. I\'m here to help you with your pet insurance needs. How can I assist you today?',
+      sender: 'assistant',
+      timestamp: new Date()
+    }]
+    session.value = {
+      sessionId: null,
+      lastMessageTimestamp: undefined,
+    }
+    error.value = null
   }
 
   // Get last message
@@ -101,15 +143,32 @@ export const useChat = () => {
   const getMessagesBySender = (sender: 'user' | 'assistant'): ChatMessage[] => {
     return messages.value.filter(msg => msg.sender === sender)
   }
+  
+  // Get current session ID
+  const getSessionId = (): string | null => {
+    return session.value.sessionId
+  }
+  
+  // Reset session (start new conversation)
+  const resetSession = () => {
+    session.value = {
+      sessionId: null,
+      lastMessageTimestamp: undefined,
+    }
+  }
 
   return {
     messages: readonly(messages),
     isTyping: readonly(isTyping),
+    error: readonly(error),
+    sessionId: computed(() => session.value.sessionId),
     sendMessage,
     addMessage,
     simulateTyping,
     clearMessages,
     getLastMessage,
-    getMessagesBySender
+    getMessagesBySender,
+    getSessionId,
+    resetSession,
   }
 }

@@ -1,48 +1,66 @@
 <template>
   <div 
-    :class="messageClasses"
-    class="flex items-start space-x-3 max-w-xs lg:max-w-md"
+    :class="[
+      'flex gap-3 p-4',
+      message.sender === 'user' ? 'justify-end' : 'justify-start'
+    ]"
   >
-    <!-- Avatar (Assistant only) -->
+    <!-- Assistant Avatar (left side) -->
     <AssistantAvatar 
       v-if="message.sender === 'assistant'"
-      size="sm"
+      class="flex-shrink-0"
     />
     
-    <!-- Message Content -->
-    <div class="flex-1">
+    <!-- Message Bubble -->
+    <div
+      :class="[
+        'max-w-[70%] rounded-2xl px-4 py-3',
+        message.sender === 'user'
+          ? 'bg-purple-600 text-white'
+          : 'bg-gray-100 text-gray-900'
+      ]"
+    >
+      <!-- Render HTML content from markdown -->
       <div 
-        :class="bubbleClasses"
-        class="px-4 py-3 rounded-2xl"
+        v-if="message.sender === 'assistant'"
+        class="prose prose-sm max-w-none"
+        :class="{
+          'prose-invert': message.sender === 'user'
+        }"
+        v-html="message.content"
+      />
+      
+      <!-- Plain text for user messages -->
+      <p 
+        v-else
+        class="text-sm whitespace-pre-wrap break-words"
       >
-        <!-- HTML content for assistant messages, plain text for user messages -->
-        <div 
-          v-if="message.sender === 'assistant'"
-          v-html="sanitizedContent"
-          class="text-sm text-gray-900"
-        ></div>
-        <div 
-          v-else
-          class="text-sm text-white"
-        >
-          {{ message.content }}
-        </div>
-      </div>
+        {{ message.content }}
+      </p>
       
       <!-- Timestamp -->
       <div 
-        :class="timestampClasses"
-        class="text-xs mt-1"
+        :class="[
+          'text-xs mt-1',
+          message.sender === 'user' ? 'text-purple-200' : 'text-gray-500'
+        ]"
       >
         {{ formatTime(message.timestamp) }}
       </div>
+    </div>
+    
+    <!-- User Avatar (right side) -->
+    <div 
+      v-if="message.sender === 'user'"
+      class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold"
+    >
+      U
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ChatMessage } from '~/types'
-import { sanitizeHtml } from '~/utils/sanitize'
 import { formatTime } from '~/utils/dateFormatter'
 import AssistantAvatar from './AssistantAvatar.vue'
 
@@ -50,32 +68,80 @@ interface Props {
   message: ChatMessage
 }
 
-const props = defineProps<Props>()
-
-// Computed properties for styling
-const messageClasses = computed(() => {
-  return props.message.sender === 'user' 
-    ? 'flex-row-reverse space-x-reverse ml-auto' 
-    : 'mr-auto'
-})
-
-const bubbleClasses = computed(() => {
-  return props.message.sender === 'user'
-    ? 'bg-mint-500'
-    : 'bg-gray-100'
-})
-
-const timestampClasses = computed(() => {
-  return props.message.sender === 'user'
-    ? 'text-gray-400 text-right'
-    : 'text-gray-500'
-})
-
-// Sanitize HTML content for assistant messages
-const sanitizedContent = computed(() => {
-  if (props.message.sender === 'assistant') {
-    return sanitizeHtml(props.message.content)
-  }
-  return props.message.content
-})
+defineProps<Props>()
 </script>
+
+<style scoped>
+/* Markdown prose styles for assistant messages */
+.prose {
+  @apply text-gray-900;
+}
+
+.prose :deep(p) {
+  @apply mb-2 last:mb-0;
+}
+
+.prose :deep(strong) {
+  @apply font-semibold text-gray-900;
+}
+
+.prose :deep(em) {
+  @apply italic;
+}
+
+.prose :deep(h1),
+.prose :deep(h2),
+.prose :deep(h3),
+.prose :deep(h4) {
+  @apply font-bold mt-4 mb-2 first:mt-0;
+}
+
+.prose :deep(h1) {
+  @apply text-xl;
+}
+
+.prose :deep(h2) {
+  @apply text-lg;
+}
+
+.prose :deep(h3) {
+  @apply text-base;
+}
+
+.prose :deep(ul),
+.prose :deep(ol) {
+  @apply ml-4 mb-2;
+}
+
+.prose :deep(li) {
+  @apply mb-1;
+}
+
+.prose :deep(ul li) {
+  @apply list-disc;
+}
+
+.prose :deep(ol li) {
+  @apply list-decimal;
+}
+
+.prose :deep(a) {
+  @apply text-purple-600 hover:text-purple-700 underline;
+}
+
+.prose :deep(code) {
+  @apply bg-gray-200 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+.prose :deep(pre) {
+  @apply bg-gray-200 p-2 rounded overflow-x-auto mb-2;
+}
+
+.prose :deep(blockquote) {
+  @apply border-l-4 border-gray-300 pl-4 italic my-2;
+}
+
+.prose :deep(hr) {
+  @apply border-gray-300 my-4;
+}
+</style>
