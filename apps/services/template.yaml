@@ -88,6 +88,9 @@ Resources:
     Properties:
       CodeUri: saver/
       Handler: app.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
       Environment:
         Variables:
           EVENTS_TABLE_NAME: !Ref EventsTable
@@ -119,7 +122,7 @@ Resources:
           MAX_TOKENS: 2048
       Policies:
         - Statement:
-            - Sid: BedrockAgentInvokePolicy
+            - Sid: BedrockAgentInvokePolicy 
               Effect: Allow
               Action:
                 - bedrock:InvokeAgent
@@ -270,3 +273,11 @@ Outputs:
   EventProducerApi:
     Description: "API Gateway endpoint URL to publish events"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/publish"
+  
+  EventSaverFunction:
+    Description: "Event Saver Lambda Function ARN"
+    Value: !GetAtt EventSaverFunction.Arn
+  
+  EventsTableName:
+    Description: "DynamoDB Events Table Name"
+    Value: !Ref EventsTable
