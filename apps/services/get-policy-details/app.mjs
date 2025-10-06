@@ -34,6 +34,8 @@ export const lambdaHandler = async (event, context) => {
 
   let responseBodyContent = {};
 
+
+
   try {
     // Find the policyId parameter passed by the agent.
     // NOTE: Without an OpenAPI schema, the agent may not be able to extract parameters effectively.
@@ -205,9 +207,14 @@ export const lambdaHandler = async (event, context) => {
   } catch (error) {
     console.error('Error in GetPolicyDetails:', error);
     responseBodyContent = {
-      error: 'Internal server error while processing the request.'
+      error: 'Internal server error while processing the request.',
     };
   }
+
+  let response = {
+    fullName: responseBodyContent.owner.fullName,
+    petName: responseBodyContent.pet.name,
+  };
 
   // Publish policy_updated event to SNS
   if (topicArn && !responseBodyContent.error) {
@@ -275,7 +282,7 @@ export const lambdaHandler = async (event, context) => {
           // The agent expects a content type, TEXT is the simplest.
           // The body must be a string.
           'TEXT': {
-            'body': JSON.stringify(responseBodyContent)
+            'body': JSON.stringify(response)
           }
         }
       }

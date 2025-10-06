@@ -89,7 +89,6 @@ Resources:
       CodeUri: saver/
       Handler: app.handler
       Runtime: nodejs20.x
-      ReservedConcurrentExecutions: 10
       Architectures:
         - x86_64
       Environment:
