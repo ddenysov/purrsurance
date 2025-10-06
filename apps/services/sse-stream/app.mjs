@@ -155,9 +155,6 @@ export const lambdaHandler = awslambda.streamifyResponse(
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': config.cors.allowOrigin,
-        'Access-Control-Allow-Methods': config.cors.allowMethods,
-        'Access-Control-Allow-Headers': config.cors.allowHeaders,
         'X-Accel-Buffering': 'no', // Disable nginx buffering
       },
     };
@@ -225,7 +222,6 @@ export const lambdaHandlerLocal = async (event, context) => {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
     },
     body: JSON.stringify({
       message: 'SSE test response (local mode)',

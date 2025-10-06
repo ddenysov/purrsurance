@@ -108,4 +108,45 @@ const handleSaveProfile = (petData: typeof pet.value) => {
 useHead({
   title: 'Purrsurance - AI Pet Insurance Assistant'
 })
+
+// SSE subscription: logs every event to the console and cleans up on unmount
+const sseUrl = 'https://asjkb24j5o4k4ilysst57irqy40ethca.lambda-url.us-east-1.on.aws/stream'
+let eventSource: EventSource | null = null
+
+onMounted(() => {
+  try {
+    eventSource = new EventSource(sseUrl)
+
+    eventSource.onopen = () => {
+      console.log('[SSE] connection opened')
+    }
+
+    eventSource.onmessage = (event) => {
+      console.log('[SSE] message', event.data)
+    }
+
+    // Example of listening to a named event that may be emitted by the server
+    eventSource.addEventListener('policy_update', (event: MessageEvent) => {
+      console.log('[SSE] test_event', event.data)
+    })
+
+    eventSource.addEventListener('claim_status', (event: MessageEvent) => {
+      console.log('[SSE] test_event', event.data)
+    })
+
+    eventSource.onerror = (error) => {
+      console.error('[SSE] error', error)
+    }
+  } catch (error) {
+    console.error('[SSE] initialization failed', error)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (eventSource) {
+    eventSource.close()
+    eventSource = null
+    console.log('[SSE] connection closed')
+  }
+})
 </script>

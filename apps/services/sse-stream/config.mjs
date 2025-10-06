@@ -11,7 +11,7 @@ export const config = {
   // SSE Configuration
   sse: {
     // Interval between mock events (milliseconds)
-    eventInterval: parseInt(process.env.SSE_EVENT_INTERVAL || '10000', 10),
+    eventInterval: parseInt(process.env.SSE_EVENT_INTERVAL || '5000', 10),
     
     // Maximum stream duration (milliseconds)
     maxStreamDuration: parseInt(process.env.SSE_MAX_DURATION || '300000', 10), // 5 minutes

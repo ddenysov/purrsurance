@@ -96,7 +96,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: sse-stream/
-      Handler: app.lambdaHandlerLocal
+      Handler: app.lambdaHandler
       Runtime: nodejs20.x
       Architectures:
         - x86_64
@@ -106,7 +106,7 @@ Resources:
         Variables:
           ENVIRONMENT: !Ref Environment
           LOG_LEVEL: info
-          SSE_EVENT_INTERVAL: 10000
+          SSE_EVENT_INTERVAL: 5000
           SSE_MAX_DURATION: 300000
           SSE_KEEPALIVE_INTERVAL: 30000
       FunctionUrlConfig:
@@ -117,7 +117,6 @@ Resources:
             - "*"
           AllowMethods:
             - GET
-            # - OPTIONS
           AllowHeaders:
             - "*"
           MaxAge: 600
@@ -129,6 +128,20 @@ Resources:
             Method: GET
             TimeoutInMillis: 300000
             PayloadFormatVersion: "2.0"
+            ApiId: !Ref SSEHttpApi
+
+  SSEHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - OPTIONS
+        AllowHeaders:
+          - "*"
+        MaxAge: 600
 
   BedrockInvokePermission:
     Type: AWS::Lambda::Permission
@@ -179,6 +192,10 @@ Outputs:
   SSEStreamFunctionUrl:
     Description: "SSE Stream Lambda Function URL"
     Value: !GetAtt SSEStreamFunctionUrl.FunctionUrl
+  
+  SSEStreamHttpApiUrl:
+    Description: "SSE Stream HTTP API Gateway URL"
+    Value: !Sub "https://${SSEHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/stream"
   
   SSEStreamFunction:
     Description: "SSE Stream Lambda Function ARN"
