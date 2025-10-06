@@ -20,7 +20,7 @@ s3_prefix = "agent-operator"
 region = "us-east-1"
 disable_rollback = false
 image_repositories = []
-parameter_overrides = "BedrockAgentArn=\"arn:aws:bedrock:us-east-1:057367573361:agent/OLHUNALEOH\""
+parameter_overrides = "Environment=\"dev\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"TSTALIASID\""
 
 [default.package.parameters]
 resolve_s3 = true
@@ -33,3 +33,42 @@ warm_containers = "EAGER"
 
 [default.local_start_lambda.parameters]
 warm_containers = "EAGER"
+
+# Development environment configuration
+[dev.global.parameters]
+stack_name = "agent-operator-dev"
+
+[dev.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "agent-operator-dev"
+region = "us-east-1"
+disable_rollback = false
+parameter_overrides = "Environment=\"dev\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"TSTALIASID\""
+
+# Staging environment configuration
+[staging.global.parameters]
+stack_name = "agent-operator-staging"
+
+[staging.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "agent-operator-staging"
+region = "us-east-1"
+disable_rollback = false
+parameter_overrides = "Environment=\"staging\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"HCIMPAKGK2\""
+
+# Production environment configuration
+[prod.global.parameters]
+stack_name = "agent-operator-prod"
+
+[prod.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "agent-operator-prod"
+region = "us-east-1"
+disable_rollback = false
+parameter_overrides = "Environment=\"prod\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"HCIMPAKGK2\""
