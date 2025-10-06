@@ -13,26 +13,65 @@ Globals:
       AllowHeaders: "'Content-Type'"
       AllowMethods: "'GET,POST,OPTIONS'"
   Function:
-    Timeout: 3
+    Timeout: 30
 
     # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
     LoggingConfig:
       LogFormat: JSON
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Environment name
+  
+  BedrockAgentId:
+    Type: String
+    Description: AWS Bedrock Agent ID
+    NoEcho: true
+  
+  BedrockAgentAliasId:
+    Type: String
+    Default: TSTALIASID
+    Description: AWS Bedrock Agent Alias ID
 Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: hello-world/
       Handler: app.lambdaHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs20.x
       Architectures:
       - x86_64
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          BEDROCK_AGENT_ID: !Ref BedrockAgentId
+          BEDROCK_AGENT_ALIAS_ID: !Ref BedrockAgentAliasId
+          AWS_REGION: !Ref AWS::Region
+          LOG_LEVEL: info
+          ENABLE_BEDROCK_TRACE: false
+          MAX_TOKENS: 2048
+      Policies:
+        - Statement:
+            - Sid: BedrockAgentInvokePolicy
+              Effect: Allow
+              Action:
+                - bedrock:InvokeAgent
+                - bedrock:InvokeModel
+              Resource:
+                - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*"
+                - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent-alias/*"
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /hello
-            Method: get
+            Method: post
 
   GetPolicyDetailsFunction:
     Type: AWS::Serverless::Function

@@ -1,0 +1,9 @@
+{
+  "httpMethod": "POST",
+  "path": "/",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"message\": \"What insurance options do you have for cats?\", \"sessionId\": \"test-session-123\"}"
+}
+
