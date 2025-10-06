@@ -23,7 +23,7 @@ export const config = {
   // DynamoDB Configuration
   dynamodb: {
     tableName: process.env.EVENTS_TABLE_NAME || 'EventsTable',
-    partitionKey: 'EVENTS', // Fixed partition key for all events
+    // partitionKey is now dynamic per session, not fixed
   },
   
   // Logging configuration

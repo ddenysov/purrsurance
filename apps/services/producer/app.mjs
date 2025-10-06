@@ -75,6 +75,24 @@ export const handler = async (event, context) => {
       };
     }
 
+    // Extract sessionId from body or headers
+    const sessionId = parsedBody.sessionId || event.headers?.['x-session-id'] || event.headers?.['X-Session-Id'];
+    
+    // Validate sessionId is provided
+    if (!sessionId) {
+      console.warn('Missing sessionId in request', { requestId });
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          error: 'Bad Request',
+          message: 'sessionId is required (in body or X-Session-Id header)',
+        }),
+      };
+    }
+
     // Extract event type from body or use default
     const eventType = parsedBody.eventType || 'PolicyUpdate';
     
@@ -95,6 +113,10 @@ export const handler = async (event, context) => {
           DataType: 'String',
           StringValue: requestId,
         },
+        sessionId: {
+          DataType: 'String',
+          StringValue: sessionId,
+        },
       },
     };
 
@@ -105,6 +127,7 @@ export const handler = async (event, context) => {
 
     console.log('Publishing message to SNS', { 
       requestId,
+      sessionId,
       topicArn, 
       eventType,
       messageSize: event.body.length,
@@ -115,6 +138,7 @@ export const handler = async (event, context) => {
 
     console.log('Message published successfully', { 
       requestId,
+      sessionId,
       messageId: response.MessageId,
       eventType,
     });
@@ -128,6 +152,7 @@ export const handler = async (event, context) => {
         success: true,
         message: 'Event published successfully',
         messageId: response.MessageId,
+        sessionId,
         eventType,
         timestamp: new Date().toISOString(),
       }),

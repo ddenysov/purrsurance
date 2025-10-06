@@ -51,6 +51,7 @@ const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile, unl
 const { messages, isTyping, error, sendMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
 const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType } = useEventBus()
+const { sessionId } = useSession()
 
 // Use pet profile store
 const petProfileStore = usePetProfileStore()
@@ -288,11 +289,15 @@ useHead({
 })
 
 // SSE subscription: logs every event to the console and cleans up on unmount
-const sseUrl = 'https://asjkb24j5o4k4ilysst57irqy40ethca.lambda-url.us-east-1.on.aws/stream'
+const sseBaseUrl = 'https://asjkb24j5o4k4ilysst57irqy40ethca.lambda-url.us-east-1.on.aws/stream'
 let eventSource: EventSource | null = null
 
 onMounted(() => {
   try {
+    // Append sessionId to SSE URL
+    const sseUrl = `${sseBaseUrl}?sessionId=${sessionId.value}`
+    console.log('[SSE] Connecting with session ID:', sessionId.value)
+    
     eventSource = new EventSource(sseUrl)
 
     eventSource.onopen = () => {

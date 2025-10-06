@@ -35,10 +35,11 @@ initialize();
 
 /**
  * Query DynamoDB for new events since last timestamp
+ * @param {string} sessionId - Session ID to query events for
  * @param {number} lastTimestamp - Last event timestamp
  * @returns {Promise<Array>} Array of new events
  */
-async function queryNewEvents(lastTimestamp) {
+async function queryNewEvents(sessionId, lastTimestamp) {
   const params = {
     TableName: config.dynamodb.tableName,
     KeyConditionExpression: 'partitionKey = :pk AND #ts > :lastTs',
@@ -46,7 +47,7 @@ async function queryNewEvents(lastTimestamp) {
       '#ts': 'timestamp',
     },
     ExpressionAttributeValues: {
-      ':pk': config.dynamodb.partitionKey,
+      ':pk': sessionId, // Use sessionId as partition key
       ':lastTs': lastTimestamp,
     },
     ScanIndexForward: true, // Sort by timestamp ascending
@@ -60,6 +61,7 @@ async function queryNewEvents(lastTimestamp) {
     logger.error('Error querying DynamoDB', {
       error: error.message,
       tableName: config.dynamodb.tableName,
+      sessionId,
     });
     throw error;
   }
@@ -70,8 +72,9 @@ async function queryNewEvents(lastTimestamp) {
  * Polls DynamoDB at regular intervals and sends new events to client
  * @param {Object} responseStream - Lambda response stream
  * @param {string} requestId - Request identifier
+ * @param {string} sessionId - Session ID for filtering events
  */
-async function streamDynamoDBEvents(responseStream, requestId) {
+async function streamDynamoDBEvents(responseStream, requestId, sessionId) {
   let eventCount = 0;
   let keepAliveTimer = null;
   let pollTimer = null;
@@ -86,7 +89,7 @@ async function streamDynamoDBEvents(responseStream, requestId) {
     // Send connection established message
     const connectionMsg = createConnectionMessage(requestId);
     responseStream.write(connectionMsg);
-    logger.info('SSE connection established', { requestId, lastTimestamp });
+    logger.info('SSE connection established', { requestId, sessionId, lastTimestamp });
     
     // Setup keep-alive timer
     keepAliveTimer = setInterval(() => {
@@ -119,11 +122,12 @@ async function streamDynamoDBEvents(responseStream, requestId) {
       
       try {
         // Query for new events
-        const newEvents = await queryNewEvents(lastTimestamp);
+        const newEvents = await queryNewEvents(sessionId, lastTimestamp);
         
         if (newEvents.length > 0) {
           logger.info('Found new events', { 
-            requestId, 
+            requestId,
+            sessionId,
             count: newEvents.length 
           });
           
@@ -156,14 +160,15 @@ async function streamDynamoDBEvents(responseStream, requestId) {
             responseStream.write(sseMessage);
             
             logger.info('Sent SSE event', { 
-              requestId, 
+              requestId,
+              sessionId,
               eventCount, 
               eventType: item.eventType,
               messageId: item.messageId,
             });
           }
         } else {
-          logger.debug('No new events', { requestId, lastTimestamp });
+          logger.debug('No new events', { requestId, sessionId, lastTimestamp });
         }
         
       } catch (error) {
@@ -251,11 +256,33 @@ export const lambdaHandler = awslambda.streamifyResponse(
   async (event, responseStream, context) => {
     const requestId = context.requestId || 'local-' + Date.now();
     
+    // Extract sessionId from query parameters
+    const queryParams = event.queryStringParameters || {};
+    const sessionId = queryParams.sessionId;
+    
     logger.info('Processing SSE request', {
       requestId,
+      sessionId,
       httpMethod: event.httpMethod || event.requestContext?.http?.method,
       path: event.path || event.requestContext?.http?.path,
     });
+    
+    // Validate sessionId
+    if (!sessionId) {
+      logger.error('Missing sessionId in request', { requestId });
+      const errorMsg = createError('Missing sessionId parameter');
+      
+      const metadata = {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'text/event-stream',
+        },
+      };
+      responseStream = awslambda.HttpResponseStream.from(responseStream, metadata);
+      responseStream.write(errorMsg);
+      responseStream.end();
+      return;
+    }
     
     // Set SSE headers
     const metadata = {
@@ -281,7 +308,7 @@ export const lambdaHandler = awslambda.streamifyResponse(
       }
       
       // Stream events from DynamoDB
-      await streamDynamoDBEvents(responseStream, requestId);
+      await streamDynamoDBEvents(responseStream, requestId, sessionId);
       
     } catch (error) {
       logger.error('Error in lambda handler', {
@@ -310,12 +337,16 @@ export const lambdaHandler = awslambda.streamifyResponse(
 export const lambdaHandlerLocal = async (event, context) => {
   const requestId = context.requestId || 'local-' + Date.now();
   
-  logger.info('Local test mode - checking DynamoDB connection', { requestId });
+  // Extract sessionId from query parameters
+  const queryParams = event.queryStringParameters || {};
+  const sessionId = queryParams.sessionId || 'test-session-id';
+  
+  logger.info('Local test mode - checking DynamoDB connection', { requestId, sessionId });
   
   try {
     // Try to query recent events from DynamoDB
     const lastTimestamp = Date.now() - 60000; // Last 1 minute
-    const recentEvents = await queryNewEvents(lastTimestamp);
+    const recentEvents = await queryNewEvents(sessionId, lastTimestamp);
     
     return {
       statusCode: 200,

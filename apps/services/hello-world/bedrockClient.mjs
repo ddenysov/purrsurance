@@ -61,9 +61,10 @@ async function getMockResponse(inputText) {
  * Invoke AWS Bedrock Agent
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
+ * @param {string} globalSessionId - Optional global session ID for SSE event routing
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeBedrockAgent(inputText, sessionId = null) {
+export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null) {
   try {
     // Use mock for local development if configured
     if (config.bedrock.useMock) {
@@ -74,6 +75,7 @@ export async function invokeBedrockAgent(inputText, sessionId = null) {
       agentId: config.bedrock.agentId,
       inputLength: inputText.length,
       hasSessionId: !!sessionId,
+      hasGlobalSessionId: !!globalSessionId,
     });
     
     const client = getBedrockClient();
@@ -86,6 +88,16 @@ export async function invokeBedrockAgent(inputText, sessionId = null) {
       inputText: inputText,
       enableTrace: config.bedrock.sessionConfig.enableTrace,
     };
+    
+    // Add session attributes if globalSessionId is provided
+    // This allows Lambda functions called by Bedrock Agent to access the sessionId
+    if (globalSessionId) {
+      commandParams.sessionState = {
+        sessionAttributes: {
+          sessionId: globalSessionId,
+        },
+      };
+    }
     
     logger.debug('Bedrock Agent command parameters', commandParams);
     

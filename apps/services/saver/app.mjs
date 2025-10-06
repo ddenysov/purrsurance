@@ -13,8 +13,20 @@ export const handler = async (event) => {
     const messageContent = snsMessage.Message;
 
     try {
+      // Extract sessionId from message attributes
+      const sessionId = snsMessage.MessageAttributes?.sessionId?.Value;
+      
+      // Validate sessionId
+      if (!sessionId) {
+        console.warn('Missing sessionId in SNS message, skipping event:', {
+          messageId: snsMessage.MessageId,
+          eventType: snsMessage.MessageAttributes?.eventType?.Value,
+        });
+        continue;
+      }
+      
       const item = {
-        partitionKey: 'EVENTS', // Use single key to easily query all events
+        partitionKey: sessionId, // Use sessionId as partition key for session isolation
         timestamp: Date.now(),    // Time in milliseconds for sorting
         payload: JSON.parse(messageContent), // Message content
         eventType: snsMessage.MessageAttributes?.eventType?.Value || 'Unknown',
@@ -27,7 +39,12 @@ export const handler = async (event) => {
       });
 
       await docClient.send(command);
-      console.log('Successfully saved event to DynamoDB:', item);
+      console.log('Successfully saved event to DynamoDB:', {
+        sessionId,
+        eventType: item.eventType,
+        messageId: item.messageId,
+        timestamp: item.timestamp,
+      });
 
     } catch (error) {
       console.error('Error parsing or saving message:', error);

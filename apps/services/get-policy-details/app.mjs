@@ -18,6 +18,19 @@ export const lambdaHandler = async (event, context) => {
 
   // Extract necessary info from the agent's invocation event
   const { actionGroup, function: functionName, parameters } = event;
+  
+  // Extract sessionId from parameters or sessionAttributes
+  // The sessionId can come from Bedrock session attributes or as a parameter
+  let sessionId = event.sessionAttributes?.sessionId;
+  
+  // If not in sessionAttributes, try to find it in parameters
+  if (!sessionId) {
+    const sessionIdParam = parameters?.find(p => p.name === 'sessionId');
+    sessionId = sessionIdParam?.value;
+  }
+  
+  // Log sessionId for debugging
+  console.log('Extracted sessionId:', sessionId);
 
   let responseBodyContent = {};
 
@@ -29,7 +42,7 @@ export const lambdaHandler = async (event, context) => {
     const policyId = policyIdParam ? policyIdParam.value : 'PETS-INS-2025-000123'; // Default for testing
 
     if (!policyId) {
-      responseBodyContent = {
+      responseBodyContent = { 
         error: 'policyId could not be determined'
       };
     } else {
@@ -205,23 +218,34 @@ export const lambdaHandler = async (event, context) => {
         data: responseBodyContent
       };
 
+      // Build message attributes
+      const messageAttributes = {
+        eventType: {
+          DataType: 'String',
+          StringValue: 'policy_updated',
+        },
+        timestamp: {
+          DataType: 'String',
+          StringValue: new Date().toISOString(),
+        },
+        source: {
+          DataType: 'String',
+          StringValue: 'get-policy-details',
+        },
+      };
+      
+      // Add sessionId to message attributes if available
+      if (sessionId) {
+        messageAttributes.sessionId = {
+          DataType: 'String',
+          StringValue: sessionId,
+        };
+      }
+
       const params = {
         TopicArn: topicArn,
         Message: JSON.stringify(eventPayload),
-        MessageAttributes: {
-          eventType: {
-            DataType: 'String',
-            StringValue: 'policy_updated',
-          },
-          timestamp: {
-            DataType: 'String',
-            StringValue: new Date().toISOString(),
-          },
-          source: {
-            DataType: 'String',
-            StringValue: 'get-policy-details',
-          },
-        },
+        MessageAttributes: messageAttributes,
       };
 
       const command = new PublishCommand(params);
@@ -230,11 +254,14 @@ export const lambdaHandler = async (event, context) => {
       console.log('Event published to SNS', {
         messageId: snsResponse.MessageId,
         eventType: 'policy_updated',
+        sessionId: sessionId || 'not-provided',
       });
     } catch (snsError) {
       console.error('Error publishing event to SNS:', snsError);
       // Don't fail the main response if SNS publish fails
     }
+  } else if (!sessionId && topicArn) {
+    console.warn('SessionId not provided, event will not be published to maintain session isolation');
   }
 
   // This is the required response structure for the `functionResponse` format

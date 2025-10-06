@@ -18,28 +18,36 @@ const CHAT_API_CONFIG = {
 /**
  * Send message to backend chat API
  * @param message - User message text
- * @param sessionId - Optional session ID for conversation continuity
+ * @param bedrockSessionId - Optional Bedrock Agent session ID for conversation continuity
+ * @param globalSessionId - Global session ID for SSE event routing
  * @returns Backend response with AI reply
  * @throws Error if request fails
  */
 export async function sendChatMessage(
   message: string,
-  sessionId: string | null = null
+  bedrockSessionId: string | null = null,
+  globalSessionId: string | null = null
 ): Promise<BackendChatResponse> {
   try {
     // Prepare request payload
-    const payload: { message: string; sessionId?: string } = {
+    const payload: { message: string; sessionId?: string; globalSessionId?: string } = {
       message: message.trim(),
     }
     
-    // Include sessionId if available
-    if (sessionId) {
-      payload.sessionId = sessionId
+    // Include Bedrock sessionId if available (for conversation continuity)
+    if (bedrockSessionId) {
+      payload.sessionId = bedrockSessionId
+    }
+    
+    // Include global sessionId if available (for SSE event routing)
+    if (globalSessionId) {
+      payload.globalSessionId = globalSessionId
     }
     
     console.log('Sending chat message:', {
       messageLength: message.length,
-      hasSessionId: !!sessionId,
+      hasBedrockSessionId: !!bedrockSessionId,
+      hasGlobalSessionId: !!globalSessionId,
     })
     
     // Make API request
@@ -54,7 +62,7 @@ export async function sendChatMessage(
     
     console.log('Chat response received:', {
       requestId: response.data.metadata?.requestId,
-      sessionId: response.data.data?.sessionId,
+      bedrockSessionId: response.data.data?.sessionId,
       responseLength: response.data.data?.response?.length,
     })
     

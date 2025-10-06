@@ -1,9 +1,13 @@
 import type { ChatMessage, ChatSession } from '~/types'
 import { usePetProfile } from './usePetProfile'
+import { useSession } from './useSession'
 import { sendChatMessage } from '~/utils/chatService'
 import { parseMarkdown } from '~/utils/markdown'
 
 export const useChat = () => {
+  // Get global session ID
+  const { sessionId: globalSessionId } = useSession()
+  
   // Chat messages state
   const messages = ref<ChatMessage[]>([
     {
@@ -17,7 +21,7 @@ export const useChat = () => {
   // Typing indicator state
   const isTyping = ref(false)
   
-  // Session tracking
+  // Session tracking (for Bedrock Agent session continuity)
   const session = ref<ChatSession>({
     sessionId: null,
     lastMessageTimestamp: undefined,
@@ -66,13 +70,14 @@ export const useChat = () => {
     isTyping.value = true
 
     try {
-      // Send message to backend
+      // Send message to backend with both global sessionId and Bedrock sessionId
       const response = await sendChatMessage(
         text.trim(),
-        session.value.sessionId
+        session.value.sessionId,
+        globalSessionId.value
       )
       
-      // Update session ID
+      // Update Bedrock session ID for conversation continuity
       if (response.data.sessionId) {
         session.value.sessionId = response.data.sessionId
       }

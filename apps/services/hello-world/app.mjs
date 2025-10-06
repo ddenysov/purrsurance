@@ -106,7 +106,11 @@ export const lambdaHandler = async (event, context) => {
     
     // Parse request body
     const body = parseRequestBody(event);
-    const { message = 'Hello, how to book a vet doctor visit??', sessionId } = body;
+    const { 
+      message = 'Hello, how to book a vet doctor visit??', 
+      sessionId, 
+      globalSessionId 
+    } = body;
     
     // Validate input
     if (typeof message !== 'string' || message.trim().length === 0) {
@@ -121,10 +125,11 @@ export const lambdaHandler = async (event, context) => {
       requestId,
       messageLength: message.length,
       hasSessionId: !!sessionId,
+      hasGlobalSessionId: !!globalSessionId,
     });
     
-    // Invoke Bedrock Agent
-    const agentResponse = await invokeBedrockAgent(message, sessionId);
+    // Invoke Bedrock Agent with session attributes
+    const agentResponse = await invokeBedrockAgent(message, sessionId, globalSessionId);
     
     logger.info('Request processed successfully', {
       requestId,
