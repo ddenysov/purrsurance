@@ -42,8 +42,83 @@
         :coverage-plan="pet.coveragePlan"
       />
       
+      <!-- Owner Information (from petProfileStore) -->
+      <div v-if="petProfileStore.petProfile.owner.fullName" class="space-y-3">
+        <h3 class="text-sm font-medium text-gray-900">Owner Information</h3>
+        <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
+          <div>
+            <span class="text-gray-500">Name:</span>
+            <span class="ml-2 font-medium text-gray-900">{{ petProfileStore.petProfile.owner.fullName }}</span>
+          </div>
+          <div v-if="petProfileStore.petProfile.owner.email">
+            <span class="text-gray-500">Email:</span>
+            <span class="ml-2 text-gray-900">{{ petProfileStore.petProfile.owner.email }}</span>
+          </div>
+          <div v-if="petProfileStore.petProfile.owner.phone">
+            <span class="text-gray-500">Phone:</span>
+            <span class="ml-2 text-gray-900">{{ petProfileStore.petProfile.owner.phone }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Medical Conditions -->
+      <div v-if="petProfileStore.petProfile.medical.conditions.length > 0" class="space-y-3">
+        <h3 class="text-sm font-medium text-gray-900">Medical Conditions</h3>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="(condition, index) in petProfileStore.petProfile.medical.conditions"
+            :key="index"
+            :class="getMedicalConditionClasses(condition.status)"
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+          >
+            {{ condition.name }}
+          </span>
+        </div>
+      </div>
+      
+      <!-- Current Medications -->
+      <div v-if="petProfileStore.petProfile.medical.medications.length > 0" class="space-y-3">
+        <h3 class="text-sm font-medium text-gray-900">Current Medications</h3>
+        <div class="bg-gray-50 rounded-lg p-3 space-y-2">
+          <div 
+            v-for="(medication, index) in petProfileStore.petProfile.medical.medications" 
+            :key="index"
+            class="text-sm"
+          >
+            <div class="font-medium text-gray-900">{{ medication.name }}</div>
+            <div class="text-gray-500 text-xs">
+              {{ medication.dosage }} - {{ medication.frequency }}
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Vaccinations -->
       <PetVaccinations :vaccinations="vaccinations" />
+      
+      <!-- Policy Status -->
+      <div v-if="petProfileStore.petProfile.policy.status !== 'inactive'" class="space-y-3">
+        <h3 class="text-sm font-medium text-gray-900">Policy Status</h3>
+        <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500">Status:</span>
+            <span 
+              :class="getPolicyStatusClasses(petProfileStore.petProfile.policy.status)"
+              class="px-2 py-1 rounded-full text-xs font-medium"
+            >
+              {{ petProfileStore.petProfile.policy.status }}
+            </span>
+          </div>
+          <div v-if="petProfileStore.petProfile.policy.startDate" class="flex items-center justify-between">
+            <span class="text-gray-500">Start Date:</span>
+            <span class="text-gray-900">{{ formatDate(petProfileStore.petProfile.policy.startDate) }}</span>
+          </div>
+          <div v-if="petProfileStore.petProfile.policy.endDate" class="flex items-center justify-between">
+            <span class="text-gray-500">End Date:</span>
+            <span class="text-gray-900">{{ formatDate(petProfileStore.petProfile.policy.endDate) }}</span>
+          </div>
+        </div>
+      </div>
       
       <!-- Upcoming Appointments -->
       <PetUpcoming :appointments="appointments" />
@@ -59,6 +134,7 @@
 
 <script setup lang="ts">
 import type { Pet, Vaccination, Appointment, QuickAction } from '~/types'
+import { usePetProfileStore } from '~/stores/petProfile'
 
 interface Props {
   pet: Pet
@@ -74,4 +150,50 @@ defineEmits<{
   'edit-profile': []
   'action-click': [actionId: string]
 }>()
+
+// Access the pet profile store for detailed information
+const petProfileStore = usePetProfileStore()
+
+// Helper functions
+const getMedicalConditionClasses = (status: string) => {
+  switch (status) {
+    case 'active':
+      return 'bg-red-100 text-red-800'
+    case 'managed':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'resolved':
+      return 'bg-green-100 text-green-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const getPolicyStatusClasses = (status: string) => {
+  switch (status) {
+    case 'active':
+      return 'bg-green-100 text-green-800'
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'expired':
+      return 'bg-red-100 text-red-800'
+    case 'inactive':
+      return 'bg-gray-100 text-gray-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  } catch (error) {
+    return dateString
+  }
+}
 </script>
