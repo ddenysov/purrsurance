@@ -1,0 +1,8 @@
+{
+  "httpMethod": "GET",
+  "path": "/stream",
+  "headers": {
+    "Accept": "text/event-stream"
+  }
+}
+

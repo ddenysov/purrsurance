@@ -92,6 +92,44 @@ Resources:
             Path: /policy
             Method: get
 
+  SSEStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: sse-stream/
+      Handler: app.lambdaHandlerLocal
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Timeout: 300
+      MemorySize: 512
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          LOG_LEVEL: info
+          SSE_EVENT_INTERVAL: 10000
+          SSE_MAX_DURATION: 300000
+          SSE_KEEPALIVE_INTERVAL: 30000
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - GET
+            # - OPTIONS
+          AllowHeaders:
+            - "*"
+          MaxAge: 600
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /stream
+            Method: GET
+            TimeoutInMillis: 300000
+            PayloadFormatVersion: "2.0"
+
   BedrockInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -137,3 +175,11 @@ Outputs:
   GetPolicyDetailsFunctionIamRole:
     Description: Implicit IAM Role created for GetPolicyDetails function
     Value: !GetAtt GetPolicyDetailsFunctionRole.Arn
+  
+  SSEStreamFunctionUrl:
+    Description: "SSE Stream Lambda Function URL"
+    Value: !GetAtt SSEStreamFunctionUrl.FunctionUrl
+  
+  SSEStreamFunction:
+    Description: "SSE Stream Lambda Function ARN"
+    Value: !GetAtt SSEStreamFunction.Arn
