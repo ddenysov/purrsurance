@@ -14,6 +14,7 @@
 import { config, validateConfig, getPrintableConfig } from './config.mjs';
 import { invokeBedrockAgent, testBedrockConnection } from './bedrockClient.mjs';
 import { logger } from './logger.mjs';
+import { saveChatMessage } from './chatHistoryService.mjs';
 
 /**
  * Initialize handler (runs once per cold start)
@@ -128,8 +129,58 @@ export const lambdaHandler = async (event, context) => {
       hasGlobalSessionId: !!globalSessionId,
     });
     
+    // Save user message to database (if globalSessionId is provided)
+    if (globalSessionId) {
+      try {
+        await saveChatMessage({
+          sessionId: globalSessionId,
+          sender: 'user',
+          content: message,
+          bedrockSessionId: sessionId,
+          metadata: {
+            requestId,
+            timestamp: new Date().toISOString(),
+            environment: config.environment,
+          },
+        });
+      } catch (error) {
+        // Log error but don't fail the request
+        logger.error('Failed to save user message', {
+          requestId,
+          error: error.message,
+        });
+      }
+    }
+    
     // Invoke Bedrock Agent with session attributes
     const agentResponse = await invokeBedrockAgent(message, sessionId, globalSessionId);
+    
+    // Save assistant response to database (if globalSessionId is provided)
+    if (globalSessionId) {
+      try {
+        await saveChatMessage({
+          sessionId: globalSessionId,
+          sender: 'assistant',
+          content: agentResponse.completion,
+          bedrockSessionId: agentResponse.sessionId,
+          metadata: {
+            requestId,
+            timestamp: new Date().toISOString(),
+            environment: config.environment,
+          },
+        });
+      } catch (error) {
+        // Log error but don't fail the request
+        logger.error('Failed to save assistant response', {
+          requestId,
+          error: error.message,
+        });
+      }
+    } else {
+      logger.warn('No globalSessionId provided, skipping chat history save', {
+        requestId,
+      });
+    }
     
     logger.info('Request processed successfully', {
       requestId,

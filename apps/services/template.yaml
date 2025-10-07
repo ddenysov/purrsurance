@@ -59,6 +59,32 @@ Resources:
           KeyType: "RANGE"
       BillingMode: PAY_PER_REQUEST
 
+  ChatHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-ChatHistory'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Service
+          Value: ChatHistory
+
     # 3. Функция-Продюсер: Отправляет событие в SNS
     # (Для примера, будет вызываться через API Gateway)
   EventProducerFunction:
@@ -120,6 +146,7 @@ Resources:
           LOG_LEVEL: info
           ENABLE_BEDROCK_TRACE: false
           MAX_TOKENS: 2048
+          CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTable
       Policies:
         - Statement:
             - Sid: BedrockAgentInvokePolicy 
@@ -130,6 +157,8 @@ Resources:
               Resource:
                 - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*"
                 - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent-alias/*"
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatHistoryTable
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -204,6 +233,30 @@ Resources:
             TimeoutInMillis: 300000
             PayloadFormatVersion: "2.0"
             ApiId: !Ref SSEHttpApi
+
+  GetChatHistoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: get-chat-history/
+      Handler: app.lambdaHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Timeout: 10
+      MemorySize: 256
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ChatHistoryTable
+      Environment:
+        Variables:
+          CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTable
+          ENVIRONMENT: !Ref Environment
+      Events:
+        GetChatHistory:
+          Type: Api
+          Properties:
+            Path: /chat-history
+            Method: get
 
   SSEHttpApi:
     Type: AWS::Serverless::HttpApi
@@ -287,3 +340,19 @@ Outputs:
   EventsTableName:
     Description: "DynamoDB Events Table Name"
     Value: !Ref EventsTable
+  
+  ChatHistoryTableName:
+    Description: "Chat History DynamoDB Table Name"
+    Value: !Ref ChatHistoryTable
+  
+  ChatHistoryTableArn:
+    Description: "Chat History DynamoDB Table ARN"
+    Value: !GetAtt ChatHistoryTable.Arn
+  
+  GetChatHistoryApi:
+    Description: "API Gateway endpoint URL for GetChatHistory function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/chat-history/"
+  
+  GetChatHistoryFunction:
+    Description: "GetChatHistory Lambda Function ARN"
+    Value: !GetAtt GetChatHistoryFunction.Arn
