@@ -75,6 +75,12 @@ Resources:
             Path: /chat
             Method: post
             RestApiId: !Ref ServiceRouterApi
+        ChatGetApi:
+          Type: Api
+          Properties:
+            Path: /chat
+            Method: get
+            RestApiId: !Ref ServiceRouterApi
         OptionsApi:
           Type: Api
           Properties:
