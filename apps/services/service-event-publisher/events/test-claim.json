@@ -1,0 +1,10 @@
+{
+  "body": "{\"sessionId\":\"test-session-456\",\"eventType\":\"ClaimSubmitted\",\"data\":{\"claimId\":\"CLAIM-789\",\"policyId\":\"POLICY-123\",\"amount\":5000,\"reason\":\"Annual checkup\",\"timestamp\":\"2025-10-08T14:30:00Z\"}}",
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Session-Id": "test-session-456"
+  },
+  "httpMethod": "POST",
+  "path": "/publish"
+}
+

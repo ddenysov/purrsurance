@@ -9,11 +9,15 @@ export default defineNuxtConfig({
   },
   
   // Runtime Config
+  // Note: Real URLs are automatically fetched from CloudFormation stacks during deployment
+  // via deploy.sh script and written to .env file
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
       apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
+      // SSE Stream URL from purrsurance-sse-stream stack
       sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3002/stream',
+      // Chat API URL from purrsurance-service-router stack
       chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || 'http://localhost:3003/chat',
     }
   },

@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  service-event-publisher
+  
+  Lambda function that publishes events directly to DynamoDB
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+  
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - warn
+      - info
+      - debug
+    Description: Logging level
+
+Resources:
+  # DynamoDB Table for storing events
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-events'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: partitionKey
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: partitionKey
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Service
+          Value: event-publisher
+
+  # Lambda Function for publishing events
+  EventPublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: app.handler
+      Description: Publishes events directly to DynamoDB
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          EVENTS_TABLE_NAME: !Ref EventsTable
+          LOG_LEVEL: !Ref LogLevel
+          NODE_ENV: production
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+      Events:
+        PublishApi:
+          Type: Api
+          Properties:
+            Path: /publish
+            Method: post
+            RestApiId: !Ref EventPublisherApi
+        OptionsApi:
+          Type: Api
+          Properties:
+            Path: /publish
+            Method: options
+            RestApiId: !Ref EventPublisherApi
+
+  # API Gateway
+  EventPublisherApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,X-Session-Id,Authorization'"
+        AllowMethods: "'POST,OPTIONS'"
+        MaxAge: "'86400'"
+
+Outputs:
+  EventPublisherApi:
+    Description: API Gateway endpoint URL for Event Publisher
+    Value: !Sub "https://${EventPublisherApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/publish"
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+  
+  EventPublisherFunction:
+    Description: Event Publisher Lambda Function ARN
+    Value: !GetAtt EventPublisherFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionArn'
+  
+  EventPublisherFunctionIamRole:
+    Description: Implicit IAM Role created for Event Publisher function
+    Value: !GetAtt EventPublisherFunctionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionRoleArn'
+  
+  EventsTableName:
+    Description: DynamoDB table name for events
+    Value: !Ref EventsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-EventsTableName'
+  
+  EventsTableArn:
+    Description: DynamoDB table ARN for events
+    Value: !GetAtt EventsTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-EventsTableArn'
+

@@ -1,0 +1,23 @@
+{
+  "name": "service-event-publisher",
+  "version": "1.0.0",
+  "description": "Event Publisher Lambda - publishes events directly to DynamoDB",
+  "type": "module",
+  "main": "app.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.705.0",
+    "@aws-sdk/lib-dynamodb": "^3.705.0"
+  },
+  "keywords": [
+    "lambda",
+    "dynamodb",
+    "event-publisher",
+    "serverless"
+  ],
+  "author": "",
+  "license": "ISC"
+}
+

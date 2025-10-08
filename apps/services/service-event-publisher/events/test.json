@@ -1,0 +1,10 @@
+{
+  "body": "{\"sessionId\":\"test-session-123\",\"eventType\":\"PolicyUpdate\",\"data\":{\"policyId\":\"POLICY-123\",\"action\":\"create\",\"timestamp\":\"2025-10-08T12:00:00Z\",\"details\":{\"petName\":\"Whiskers\",\"coverage\":100000}}}",
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Session-Id": "test-session-123"
+  },
+  "httpMethod": "POST",
+  "path": "/publish"
+}
+

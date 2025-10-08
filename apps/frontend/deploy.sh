@@ -42,6 +42,7 @@ SSE_STREAM_URL=""
 API_BASE_URL=""
 CHAT_API_URL=""
 SERVICE_ROUTER_STACK_NAME="purrsurance-service-router"
+SSE_STREAM_STACK_NAME="purrsurance-sse-stream"
 BACKEND_CONFIG_SUCCESS=false
 
 echo -e "${YELLOW}Step 1: Fetching backend service URLs...${NC}"
@@ -63,34 +64,42 @@ else
     echo -e "${YELLOW}⚠ Warning: ServiceRouter stack '${SERVICE_ROUTER_STACK_NAME}' not found${NC}"
 fi
 
-# Get other backend URLs if backend stack name is provided
+# Get SSE Stream URL from service-sse-stream stack
+if aws cloudformation describe-stacks --stack-name "$SSE_STREAM_STACK_NAME" &> /dev/null; then
+    SSE_STREAM_URL=$(aws cloudformation describe-stacks \
+        --stack-name "$SSE_STREAM_STACK_NAME" \
+        --query 'Stacks[0].Outputs[?OutputKey==`SSEStreamFunctionUrl`].OutputValue' \
+        --output text 2>/dev/null || echo "")
+    
+    if [ -n "$SSE_STREAM_URL" ]; then
+        echo -e "${GREEN}✓ SSE Stream URL:${NC} ${SSE_STREAM_URL}"
+    else
+        echo -e "${YELLOW}⚠ Warning: Could not retrieve SSE Stream URL from stack${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ Warning: SSE Stream stack '${SSE_STREAM_STACK_NAME}' not found${NC}"
+fi
+
+# Get other backend URLs if backend stack name is provided (legacy support)
 if [ -n "$BACKEND_STACK_NAME" ]; then
     if aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" &> /dev/null; then
-        # Get SSE Stream URL
-        SSE_STREAM_URL=$(aws cloudformation describe-stacks \
-            --stack-name "$BACKEND_STACK_NAME" \
-            --query 'Stacks[0].Outputs[?OutputKey==`SSEStreamFunctionUrl`].OutputValue' \
-            --output text 2>/dev/null || echo "")
-        
-        # Get API Base URL
+        # Get API Base URL (if needed from legacy stack)
         API_BASE_URL=$(aws cloudformation describe-stacks \
             --stack-name "$BACKEND_STACK_NAME" \
             --query 'Stacks[0].Outputs[?OutputKey==`HelloWorldApi`].OutputValue' \
             --output text 2>/dev/null || echo "")
         
-        if [ -n "$SSE_STREAM_URL" ]; then
-            echo -e "${GREEN}✓ SSE Stream URL:${NC} ${SSE_STREAM_URL}"
-        fi
-        
         if [ -n "$API_BASE_URL" ]; then
-            echo -e "${GREEN}✓ API Base URL:${NC} ${API_BASE_URL}"
+            echo -e "${GREEN}✓ API Base URL (legacy):${NC} ${API_BASE_URL}"
         fi
     else
         echo -e "${YELLOW}⚠ Warning: Backend stack '${BACKEND_STACK_NAME}' not found${NC}"
     fi
 fi
 
-if [ -z "$CHAT_API_URL" ]; then
+if [ -n "$CHAT_API_URL" ] && [ -n "$SSE_STREAM_URL" ]; then
+    BACKEND_CONFIG_SUCCESS=true
+else
     echo -e "${YELLOW}  Will continue with fallback configuration${NC}"
     BACKEND_CONFIG_SUCCESS=false
 fi
