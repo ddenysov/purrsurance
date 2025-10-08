@@ -1,6 +1,5 @@
 # Nuxt dev/build outputs
 .output
-.data
 .nuxt
 .nitro
 .cache
@@ -18,7 +17,10 @@ logs
 .fleet
 .idea
 
-# Local env files
+# Environment variables
 .env
 .env.*
 !.env.example
+
+# Local Netlify folder
+.netlify

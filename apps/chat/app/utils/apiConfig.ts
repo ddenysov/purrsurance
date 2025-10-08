@@ -1,10 +1,37 @@
+/**
+ * API Configuration
+ * 
+ * Gets configuration from Nuxt runtime config which is populated from environment variables.
+ * This ensures that URLs are not hardcoded and can be updated via env vars.
+ */
+
+// Get runtime config - this will be populated by Nuxt from environment variables
+const getRuntimeConfig = () => {
+  if (typeof useRuntimeConfig === 'function') {
+    return useRuntimeConfig()
+  }
+  // Fallback for non-Nuxt contexts (like tests)
+  return {
+    public: {
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
+      apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
+      appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'development',
+      sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3002/stream',
+    }
+  }
+}
+
 // API Configuration
 export const apiConfig = {
   // Base URL for API requests
-  baseURL: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
+  get baseURL() {
+    return getRuntimeConfig().public.apiBaseUrl
+  },
   
   // Request timeout in milliseconds
-  timeout: parseInt(process.env.NUXT_PUBLIC_API_TIMEOUT || '10000'),
+  get timeout() {
+    return parseInt(getRuntimeConfig().public.apiTimeout)
+  },
   
   // Default headers
   headers: {
@@ -13,7 +40,14 @@ export const apiConfig = {
   },
   
   // Environment
-  environment: process.env.NUXT_PUBLIC_APP_ENV || 'development',
+  get environment() {
+    return getRuntimeConfig().public.appEnv
+  },
+  
+  // SSE Stream URL
+  get sseStreamUrl() {
+    return getRuntimeConfig().public.sseStreamUrl
+  },
   
   // API endpoints
   endpoints: {

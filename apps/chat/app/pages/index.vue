@@ -289,14 +289,17 @@ useHead({
 })
 
 // SSE subscription: logs every event to the console and cleans up on unmount
-const sseBaseUrl = 'https://asjkb24j5o4k4ilysst57irqy40ethca.lambda-url.us-east-1.on.aws/stream'
+// Get SSE URL from runtime config (not hardcoded)
+const config = useRuntimeConfig()
+const sseBaseUrl = config.public.sseStreamUrl
 let eventSource: EventSource | null = null
 
 onMounted(() => {
   try {
     // Append sessionId to SSE URL
     const sseUrl = `${sseBaseUrl}?sessionId=${sessionId.value}`
-    console.log('[SSE] Connecting with session ID:', sessionId.value)
+    console.log('[SSE] Connecting to:', sseBaseUrl)
+    console.log('[SSE] With session ID:', sessionId.value)
     
     eventSource = new EventSource(sseUrl)
 

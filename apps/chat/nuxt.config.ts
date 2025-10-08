@@ -3,6 +3,16 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   
+  // Runtime Config
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
+      apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
+      appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'development',
+      sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3002/stream',
+    }
+  },
+  
   // Modules
   modules: [
       '@nuxtjs/tailwindcss',
