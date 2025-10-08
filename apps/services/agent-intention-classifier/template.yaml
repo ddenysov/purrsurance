@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  IntentionClassifierAgent Configuration
+  
+  Intention Classifier Agent for Purrsurance pet insurance system
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+
+  # IntentionClassifierAgent Configuration
+  IntentionClassifierAgentName:
+    Type: String
+    Default: IntentionClassifierAgent
+    Description: Name for the Intention Classifier Agent
+  
+  IntentionClassifierAgentFoundationModel:
+    Type: String
+    Default: us.anthropic.claude-3-5-haiku-20241022-v1:0
+    Description: Foundation model for IntentionClassifierAgent (Claude 3.5 Haiku for fast classification)
+    AllowedValues:
+      - us.anthropic.claude-3-5-haiku-20241022-v1:0
+
+  IntentionClassifierAgentInstruction:
+    Type: String
+    Default: |
+      You are a simple and precise classifier agent. Your sole task is to analyze the user's text and determine their intent. You must return ONE of these three exact values: `PolicyAgent`, `VetDocAgent`, or `AgentNotFoundException`.
+
+      Follow these rules STRICTLY:
+
+      1.  If the text mentions insurance, an insurance policy, a car accident, a claim, or anything related to insurance, you must return `PolicyAgent`.
+      2.  If the text describes symptoms of illness or a pet feeling unwell (e.g., a cat, dog, hamster), you must return `VetDocAgent`.
+      3.  In all other cases, including greetings, thank you messages, or any other unrelated text, you must return `AgentNotFoundException`.
+
+      **CRITICAL INSTRUCTIONS:**
+      - Do not add any explanations.
+      - Do not write anything other than one of the three specified values.
+      - Your response must ALWAYS be just `PolicyAgent`, `VetDocAgent`, or `AgentNotFoundException`.
+
+      Here are some examples:
+
+      User: "My cat is lethargic and refuses to eat."
+      Your Answer: VetDocAgent
+
+      User: "Here is my policy id."
+      Your Answer: PolicyAgent
+
+      User: "Hello!"
+      Your Answer: AgentNotFoundException
+
+      User: "(any text about an insurance policy)"
+      Your Answer: PolicyAgent
+
+      User: "My dog has been vomiting since this morning."
+      Your Answer: VetDocAgent
+
+      User: "Thank you for your help."
+      Your Answer: AgentNotFoundException
+
+      Now, analyze the user's request below and provide your answer.
+
+      User Request:
+    Description: System instruction/prompt for IntentionClassifierAgent routing logic
+  
+  IntentionClassifierAgentIdleSessionTTL:
+    Type: Number
+    Default: 600
+    MinValue: 60
+    MaxValue: 3600
+    Description: Idle session timeout in seconds for IntentionClassifierAgent (60-3600)
+
+Resources:
+  IntentionClassifierAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      # RoleName: !Sub '${AWS::StackName}-IntentionClassifierAgentRole'
+      Description: IAM role for IntentionClassifierAgent to invoke Bedrock foundation models
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+        - PolicyName: BedrockModelInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/*'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Agent
+          Value: IntentionClassifierAgent
+        - Key: Role
+          Value: IntentionClassifier
+
+  IntentionClassifierAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: !Ref IntentionClassifierAgentName
+      Description: Intention classifier agent for Purrsurance system
+      AgentResourceRoleArn: !GetAtt IntentionClassifierAgentRole.Arn
+      FoundationModel: !Ref IntentionClassifierAgentFoundationModel
+      Instruction: !Ref IntentionClassifierAgentInstruction
+      IdleSessionTTLInSeconds: !Ref IntentionClassifierAgentIdleSessionTTL
+      AutoPrepare: true
+      Tags:
+        Environment: !Ref Environment
+        Service: IntentionClassifierAgent
+        ManagedBy: SAM
+        Purpose: IntentionClassification
+
+  IntentionClassifierAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId: !Ref IntentionClassifierAgent
+      AgentAliasName: !Sub '${Environment}-intention-classifier-alias'
+      Description: !Sub 'Intention classifier agent alias for ${Environment} environment'
+      Tags:
+        Environment: !Ref Environment
+        Agent: IntentionClassifierAgent
+        Role: IntentionClassifier
+
+Outputs:
+  IntentionClassifierAgentId:
+    Description: "IntentionClassifierAgent Bedrock Agent ID"
+    Value: !Ref IntentionClassifierAgent
+    Export:
+      Name: !Sub '${AWS::StackName}-IntentionClassifierAgentId'
+  
+  IntentionClassifierAgentAliasId:
+    Description: "IntentionClassifierAgent Alias ID"
+    Value: !GetAtt IntentionClassifierAgentAlias.AgentAliasId
+    Export:
+      Name: !Sub '${AWS::StackName}-IntentionClassifierAgentAliasId'
+  
+  IntentionClassifierAgentArn:
+    Description: "IntentionClassifierAgent ARN"
+    Value: !GetAtt IntentionClassifierAgent.AgentArn
+    Export:
+      Name: !Sub '${AWS::StackName}-IntentionClassifierAgentArn'
+  
+  IntentionClassifierAgentRoleArn:
+    Description: "IntentionClassifierAgent IAM Role ARN"
+    Value: !GetAtt IntentionClassifierAgentRole.Arn
+
