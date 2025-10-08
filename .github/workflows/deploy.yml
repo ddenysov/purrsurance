@@ -1,0 +1,301 @@
+name: Deploy Purrsurance to AWS
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
+          - staging
+          - dev
+
+env:
+  AWS_REGION: us-east-1
+  NODE_VERSION: '20'
+
+jobs:
+  # Determine environment based on branch or manual input
+  set-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      backend-stack: ${{ steps.set-env.outputs.backend-stack }}
+      frontend-stack: ${{ steps.set-env.outputs.frontend-stack }}
+    steps:
+      - name: Set environment variables
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          else
+            case "${{ github.ref }}" in
+              refs/heads/main)
+                ENV="prod"
+                ;;
+              refs/heads/staging)
+                ENV="staging"
+                ;;
+              refs/heads/develop)
+                ENV="dev"
+                ;;
+              *)
+                ENV="dev"
+                ;;
+            esac
+          fi
+          
+          echo "environment=${ENV}" >> $GITHUB_OUTPUT
+          echo "backend-stack=agent-operator-${ENV}" >> $GITHUB_OUTPUT
+          echo "frontend-stack=purrsurance-frontend-${ENV}" >> $GITHUB_OUTPUT
+          
+          echo "Deploying to environment: ${ENV}"
+
+  # Deploy Backend Services
+  deploy-backend:
+    needs: set-environment
+    runs-on: ubuntu-latest
+    environment: ${{ needs.set-environment.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Cache SAM build
+        uses: actions/cache@v3
+        with:
+          path: apps/services_old/.aws-sam
+          key: sam-${{ runner.os }}-${{ hashFiles('apps/services_old/**/template.yaml') }}
+          restore-keys: |
+            sam-${{ runner.os }}-
+
+      - name: SAM Build
+        run: |
+          cd apps/services_old
+          sam build
+
+      - name: SAM Deploy
+        run: |
+          cd apps/services_old
+          sam deploy \
+            --stack-name ${{ needs.set-environment.outputs.backend-stack }} \
+            --region ${{ env.AWS_REGION }} \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              Environment=${{ needs.set-environment.outputs.environment }} \
+              BedrockAgentId=${{ secrets.BEDROCK_AGENT_ID }} \
+              BedrockAgentAliasId=${{ secrets.BEDROCK_AGENT_ALIAS_ID }}
+
+      - name: Get Backend Stack Outputs
+        id: backend-outputs
+        run: |
+          SSE_URL=$(aws cloudformation describe-stacks \
+            --stack-name ${{ needs.set-environment.outputs.backend-stack }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`SSEStreamFunctionUrl`].OutputValue' \
+            --output text)
+          
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name ${{ needs.set-environment.outputs.backend-stack }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`HelloWorldApi`].OutputValue' \
+            --output text)
+          
+          echo "sse-url=${SSE_URL}" >> $GITHUB_OUTPUT
+          echo "api-url=${API_URL}" >> $GITHUB_OUTPUT
+          
+          echo "Backend URLs:"
+          echo "  SSE: ${SSE_URL}"
+          echo "  API: ${API_URL}"
+
+  # Deploy Frontend Application
+  deploy-frontend:
+    needs: [set-environment, deploy-backend]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.set-environment.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Install dependencies
+        run: |
+          cd apps/frontend
+          pnpm install --frozen-lockfile
+
+      - name: Fetch backend URLs and create .env
+        run: |
+          cd apps/frontend
+          
+          SSE_URL=$(aws cloudformation describe-stacks \
+            --stack-name ${{ needs.set-environment.outputs.backend-stack }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`SSEStreamFunctionUrl`].OutputValue' \
+            --output text)
+          
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name ${{ needs.set-environment.outputs.backend-stack }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`HelloWorldApi`].OutputValue' \
+            --output text)
+          
+          cat > .env << EOF
+          NUXT_PUBLIC_SSE_STREAM_URL=${SSE_URL}
+          NUXT_PUBLIC_API_BASE_URL=${API_URL}
+          NUXT_PUBLIC_API_TIMEOUT=10000
+          NUXT_PUBLIC_APP_ENV=${{ needs.set-environment.outputs.environment }}
+          EOF
+          
+          echo "Frontend environment configured"
+
+      - name: Build Nuxt application
+        run: |
+          cd apps/frontend
+          pnpm build
+
+      - name: SAM Deploy (Infrastructure)
+        run: |
+          cd apps/frontend
+          sam deploy \
+            --stack-name ${{ needs.set-environment.outputs.frontend-stack }} \
+            --region ${{ env.AWS_REGION }} \
+            --capabilities CAPABILITY_IAM \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides \
+              Environment=${{ needs.set-environment.outputs.environment }}
+
+      - name: Get S3 bucket name
+        id: s3-bucket
+        run: |
+          BUCKET_NAME=$(aws cloudformation describe-stacks \
+            --stack-name ${{ needs.set-environment.outputs.frontend-stack }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`WebsiteBucketName`].OutputValue' \
+            --output text)
+          
+          echo "bucket-name=${BUCKET_NAME}" >> $GITHUB_OUTPUT
+          echo "S3 Bucket: ${BUCKET_NAME}"
+
+      - name: Sync files to S3
+        run: |
+          cd apps/frontend
+          
+          # Upload static assets with long cache
+          aws s3 sync .output/public s3://${{ steps.s3-bucket.outputs.bucket-name }}/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*.html" \
+            --exclude "*.json"
+          
+          # Upload HTML and JSON with short cache
+          aws s3 sync .output/public s3://${{ steps.s3-bucket.outputs.bucket-name }}/ \
+            --exclude "*" \
+            --include "*.html" \
+            --include "*.json" \
+            --cache-control "public, max-age=0, must-revalidate"
+
+      - name: Get CloudFront distribution ID
+        id: cloudfront
+        run: |
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name ${{ needs.set-environment.outputs.frontend-stack }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
+            --output text)
+          
+          echo "distribution-id=${DISTRIBUTION_ID}" >> $GITHUB_OUTPUT
+          echo "CloudFront Distribution: ${DISTRIBUTION_ID}"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.cloudfront.outputs.distribution-id }} \
+            --paths "/*"
+          
+          echo "CloudFront cache invalidation initiated"
+
+      - name: Get deployment URLs
+        id: urls
+        run: |
+          CLOUDFRONT_URL=$(aws cloudformation describe-stacks \
+            --stack-name ${{ needs.set-environment.outputs.frontend-stack }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontURL`].OutputValue' \
+            --output text)
+          
+          echo "cloudfront-url=${CLOUDFRONT_URL}" >> $GITHUB_OUTPUT
+          
+          echo "## Deployment Complete! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ needs.set-environment.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Frontend URL:** ${CLOUDFRONT_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Backend Stack:** ${{ needs.set-environment.outputs.backend-stack }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Frontend Stack:** ${{ needs.set-environment.outputs.frontend-stack }}" >> $GITHUB_STEP_SUMMARY
+
+  # Notify on completion
+  notify:
+    needs: [set-environment, deploy-backend, deploy-frontend]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Deployment Status
+        run: |
+          if [ "${{ needs.deploy-frontend.result }}" == "success" ]; then
+            echo "✅ Deployment to ${{ needs.set-environment.outputs.environment }} completed successfully"
+          else
+            echo "❌ Deployment to ${{ needs.set-environment.outputs.environment }} failed"
+            exit 1
+          fi
+

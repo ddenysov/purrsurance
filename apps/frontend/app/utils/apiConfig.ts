@@ -15,7 +15,6 @@ const getRuntimeConfig = () => {
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
       apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
-      appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'production',
       sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3002/stream',
     }
   }
@@ -37,11 +36,6 @@ export const apiConfig = {
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  },
-  
-  // Environment
-  get environment() {
-    return getRuntimeConfig().public.appEnv
   },
   
   // SSE Stream URL
@@ -87,14 +81,4 @@ export const apiConfig = {
 // Helper function to get full endpoint URL
 export const getEndpointUrl = (endpoint: string): string => {
   return `${apiConfig.baseURL}${endpoint}`
-}
-
-// Helper function to check if we're in development mode
-export const isDevelopment = (): boolean => {
-  return apiConfig.environment === 'development'
-}
-
-// Helper function to check if we're in production mode
-export const isProduction = (): boolean => {
-  return apiConfig.environment === 'production'
 }

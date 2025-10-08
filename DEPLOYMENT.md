@@ -5,8 +5,10 @@ This guide explains how to deploy the entire Purrsurance stack and configure the
 ## Overview
 
 The Purrsurance application consists of two main parts:
-1. **Backend Services** (AWS Lambda functions deployed via CloudFormation)
-2. **Frontend Application** (Nuxt 3 app that connects to backend services)
+1. **Backend Services** (AWS Lambda functions deployed via SAM/CloudFormation)
+2. **Frontend Application** (Nuxt 3 static site hosted on S3 + CloudFront)
+
+Both parts are deployed using AWS SAM (Serverless Application Model) and can be deployed independently or together.
 
 ## Prerequisites
 
@@ -20,7 +22,7 @@ The Purrsurance application consists of two main parts:
 Navigate to the services directory and deploy the CloudFormation stack:
 
 ```bash
-cd apps/services
+cd apps/services_old
 
 # Build the services
 sam build
@@ -38,66 +40,149 @@ During the guided deployment, you'll be asked to provide:
 
 After deployment completes, note down the stack name - you'll need it for the next step.
 
-## Step 2: Configure Frontend Application
+## Step 2: Deploy Frontend Application
 
-The frontend needs to know the URLs of your deployed backend services. Use the automated configuration script:
+The frontend deployment is fully automated and includes:
+- S3 bucket for static file hosting
+- CloudFront CDN distribution
+- Automatic backend URL configuration
+- Build and upload process
 
 ```bash
-cd apps/chat
+cd apps/frontend
 
-# Run the auto-configuration script
-./update-env.sh your-stack-name
+# Deploy with automatic backend integration
+./deploy.sh prod agent-operator-prod
+
+# Or use Makefile
+make deploy-prod BACKEND_STACK=agent-operator-prod
 ```
 
-For example:
-```bash
-./update-env.sh agent-operator-prod
-```
-
-This script will:
-1. Query your CloudFormation stack for service URLs
+The deployment script will:
+1. Query your backend CloudFormation stack for service URLs
 2. Create a `.env` file with the correct configuration
-3. Display the URLs for verification
+3. Install dependencies and build the Nuxt application
+4. Deploy S3 bucket and CloudFront distribution via SAM
+5. Upload built files to S3
+6. Invalidate CloudFront cache
+7. Display your application URLs
 
-### What URLs are Retrieved?
+### What Gets Created?
 
-The script retrieves these CloudFormation outputs:
-- `SSEStreamFunctionUrl` - WebSocket/SSE endpoint for real-time updates
-- `HelloWorldApi` - Main API Gateway endpoint for chat
-- `GetPolicyDetailsApi` - Policy details endpoint
-- `GetChatHistoryApi` - Chat history endpoint
+**AWS Resources:**
+- S3 Bucket with static website hosting
+- CloudFront Distribution (global CDN)
+- Origin Access Identity for secure S3 access
+- Bucket policies for public read access
 
-## Step 3: Start the Frontend Application
+**CloudFormation Outputs:**
+- `CloudFrontURL` - Primary application URL (use this)
+- `WebsiteURL` - Direct S3 website URL (fallback)
+- `WebsiteBucketName` - S3 bucket name
+- `CloudFrontDistributionId` - Distribution ID for cache management
+
+### Get Your Application URL
+
+After deployment:
 
 ```bash
-cd apps/chat
+# Using Makefile
+make get-urls ENV=prod
 
-# Install dependencies (if not done yet)
+# Or manually
+aws cloudformation describe-stacks \
+  --stack-name purrsurance-frontend-prod \
+  --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontURL`].OutputValue' \
+  --output text
+```
+
+Access your application at the CloudFront URL: `https://d123456.cloudfront.net`
+
+## Step 3: Development Workflow (Optional)
+
+For local development:
+
+```bash
+cd apps/frontend
+
+# Install dependencies
 pnpm install
 
 # Start development server
 pnpm dev
 ```
 
-Open your browser to `http://localhost:3000` and verify:
+Open your browser to `http://localhost:3001` and verify:
 1. Browser console shows: `[SSE] Connecting to: https://your-lambda-url...`
 2. SSE connection opens successfully
 3. Chat functionality works
 
+**Note:** For development, you may need to create a `.env` file manually with backend URLs:
+
+```bash
+cat > .env << EOF
+NUXT_PUBLIC_SSE_STREAM_URL=https://xxx.lambda-url.us-east-1.on.aws/stream
+NUXT_PUBLIC_API_BASE_URL=https://xxx.execute-api.us-east-1.amazonaws.com/Prod
+NUXT_PUBLIC_API_TIMEOUT=10000
+NUXT_PUBLIC_APP_ENV=development
+EOF
+```
+
 ## Updating After Redeployment
 
-When you redeploy your backend services and URLs change:
+### Update Backend Only
+
+When you redeploy your backend services:
+
+```bash
+cd apps/services_old
+sam build && sam deploy
+```
+
+### Update Frontend Only
+
+If only frontend code changed:
+
+```bash
+cd apps/frontend
+
+# Option 1: Full redeploy (recommended if URLs changed)
+./deploy.sh prod agent-operator-prod
+
+# Option 2: Quick update (if only frontend code changed)
+pnpm build
+make sync-s3 ENV=prod
+make invalidate-cache ENV=prod
+```
+
+### Update Both Backend and Frontend
 
 ```bash
 # 1. Redeploy backend
-cd apps/services
+cd apps/services_old
 sam build && sam deploy
 
-# 2. Update frontend configuration
-cd ../chat
-./update-env.sh your-stack-name
+# 2. Redeploy frontend with updated backend URLs
+cd ../frontend
+./deploy.sh prod agent-operator-prod
+```
 
-# 3. Restart development server (or rebuild for production)
+### Development Server Updates
+
+For local development, after backend redeployment:
+
+```bash
+cd apps/frontend
+
+# Update .env with new URLs
+cat > .env << EOF
+NUXT_PUBLIC_SSE_STREAM_URL=$(aws cloudformation describe-stacks --stack-name agent-operator-prod --query 'Stacks[0].Outputs[?OutputKey==`SSEStreamFunctionUrl`].OutputValue' --output text)
+NUXT_PUBLIC_API_BASE_URL=$(aws cloudformation describe-stacks --stack-name agent-operator-prod --query 'Stacks[0].Outputs[?OutputKey==`HelloWorldApi`].OutputValue' --output text)
+NUXT_PUBLIC_API_TIMEOUT=10000
+NUXT_PUBLIC_APP_ENV=development
+EOF
+
+# Restart development server
 pnpm dev
 ```
 
@@ -144,7 +229,7 @@ NUXT_PUBLIC_APP_ENV=production
 ### Backend (AWS)
 
 ```bash
-cd apps/services
+cd apps/services_old
 
 # Deploy to production
 sam deploy \
@@ -153,13 +238,45 @@ sam deploy \
   --no-confirm-changeset
 ```
 
-### Frontend (Static Hosting)
+### Frontend (AWS S3 + CloudFront)
 
 ```bash
-cd apps/chat
+cd apps/frontend
+
+# One-line deployment with automatic backend integration
+./deploy.sh prod agent-operator-prod
+
+# Or using Makefile
+make deploy-prod BACKEND_STACK=agent-operator-prod
+```
+
+This will:
+1. Automatically fetch backend URLs from CloudFormation
+2. Build the Nuxt application
+3. Deploy S3 bucket and CloudFront distribution
+4. Upload static files to S3
+5. Invalidate CloudFront cache
+6. Display your application URL
+
+After deployment, access your app at the CloudFront URL (e.g., `https://d123456.cloudfront.net`)
+
+#### Manual Frontend Deployment (Alternative)
+
+If you prefer manual deployment to other hosting providers:
+
+```bash
+cd apps/frontend
 
 # Update configuration for production
-./update-env.sh agent-operator-prod
+# Create .env file with backend URLs
+cat > .env << EOF
+NUXT_PUBLIC_SSE_STREAM_URL=https://your-lambda-url.lambda-url.us-east-1.on.aws/stream
+NUXT_PUBLIC_API_BASE_URL=https://your-api-gateway.execute-api.us-east-1.amazonaws.com/Prod
+NUXT_PUBLIC_API_TIMEOUT=10000
+NUXT_PUBLIC_APP_ENV=production
+EOF
+
+# Build
 NUXT_PUBLIC_APP_ENV=production pnpm build
 
 # Deploy the .output directory to your hosting provider

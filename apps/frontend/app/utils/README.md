@@ -55,7 +55,7 @@ Create a `.env` file in the project root:
 ```env
 NUXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
 NUXT_PUBLIC_API_TIMEOUT=10000
-NUXT_PUBLIC_APP_ENV=development
+NUXT_PUBLIC_SSE_STREAM_URL=http://localhost:3002/stream
 ```
 
 ### Custom Configuration
@@ -268,4 +268,4 @@ import { apiClient } from '~/utils/apiClient'
 2. **Use loading states**: Show loading indicators during API calls
 3. **Initialize auth**: Call `initializeAuth()` on app startup
 4. **Type safety**: Use TypeScript interfaces for better development experience
-5. **Environment config**: Use environment variables for different environments
+5. **Configuration**: Use environment variables for configuration
