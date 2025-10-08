@@ -20,6 +20,11 @@ build: ## Build the Nuxt application
 	@echo "Building application..."
 	pnpm build
 
+generate: ## Generate the Nuxt application
+	@echo "Building application..."
+	pnpm generate
+
+
 dev: ## Start development server
 	@echo "Starting development server..."
 	pnpm dev
@@ -44,6 +49,8 @@ sync-s3: ## Sync built files to S3
 		--query 'Stacks[0].Outputs[?OutputKey==`WebsiteBucketName`].OutputValue' \
 		--output text) && \
 	aws s3 sync .output/public s3://$$BUCKET_NAME/ --delete
+
+upload: generate sync-s3
 
 invalidate-cache: ## Invalidate CloudFront cache
 	@echo "Invalidating CloudFront cache..."
