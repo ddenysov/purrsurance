@@ -1,5 +1,5 @@
 {
-  "name": "agent-router",
+  "name": "service-router",
   "version": "1.0.0",
   "description": "Lambda function that routes chat messages to AWS Bedrock Agent",
   "type": "module",

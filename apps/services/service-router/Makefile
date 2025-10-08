@@ -2,7 +2,7 @@
 
 # Default target
 help:
-	@echo "Agent Router Service - Available commands:"
+	@echo "Service Router Service - Available commands:"
 	@echo "  make install      - Install dependencies"
 	@echo "  make build        - Build SAM application"
 	@echo "  make deploy       - Deploy to AWS"
@@ -36,7 +36,7 @@ delete:
 # Test function locally with mock event
 invoke:
 	@echo "Invoking function locally..."
-	@echo '{"httpMethod":"POST","body":"{\"message\":\"Hello Agent\"}"}' | sam local invoke AgentRouterFunction
+	@echo '{"httpMethod":"POST","body":"{\"message\":\"Hello Agent\"}"}' | sam local invoke ServiceRouterFunction
 
 # Start local API
 start-api: build
@@ -46,7 +46,7 @@ start-api: build
 # Tail CloudWatch logs
 logs:
 	@echo "Tailing logs..."
-	sam logs -n AgentRouterFunction --stack-name purrsurance-agent-router --tail
+	sam logs -n ServiceRouterFunction --stack-name purrsurance-service-router --tail
 
 # Clean build artifacts
 clean:

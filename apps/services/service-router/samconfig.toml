@@ -1,9 +1,9 @@
-# SAM configuration file for agent-router service
+# SAM configuration file for service-router service
 version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-agent-router"
+stack_name = "purrsurance-service-router"
 
 [default.build.parameters]
 cached = true
@@ -17,7 +17,7 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
 region = "us-east-1"
-s3_prefix = "agent-router"
+s3_prefix = "service-router"
 parameter_overrides = "Environment=\"prod\" BedrockAgentId=\"2QAS7CGXW9\" BedrockAgentAliasId=\"9UMT64HRVJ\" ChatHistoryTableName=\"agent-operator-prod-ChatHistory\" LogLevel=\"info\""
 
 [default.package.parameters]

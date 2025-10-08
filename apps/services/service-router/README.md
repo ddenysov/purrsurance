@@ -1,4 +1,4 @@
-# Agent Router Service
+# Service Router Service
 
 Lambda function that routes chat messages to AWS Bedrock Agent and manages chat history.
 
@@ -20,7 +20,7 @@ This service provides a REST API endpoint that:
 ## Project Structure
 
 ```
-agent-router/
+service-router/
 ├── app.mjs                    # Main Lambda handler
 ├── bedrockClient.mjs          # AWS Bedrock Agent client
 ├── chatHistoryService.mjs     # DynamoDB chat history service
@@ -69,7 +69,7 @@ make start-api
 
 Invoke with test event:
 ```bash
-sam local invoke AgentRouterFunction -e events/test-chat.json
+sam local invoke ServiceRouterFunction -e events/test-chat.json
 ```
 
 ### Validate Template

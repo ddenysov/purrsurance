@@ -1,5 +1,5 @@
 /**
- * Configuration for Agent Router Lambda Function
+ * Configuration for Service Router Lambda Function
  * 
  * Centralizes all configuration settings from environment variables
  */

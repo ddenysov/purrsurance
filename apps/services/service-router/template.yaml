@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  agent-router
+  service-router
   
   Lambda function that routes chat messages to AWS Bedrock Agent
 
@@ -47,7 +47,7 @@ Parameters:
     Description: Logging level
 
 Resources:
-  AgentRouterFunction:
+  ServiceRouterFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
@@ -78,15 +78,15 @@ Resources:
           Properties:
             Path: /chat
             Method: post
-            RestApiId: !Ref AgentRouterApi
+            RestApiId: !Ref ServiceRouterApi
         OptionsApi:
           Type: Api
           Properties:
             Path: /chat
             Method: options
-            RestApiId: !Ref AgentRouterApi
+            RestApiId: !Ref ServiceRouterApi
 
-  AgentRouterApi:
+  ServiceRouterApi:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
@@ -97,15 +97,15 @@ Resources:
         MaxAge: "'86400'"
 
 Outputs:
-  AgentRouterApi:
-    Description: API Gateway endpoint URL for Agent Router
-    Value: !Sub "https://${AgentRouterApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/chat"
+  ServiceRouterApi:
+    Description: API Gateway endpoint URL for Service Router
+    Value: !Sub "https://${ServiceRouterApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/chat"
   
-  AgentRouterFunction:
-    Description: Agent Router Lambda Function ARN
-    Value: !GetAtt AgentRouterFunction.Arn
+  ServiceRouterFunction:
+    Description: Service Router Lambda Function ARN
+    Value: !GetAtt ServiceRouterFunction.Arn
   
-  AgentRouterFunctionIamRole:
-    Description: Implicit IAM Role created for Agent Router function
-    Value: !GetAtt AgentRouterFunctionRole.Arn
+  ServiceRouterFunctionIamRole:
+    Description: Implicit IAM Role created for Service Router function
+    Value: !GetAtt ServiceRouterFunctionRole.Arn
 
