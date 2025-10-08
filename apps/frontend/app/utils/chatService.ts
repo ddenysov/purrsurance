@@ -2,17 +2,19 @@ import type { BackendChatResponse, BackendErrorResponse } from '~/types'
 import { apiClient } from './apiClient'
 
 /**
- * Chat service configuration
+ * Get chat API configuration from runtime config
  */
-const CHAT_API_CONFIG = {
-  // Production endpoint
-  baseURL: 'https://cbx2umgj5k.execute-api.us-east-1.amazonaws.com/Prod',
+function getChatApiConfig() {
+  const config = useRuntimeConfig()
+  const chatApiUrl = config.public.chatApiUrl as string
   
-  // API path
-  endpoint: '/hello/',
-  
-  // Request timeout (30 seconds for AI processing)
-  timeout: 30000,
+  return {
+    // Full URL from ServiceRouter stack output
+    fullUrl: chatApiUrl,
+    
+    // Request timeout (30 seconds for AI processing)
+    timeout: 30000,
+  }
 }
 
 /**
@@ -50,13 +52,15 @@ export async function sendChatMessage(
       hasGlobalSessionId: !!globalSessionId,
     })
     
-    // Make API request
+    // Get chat API configuration
+    const apiConfig = getChatApiConfig()
+    
+    // Make API request (apiClient will detect full URL and not prepend baseURL)
     const response = await apiClient.post<BackendChatResponse>(
-      CHAT_API_CONFIG.endpoint,
+      apiConfig.fullUrl,
       payload,
       {
-        baseURL: CHAT_API_CONFIG.baseURL,
-        timeout: CHAT_API_CONFIG.timeout,
+        timeout: apiConfig.timeout,
       }
     )
     
@@ -119,9 +123,9 @@ export async function testBackendConnection(): Promise<boolean> {
  * @returns Status information
  */
 export function getChatAPIStatus() {
+  const config = getChatApiConfig()
   return {
-    baseURL: CHAT_API_CONFIG.baseURL,
-    endpoint: CHAT_API_CONFIG.endpoint,
-    timeout: CHAT_API_CONFIG.timeout,
+    fullUrl: config.fullUrl,
+    timeout: config.timeout,
   }
 }

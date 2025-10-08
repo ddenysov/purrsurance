@@ -37,19 +37,35 @@ if ! command -v sam &> /dev/null; then
     exit 1
 fi
 
-# Step 1: Fetch backend URLs if backend stack name is provided
+# Step 1: Fetch backend URLs from service stacks
 SSE_STREAM_URL=""
 API_BASE_URL=""
+CHAT_API_URL=""
+SERVICE_ROUTER_STACK_NAME="purrsurance-service-router"
 BACKEND_CONFIG_SUCCESS=false
 
-if [ -n "$BACKEND_STACK_NAME" ]; then
-    echo -e "${YELLOW}Step 1: Fetching backend service URLs...${NC}"
+echo -e "${YELLOW}Step 1: Fetching backend service URLs...${NC}"
+
+# Get Service Router (Chat) API URL
+if aws cloudformation describe-stacks --stack-name "$SERVICE_ROUTER_STACK_NAME" &> /dev/null; then
+    CHAT_API_URL=$(aws cloudformation describe-stacks \
+        --stack-name "$SERVICE_ROUTER_STACK_NAME" \
+        --query 'Stacks[0].Outputs[?OutputKey==`ServiceRouterApi`].OutputValue' \
+        --output text 2>/dev/null || echo "")
     
-    # Check if backend stack exists
-    if ! aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" &> /dev/null; then
-        echo -e "${YELLOW}⚠ Warning: Backend stack '${BACKEND_STACK_NAME}' not found${NC}"
-        echo -e "${YELLOW}  Will continue with fallback configuration${NC}"
+    if [ -n "$CHAT_API_URL" ]; then
+        echo -e "${GREEN}✓ Chat API URL (ServiceRouter):${NC} ${CHAT_API_URL}"
+        BACKEND_CONFIG_SUCCESS=true
     else
+        echo -e "${YELLOW}⚠ Warning: Could not retrieve Chat API URL from ServiceRouter stack${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ Warning: ServiceRouter stack '${SERVICE_ROUTER_STACK_NAME}' not found${NC}"
+fi
+
+# Get other backend URLs if backend stack name is provided
+if [ -n "$BACKEND_STACK_NAME" ]; then
+    if aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" &> /dev/null; then
         # Get SSE Stream URL
         SSE_STREAM_URL=$(aws cloudformation describe-stacks \
             --stack-name "$BACKEND_STACK_NAME" \
@@ -62,28 +78,36 @@ if [ -n "$BACKEND_STACK_NAME" ]; then
             --query 'Stacks[0].Outputs[?OutputKey==`HelloWorldApi`].OutputValue' \
             --output text 2>/dev/null || echo "")
         
-        if [ -z "$SSE_STREAM_URL" ] || [ -z "$API_BASE_URL" ]; then
-            echo -e "${YELLOW}⚠ Warning: Could not retrieve all backend URLs from stack${NC}"
-            echo -e "${YELLOW}  Will continue with fallback configuration${NC}"
-        else
+        if [ -n "$SSE_STREAM_URL" ]; then
             echo -e "${GREEN}✓ SSE Stream URL:${NC} ${SSE_STREAM_URL}"
-            echo -e "${GREEN}✓ API Base URL:${NC} ${API_BASE_URL}"
-            BACKEND_CONFIG_SUCCESS=true
         fi
+        
+        if [ -n "$API_BASE_URL" ]; then
+            echo -e "${GREEN}✓ API Base URL:${NC} ${API_BASE_URL}"
+        fi
+    else
+        echo -e "${YELLOW}⚠ Warning: Backend stack '${BACKEND_STACK_NAME}' not found${NC}"
     fi
+fi
+
+if [ -z "$CHAT_API_URL" ]; then
+    echo -e "${YELLOW}  Will continue with fallback configuration${NC}"
+    BACKEND_CONFIG_SUCCESS=false
 fi
 
 # Create .env file with fallback values if needed
 if [ "$BACKEND_CONFIG_SUCCESS" = true ]; then
     cat > .env << EOF
-NUXT_PUBLIC_SSE_STREAM_URL=${SSE_STREAM_URL}
-NUXT_PUBLIC_API_BASE_URL=${API_BASE_URL}
+NUXT_PUBLIC_CHAT_API_URL=${CHAT_API_URL}
+NUXT_PUBLIC_SSE_STREAM_URL=${SSE_STREAM_URL:-https://placeholder.example.com/stream}
+NUXT_PUBLIC_API_BASE_URL=${API_BASE_URL:-https://placeholder.example.com/api}
 NUXT_PUBLIC_API_TIMEOUT=10000
 EOF
     echo -e "${GREEN}✓ Created .env file with backend configuration${NC}"
 else
     # Use fallback/placeholder values
     cat > .env << EOF
+NUXT_PUBLIC_CHAT_API_URL=https://placeholder.example.com/chat
 NUXT_PUBLIC_SSE_STREAM_URL=https://placeholder.example.com/stream
 NUXT_PUBLIC_API_BASE_URL=https://placeholder.example.com/api
 NUXT_PUBLIC_API_TIMEOUT=10000

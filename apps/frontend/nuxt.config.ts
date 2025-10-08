@@ -14,6 +14,7 @@ export default defineNuxtConfig({
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
       apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
       sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3002/stream',
+      chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || 'http://localhost:3003/chat',
     }
   },
   

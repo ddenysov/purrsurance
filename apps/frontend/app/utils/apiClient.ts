@@ -91,7 +91,10 @@ class ApiClient {
       ...fetchOptions
     } = options
 
-    const url = `${baseURL}${endpoint}`
+    // Check if endpoint is already a full URL (starts with http:// or https://)
+    const isFullUrl = /^https?:\/\//i.test(endpoint)
+    const url = isFullUrl ? endpoint : `${baseURL}${endpoint}`
+    
     const requestHeaders = {
       ...this.config.headers,
       ...headers
