@@ -17,10 +17,8 @@ Globals:
 Parameters:
   Environment:
     Type: String
-    Default: dev
+    Default: prod
     AllowedValues:
-      - dev
-      - staging
       - prod
     Description: Environment name
   

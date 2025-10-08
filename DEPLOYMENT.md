@@ -30,9 +30,9 @@ sam deploy --guided
 ```
 
 During the guided deployment, you'll be asked to provide:
-- **Stack Name**: e.g., `purrsurance-dev`, `purrsurance-prod`
+- **Stack Name**: e.g., `agent-operator-prod`
 - **Region**: e.g., `us-east-1`
-- **Environment**: `dev`, `staging`, or `prod`
+- **Environment**: `prod`
 - **BedrockAgentId**: Your AWS Bedrock Agent ID
 - **BedrockAgentAliasId**: Your Bedrock Agent Alias ID (default: `TSTALIASID`)
 
@@ -51,7 +51,7 @@ cd apps/chat
 
 For example:
 ```bash
-./update-env.sh purrsurance-dev
+./update-env.sh agent-operator-prod
 ```
 
 This script will:
@@ -136,7 +136,7 @@ Create `apps/chat/.env` with:
 NUXT_PUBLIC_SSE_STREAM_URL=https://your-lambda-url.lambda-url.us-east-1.on.aws/stream
 NUXT_PUBLIC_API_BASE_URL=https://your-api-gateway.execute-api.us-east-1.amazonaws.com/Prod
 NUXT_PUBLIC_API_TIMEOUT=10000
-NUXT_PUBLIC_APP_ENV=development
+NUXT_PUBLIC_APP_ENV=production
 ```
 
 ## Production Deployment
@@ -148,7 +148,7 @@ cd apps/services
 
 # Deploy to production
 sam deploy \
-  --stack-name purrsurance-prod \
+  --stack-name agent-operator-prod \
   --parameter-overrides Environment=prod \
   --no-confirm-changeset
 ```
@@ -159,7 +159,7 @@ sam deploy \
 cd apps/chat
 
 # Update configuration for production
-./update-env.sh purrsurance-prod
+./update-env.sh agent-operator-prod
 NUXT_PUBLIC_APP_ENV=production pnpm build
 
 # Deploy the .output directory to your hosting provider
@@ -169,34 +169,20 @@ NUXT_PUBLIC_APP_ENV=production pnpm build
 # - S3: aws s3 sync .output/public s3://your-bucket
 ```
 
-## Environment-Specific Configuration
+## Production Configuration
 
-For multiple environments, create separate `.env` files:
+The production `.env` file is generated automatically:
 
 ```bash
-# Development
-apps/chat/.env.development
-
-# Staging
-apps/chat/.env.staging
-
 # Production
 apps/chat/.env.production
 ```
 
-Generate each file with the update script:
+Generate the production configuration file:
 
 ```bash
-# Development
-./update-env.sh purrsurance-dev
-mv .env .env.development
-
-# Staging
-./update-env.sh purrsurance-staging
-mv .env .env.staging
-
 # Production
-./update-env.sh purrsurance-prod
+./update-env.sh agent-operator-prod
 mv .env .env.production
 ```
 
@@ -252,7 +238,7 @@ jobs:
         run: |
           cd apps/chat
           chmod +x update-env.sh
-          ./update-env.sh purrsurance-prod
+          ./update-env.sh agent-operator-prod
       
       - name: Build frontend
         run: |

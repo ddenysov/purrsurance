@@ -22,12 +22,10 @@ Globals:
       LogFormat: JSON # Log format: JSON for structured logs, Text for plain text logs
 
 Parameters: # Input parameters that can be passed when deploying the stack
-  Environment: # Environment identifier (dev/staging/prod)
+  Environment: # Environment identifier (prod)
     Type: String # Parameter type: string value
-    Default: dev # Default value if not specified during deployment
+    Default: prod # Default value if not specified during deployment
     AllowedValues: # List of valid values for this parameter
-      - dev # Development environment
-      - staging # Staging/testing environment
       - prod # Production environment
     Description: Environment name # Human-readable description of the parameter
   

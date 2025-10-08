@@ -130,14 +130,8 @@ cd apps/services
 # Build (validates template)
 sam build
 
-# Deploy to dev
-sam deploy --config-env dev
-
-# Deploy to staging
-sam deploy --config-env staging
-
 # Deploy to production
-sam deploy --config-env prod
+sam deploy
 ```
 
 ### Get Agent Information
@@ -146,11 +140,11 @@ After deployment, get the supervisor agent details:
 
 ```bash
 # Get all outputs
-sam list stack-outputs --stack-name agent-operator-dev
+sam list stack-outputs --stack-name agent-operator-prod
 
 # Get specific output
 aws cloudformation describe-stacks \
-  --stack-name agent-operator-dev \
+  --stack-name agent-operator-prod \
   --query 'Stacks[0].Outputs[?OutputKey==`SupervisorAgentId`].OutputValue' \
   --output text
 ```
@@ -249,21 +243,8 @@ Policies:
 | `SupervisorAgentArn` | Agent ARN | IAM policies, monitoring |
 | `SupervisorAgentRoleArn` | IAM Role ARN | Reference, auditing |
 
-## Environment-Specific Configuration
+## Production Configuration
 
-### Development
-- **Name**: SupervisorAgent-Dev
-- **Purpose**: Testing routing logic
-- **TTL**: 600 seconds
-- **Model**: Claude 3.5 Haiku
-
-### Staging
-- **Name**: SupervisorAgent-Staging
-- **Purpose**: Pre-production validation
-- **TTL**: 600 seconds
-- **Model**: Claude 3.5 Haiku
-
-### Production
 - **Name**: SupervisorAgent-Prod
 - **Purpose**: Production routing
 - **TTL**: 600 seconds

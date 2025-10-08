@@ -1,4 +1,4 @@
-.PHONY: help build validate deploy deploy-dev deploy-staging deploy-prod test-local clean logs
+.PHONY: help build validate deploy test-local clean logs
 
 # Default target
 help:
@@ -6,9 +6,6 @@ help:
 	@echo "  make build          - Build SAM application"
 	@echo "  make validate       - Validate SAM template"
 	@echo "  make deploy         - Build and deploy to PRODUCTION"
-	@echo "  make deploy-dev     - Build and deploy to DEV environment"
-	@echo "  make deploy-staging - Build and deploy to STAGING environment"
-	@echo "  make deploy-prod    - Build and deploy to PRODUCTION environment"
 	@echo "  make test-local     - Start local API for testing"
 	@echo "  make logs           - Tail production Lambda logs"
 	@echo "  make clean          - Clean build artifacts"
@@ -27,23 +24,8 @@ validate:
 deploy: build
 	@echo ">>> Deploying to PRODUCTION environment..."
 	@echo "⚠️  WARNING: You are about to deploy to PRODUCTION!"
-	sam deploy --region us-east-1 --stack-name agent-operator --parameter-overrides BedrockAgentId="2QAS7CGXW9"
+	sam deploy --region us-east-1 --stack-name agent-operator-prod --parameter-overrides BedrockAgentId="2QAS7CGXW9"
 	@echo "✅ Successfully deployed to PRODUCTION!"
-
-# Deploy to DEV environment
-deploy-dev: build
-	@echo ">>> Deploying to DEV environment..."
-	sam deploy --config-env dev
-	@echo "✅ Successfully deployed to DEV!"
-
-# Deploy to STAGING environment
-deploy-staging: build
-	@echo ">>> Deploying to STAGING environment..."
-	sam deploy --config-env staging
-	@echo "✅ Successfully deployed to STAGING!"
-
-# Deploy to PRODUCTION environment (same as deploy, but explicit)
-deploy-prod: deploy
 
 # Start local API for testing
 test-local:

@@ -203,7 +203,7 @@ sam deploy \
   --parameter-overrides \
     BedrockAgentId=YOUR_AGENT_ID \
     BedrockAgentAliasId=TSTALIASID \
-    Environment=dev
+    Environment=prod
 ```
 
 ### Deploy with Parameters
@@ -211,16 +211,16 @@ sam deploy \
 Create `samconfig.toml`:
 
 ```toml
-[dev.deploy.parameters]
-stack_name = "purrsurance-dev"
+[default.deploy.parameters]
+stack_name = "agent-operator-prod"
 s3_bucket = "your-deployment-bucket"
 region = "us-east-1"
-parameter_overrides = "BedrockAgentId=AGENT_ID BedrockAgentAliasId=TSTALIASID Environment=dev"
+parameter_overrides = "BedrockAgentId=AGENT_ID BedrockAgentAliasId=TSTALIASID Environment=prod"
 ```
 
 Then deploy:
 ```bash
-sam deploy --config-env dev
+sam deploy
 ```
 
 ## Architecture
@@ -261,19 +261,11 @@ sam deploy --config-env dev
    ./start-local-api.sh real
    ```
 
-3. **Deploy to Dev:**
-   - Test in AWS environment
-   - Verify IAM permissions
-   - Check CloudWatch logs
-   ```bash
-   sam deploy --config-env dev
-   ```
-
-4. **Deploy to Production:**
+3. **Deploy to Production:**
    - Full testing completed
    - Monitoring configured
    ```bash
-   sam deploy --config-env prod
+   sam deploy
    ```
 
 ## Troubleshooting
@@ -335,7 +327,7 @@ View logs locally:
 
 View logs in AWS:
 ```bash
-sam logs -n HelloWorldFunction --stack-name purrsurance-dev --tail
+sam logs -n HelloWorldFunction --stack-name agent-operator-prod --tail
 ```
 
 ## Cost Estimation

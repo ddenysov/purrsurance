@@ -94,25 +94,19 @@ cd apps/services
 # Build (no code to compile, validates template)
 sam build
 
-# Deploy to dev
-sam deploy --config-env dev
-
-# Deploy to staging
-sam deploy --config-env staging
-
 # Deploy to production
-sam deploy --config-env prod
+sam deploy
 ```
 
 ### Get Agent Information
 
 ```bash
 # Get all outputs
-sam list stack-outputs --stack-name agent-operator-dev
+sam list stack-outputs --stack-name agent-operator-prod
 
 # Get specific output (example)
 aws cloudformation describe-stacks \
-  --stack-name agent-operator-dev \
+  --stack-name agent-operator-prod \
   --query 'Stacks[0].Outputs[?OutputKey==`VetDocAgentId`].OutputValue' \
   --output text
 ```

@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
       apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
-      appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'development',
+      appEnv: process.env.NUXT_PUBLIC_APP_ENV || 'production',
       sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3002/stream',
     }
   },

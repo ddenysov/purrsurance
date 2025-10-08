@@ -5,7 +5,7 @@
 set -e
 
 # Default stack name (can be overridden by first argument)
-STACK_NAME="${1:-agent-operator}"
+STACK_NAME="${1:-agent-operator-prod}"
 
 echo "📦 Fetching outputs from CloudFormation stack: $STACK_NAME"
 
@@ -61,7 +61,7 @@ cat > "$ENV_FILE" << EOF
 NUXT_PUBLIC_API_BASE_URL=${API_URL:-https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/Prod}
 NUXT_PUBLIC_SSE_STREAM_URL=$SSE_URL
 NUXT_PUBLIC_API_TIMEOUT=10000
-NUXT_PUBLIC_APP_ENV=development
+NUXT_PUBLIC_APP_ENV=production
 EOF
 
 echo ""

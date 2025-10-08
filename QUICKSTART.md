@@ -11,7 +11,7 @@ cd apps/services
 sam build && sam deploy --guided
 ```
 
-**Note**: Write down your stack name (e.g., `purrsurance-dev`)
+**Note**: Write down your stack name (e.g., `agent-operator-prod`)
 
 ### 2️⃣ Configure Frontend
 
@@ -59,20 +59,14 @@ That's it! The app will use the new URLs automatically.
 
 ## 💡 Pro Tips
 
-1. **Multiple environments?** Use different stack names:
-   ```bash
-   sam deploy --stack-name purrsurance-dev
-   sam deploy --stack-name purrsurance-prod
-   ```
-
-2. **Need manual config?** Get URLs with:
+1. **Need manual config?** Get URLs with:
    ```bash
    aws cloudformation describe-stacks \
      --stack-name your-stack-name \
      --query 'Stacks[0].Outputs'
    ```
 
-3. **Troubleshooting?** Check CloudFormation outputs match your `.env`:
+2. **Troubleshooting?** Check CloudFormation outputs match your `.env`:
    ```bash
    cat apps/chat/.env
    ```
