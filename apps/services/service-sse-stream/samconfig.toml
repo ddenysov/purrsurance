@@ -1,0 +1,33 @@
+version = 0.1
+
+[default]
+[default.global.parameters]
+stack_name = "purrsurance-sse-stream"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+region = "us-east-1"
+parameter_overrides = [
+    "Environment=prod",
+    "LogLevel=info",
+    "EventPublisherStackName=purrsurance-event-publisher",
+    "SSEPollInterval=2000",
+    "SSEMaxDuration=300000",
+    "SSEKeepaliveInterval=30000"
+]
+
+[default.package.parameters]
+resolve_s3 = true
+
+[default.sync.parameters]
+watch = true
+
+[default.local_invoke.parameters]
+env_vars = "env.json"
+

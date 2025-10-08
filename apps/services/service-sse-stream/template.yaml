@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  service-sse-stream
+  
+  Lambda function with SSE streaming that reads events from DynamoDB
+
+Globals:
+  Function:
+    Timeout: 300
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+  
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - warn
+      - info
+      - debug
+    Description: Logging level
+  
+  EventPublisherStackName:
+    Type: String
+    Default: purrsurance-event-publisher
+    Description: Name of the Event Publisher stack to import from
+  
+  SSEPollInterval:
+    Type: Number
+    Default: 2000
+    Description: Interval between DynamoDB polls in milliseconds
+  
+  SSEMaxDuration:
+    Type: Number
+    Default: 300000
+    Description: Maximum stream duration in milliseconds (5 minutes)
+  
+  SSEKeepaliveInterval:
+    Type: Number
+    Default: 30000
+    Description: Keep-alive heartbeat interval in milliseconds
+
+Resources:
+  # Lambda Function for SSE streaming
+  SSEStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: app.lambdaHandler
+      Description: Streams events from DynamoDB using SSE protocol
+      MemorySize: 512
+      Timeout: 300
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          LOG_LEVEL: !Ref LogLevel
+          NODE_ENV: production
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+          EVENTS_TABLE_NAME:
+            Fn::ImportValue: !Sub '${EventPublisherStackName}-EventsTableName'
+          SSE_POLL_INTERVAL: !Ref SSEPollInterval
+          SSE_MAX_DURATION: !Ref SSEMaxDuration
+          SSE_KEEPALIVE_INTERVAL: !Ref SSEKeepaliveInterval
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:Query
+              - dynamodb:GetItem
+            Resource:
+              Fn::ImportValue: !Sub '${EventPublisherStackName}-EventsTableArn'
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+        Cors:
+          AllowOrigins:
+            - '*'
+          AllowMethods:
+            - GET
+          AllowHeaders:
+            - '*'
+          MaxAge: 600
+
+Outputs:
+  SSEStreamFunctionUrl:
+    Description: Lambda Function URL for SSE streaming
+    Value: !GetAtt SSEStreamFunctionUrl.FunctionUrl
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionUrl'
+  
+  SSEStreamFunction:
+    Description: SSE Stream Lambda Function ARN
+    Value: !GetAtt SSEStreamFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionArn'
+  
+  SSEStreamFunctionIamRole:
+    Description: Implicit IAM Role created for SSE Stream function
+    Value: !GetAtt SSEStreamFunctionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionRoleArn'
+

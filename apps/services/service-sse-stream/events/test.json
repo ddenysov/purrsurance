@@ -1,0 +1,13 @@
+{
+  "queryStringParameters": {
+    "sessionId": "test-session-123"
+  },
+  "httpMethod": "GET",
+  "headers": {
+    "Accept": "text/event-stream"
+  },
+  "requestContext": {
+    "requestId": "test-request-123"
+  }
+}
+

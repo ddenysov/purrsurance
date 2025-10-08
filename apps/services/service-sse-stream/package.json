@@ -1,0 +1,16 @@
+{
+  "name": "service-sse-stream",
+  "version": "1.0.0",
+  "description": "Lambda function with Server-Sent Events streaming for real-time event delivery",
+  "type": "module",
+  "main": "app.mjs",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.504.0",
+    "@aws-sdk/lib-dynamodb": "^3.504.0"
+  },
+  "devDependencies": {}
+}
+
