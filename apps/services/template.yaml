@@ -42,12 +42,12 @@ Parameters:
 
 Resources:
   # VetDocAgent - deployed as separate stack
-#  VetDocAgentStack:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL: ./vetdoc-agent/template.yaml
-#      Parameters:
-#        Environment: !Ref Environment
+  VetDocAgentStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./vetdoc-agent/template.yaml
+      Parameters:
+        Environment: !Ref Environment
 
   # SupervisorAgent - deployed as separate stack
   SupervisorAgentStack:
@@ -298,7 +298,7 @@ Resources:
       FunctionName: !GetAtt GetPolicyDetailsFunction.Arn
       Principal: bedrock.amazonaws.com
       # Теперь SourceArn ссылается на ARN агента, созданного в этом же шаблоне
-      SourceArn: arn:aws:bedrock:us-east-1:057367573361:agent/OLHUNALEOH
+      SourceArn: arn:aws:bedrock:us-east-1:057367573361:agent/2QAS7CGXW9
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group

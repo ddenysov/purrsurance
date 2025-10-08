@@ -20,7 +20,7 @@ s3_prefix = "agent-operator"
 region = "us-east-1"
 disable_rollback = false
 image_repositories = []
-parameter_overrides = "Environment=\"dev\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"TSTALIASID\" VetDocAgentName=\"VetDocAgent\" VetDocAgentFoundationModel=\"us.anthropic.claude-3-5-sonnet-20241022-v2:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""
+parameter_overrides = "Environment=\"dev\" BedrockAgentId=\"2QAS7CGXW9\" BedrockAgentAliasId=\"9UMT64HRVJ\" VetDocAgentName=\"VetDocAgent\" VetDocAgentFoundationModel=\"us.anthropic.claude-3-5-sonnet-20241022-v2:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""
 
 [default.package.parameters]
 resolve_s3 = true
@@ -45,7 +45,7 @@ resolve_s3 = true
 s3_prefix = "agent-operator-dev"
 region = "us-east-1"
 disable_rollback = false
-parameter_overrides = "Environment=\"dev\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"TSTALIASID\" VetDocAgentName=\"VetDocAgent-Dev\" VetDocAgentFoundationModel=\"us.anthropic.claude-3-5-sonnet-20241022-v2:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent-Dev\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""
+parameter_overrides = "Environment=\"dev\" BedrockAgentId=\"2QAS7CGXW9\" BedrockAgentAliasId=\"9UMT64HRVJ\" VetDocAgentName=\"VetDocAgent-Dev\" VetDocAgentFoundationModel=\"us.anthropic.claude-3-5-sonnet-20241022-v2:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent-Dev\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""
 
 # Staging environment configuration
 [staging.global.parameters]
@@ -58,7 +58,7 @@ resolve_s3 = true
 s3_prefix = "agent-operator-staging"
 region = "us-east-1"
 disable_rollback = false
-parameter_overrides = "Environment=\"staging\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"HCIMPAKGK2\" VetDocAgentName=\"VetDocAgent-Staging\" VetDocAgentFoundationModel=\"anthropic.claude-3-5-sonnet-20240620-v1:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent-Staging\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""
+parameter_overrides = "Environment=\"staging\" BedrockAgentId=\"2QAS7CGXW9\" BedrockAgentAliasId=\"9UMT64HRVJ\" VetDocAgentName=\"VetDocAgent-Staging\" VetDocAgentFoundationModel=\"anthropic.claude-3-5-sonnet-20240620-v1:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent-Staging\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""
 
 # Production environment configuration
 [prod.global.parameters]
@@ -71,4 +71,4 @@ resolve_s3 = true
 s3_prefix = "agent-operator-prod"
 region = "us-east-1"
 disable_rollback = false
-parameter_overrides = "Environment=\"prod\" BedrockAgentId=\"OLHUNALEOH\" BedrockAgentAliasId=\"HCIMPAKGK2\" VetDocAgentName=\"VetDocAgent-Prod\" VetDocAgentFoundationModel=\"anthropic.claude-3-5-sonnet-20240620-v1:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent-Prod\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""
+parameter_overrides = "Environment=\"prod\" BedrockAgentId=\"2QAS7CGXW9\" BedrockAgentAliasId=\"9UMT64HRVJ\" VetDocAgentName=\"VetDocAgent-Prod\" VetDocAgentFoundationModel=\"anthropic.claude-3-5-sonnet-20240620-v1:0\" VetDocAgentIdleSessionTTL=\"600\" SupervisorAgentName=\"SupervisorAgent-Prod\" SupervisorAgentFoundationModel=\"anthropic.claude-3-5-haiku-20241022-v1:0\" SupervisorAgentIdleSessionTTL=\"600\""

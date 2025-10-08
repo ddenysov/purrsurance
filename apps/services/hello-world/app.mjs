@@ -108,7 +108,7 @@ export const lambdaHandler = async (event, context) => {
     // Parse request body
     const body = parseRequestBody(event);
     const { 
-      message = 'Hello, how to book a vet doctor visit??', 
+      message = 'My policy ID is abcd-1234',
       sessionId, 
       globalSessionId 
     } = body;
