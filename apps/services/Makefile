@@ -27,7 +27,7 @@ validate:
 deploy: build
 	@echo ">>> Deploying to PRODUCTION environment..."
 	@echo "⚠️  WARNING: You are about to deploy to PRODUCTION!"
-	sam deploy --region us-east-1 --stack-name agent-operator
+	sam deploy --region us-east-1 --stack-name agent-operator --parameter-overrides BedrockAgentId="2QAS7CGXW9"
 	@echo "✅ Successfully deployed to PRODUCTION!"
 
 # Deploy to DEV environment

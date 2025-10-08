@@ -23,7 +23,7 @@ fi
 
 # Build the function
 echo "🔨 Building Lambda function..."
-cd .. && sam build && cd hello-world || exit 1
+cd .. && sam build --no-cached && cd hello-world || exit 1
 
 # Invoke locally
 echo "🚀 Invoking Lambda function..."
