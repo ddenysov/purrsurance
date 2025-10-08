@@ -1,11 +1,11 @@
 {
-  "name": "hello-world",
+  "name": "agent-router",
   "version": "1.0.0",
-  "description": "Lambda function with AWS Bedrock Agent integration",
+  "description": "Lambda function that routes chat messages to AWS Bedrock Agent",
   "type": "module",
   "main": "app.mjs",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
+  "repository": "",
+  "author": "Purrsurance Team",
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-bedrock-agent-runtime": "^3.600.0",

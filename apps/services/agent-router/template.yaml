@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  agent-router
+  
+  Lambda function that routes chat messages to AWS Bedrock Agent
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+  
+  BedrockAgentId:
+    Type: String
+    Description: AWS Bedrock Agent ID
+    NoEcho: true
+  
+  BedrockAgentAliasId:
+    Type: String
+    Default: TSTALIASID
+    Description: AWS Bedrock Agent Alias ID
+  
+  ChatHistoryTableName:
+    Type: String
+    Description: DynamoDB table name for chat history
+  
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - warn
+      - info
+      - debug
+    Description: Logging level
+
+Resources:
+  AgentRouterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: app.lambdaHandler
+      Description: Routes chat messages to AWS Bedrock Agent
+      MemorySize: 512
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          BEDROCK_AGENT_ID: !Ref BedrockAgentId
+          BEDROCK_AGENT_ALIAS_ID: !Ref BedrockAgentAliasId
+          CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTableName
+          LOG_LEVEL: !Ref LogLevel
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      Policies:
+        - Statement:
+            - Sid: InvokeBedrock
+              Effect: Allow
+              Action:
+                - bedrock:InvokeAgent
+                - bedrock:InvokeModel
+              Resource: '*'
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatHistoryTableName
+      Events:
+        ChatApi:
+          Type: Api
+          Properties:
+            Path: /chat
+            Method: post
+            RestApiId: !Ref AgentRouterApi
+        OptionsApi:
+          Type: Api
+          Properties:
+            Path: /chat
+            Method: options
+            RestApiId: !Ref AgentRouterApi
+
+  AgentRouterApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowMethods: "'GET,POST,OPTIONS'"
+        MaxAge: "'86400'"
+
+Outputs:
+  AgentRouterApi:
+    Description: API Gateway endpoint URL for Agent Router
+    Value: !Sub "https://${AgentRouterApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/chat"
+  
+  AgentRouterFunction:
+    Description: Agent Router Lambda Function ARN
+    Value: !GetAtt AgentRouterFunction.Arn
+  
+  AgentRouterFunctionIamRole:
+    Description: Implicit IAM Role created for Agent Router function
+    Value: !GetAtt AgentRouterFunctionRole.Arn
+
