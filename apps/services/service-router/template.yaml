@@ -22,15 +22,9 @@ Parameters:
       - prod
     Description: Environment name
   
-  BedrockAgentId:
+  IntentionClassifierStackName:
     Type: String
-    Description: AWS Bedrock Agent ID
-    NoEcho: true
-  
-  BedrockAgentAliasId:
-    Type: String
-    Default: TSTALIASID
-    Description: AWS Bedrock Agent Alias ID
+    Description: Name of the IntentionClassifierAgent CloudFormation stack (e.g. purrsurance-agent-intention-classifier)
   
   ChatHistoryTableName:
     Type: String
@@ -57,8 +51,10 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Ref Environment
-          BEDROCK_AGENT_ID: !Ref BedrockAgentId
-          BEDROCK_AGENT_ALIAS_ID: !Ref BedrockAgentAliasId
+          BEDROCK_AGENT_ID: !ImportValue
+            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentId'
+          BEDROCK_AGENT_ALIAS_ID: !ImportValue
+            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentAliasId'
           CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTableName
           LOG_LEVEL: !Ref LogLevel
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
