@@ -13,7 +13,7 @@ parallel = true
 lint = true
 
 [default.deploy.parameters]
-capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "agent-operator"
@@ -39,7 +39,7 @@ warm_containers = "EAGER"
 stack_name = "agent-operator-dev"
 
 [dev.deploy.parameters]
-capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "agent-operator-dev"
@@ -52,7 +52,7 @@ parameter_overrides = "Environment=\"dev\" BedrockAgentId=\"OLHUNALEOH\" Bedrock
 stack_name = "agent-operator-staging"
 
 [staging.deploy.parameters]
-capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "agent-operator-staging"
@@ -65,7 +65,7 @@ parameter_overrides = "Environment=\"staging\" BedrockAgentId=\"OLHUNALEOH\" Bed
 stack_name = "agent-operator-prod"
 
 [prod.deploy.parameters]
-capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
 s3_prefix = "agent-operator-prod"

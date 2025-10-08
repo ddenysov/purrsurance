@@ -50,12 +50,12 @@ Resources:
 #        Environment: !Ref Environment
 
   # SupervisorAgent - deployed as separate stack
-#  SupervisorAgentStack:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL: ./supervisor-agent/template.yaml
-#      Parameters:
-#        Environment: !Ref Environment
+  SupervisorAgentStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./supervisor-agent/template.yaml
+      Parameters:
+        Environment: !Ref Environment
 
   EventsTopic:
     Type: AWS::SNS::Topic
