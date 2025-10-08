@@ -39,101 +39,24 @@ Parameters:
     Default: TSTALIASID
     Description: AWS Bedrock Agent Alias ID
 
-  # VetDocAgent Configuration
-  VetDocAgentName:
-    Type: String
-    Default: VetDocAgent
-    Description: Name for the Veterinary Documentation Agent
-  
-  VetDocAgentFoundationModel:
-    Type: String
-    Default: anthropic.claude-3-5-sonnet-20240620-v1:0
-    Description: Foundation model for VetDocAgent (Claude Sonnet 3.5)
-    AllowedValues:
-      - anthropic.claude-3-5-sonnet-20240620-v1:0
-      - anthropic.claude-3-sonnet-20240229-v1:0
-  
-  VetDocAgentInstruction:
-    Type: String
-    Default: |
-      You are VetDocAgent, a specialized veterinary documentation assistant for Purrsurance pet insurance.
-      
-      Your role is to help veterinarians and pet insurance agents with:
-      - Medical documentation and record-keeping
-      - Insurance policy explanations
-      - Claims processing guidance
-      - Veterinary medical knowledge
-      - Pet health information
-      
-      Always provide accurate, professional, and helpful information.
-      When discussing medical topics, remind users to consult with licensed veterinarians for specific cases.
-      For insurance-related questions, reference policy documents and standard procedures.
-    Description: System instruction/prompt for VetDocAgent
-  
-  VetDocAgentIdleSessionTTL:
-    Type: Number
-    Default: 600
-    MinValue: 60
-    MaxValue: 3600
-    Description: Idle session timeout in seconds (60-3600)
 
-  # SupervisorAgent Configuration
-  SupervisorAgentName:
-    Type: String
-    Default: SupervisorAgent
-    Description: Name for the Supervisor/Router Agent
-  
-  SupervisorAgentFoundationModel:
-    Type: String
-    Default: anthropic.claude-3-5-haiku-20241022-v1:0
-    Description: Foundation model for SupervisorAgent (Claude 3.5 Haiku for fast routing)
-    AllowedValues:
-      - anthropic.claude-3-haiku-20240307-v1:0
-
-  SupervisorAgentInstruction:
-    Type: String
-    Default: |
-      You are SupervisorAgent, an intelligent request router for the Purrsurance pet insurance system.
-      
-      Your primary role is to analyze incoming user requests and route them to the appropriate specialized agent:
-      
-      **Routing Guidelines:**
-      
-      1. **VetDocAgent** - Route requests about:
-         - Veterinary medical documentation
-         - Medical record keeping
-         - Veterinary knowledge and procedures
-         - Pet health conditions and symptoms
-         - Medical terminology
-      
-      2. **Insurance/Policy Questions** - Route requests about:
-         - Policy coverage and benefits
-         - Claims processing and status
-         - Premium calculations
-         - Policy terms and conditions
-         - Insurance product information
-      
-      3. **General Inquiries** - Handle directly:
-         - Greeting and general conversation
-         - Navigation help
-         - System status questions
-         - Simple FAQs
-      
-      **Response Format:**
-      When routing, clearly indicate which agent should handle the request and why.
-      For general inquiries, provide a brief, helpful response directly.
-      
-      **Tone:** Professional, efficient, and helpful.
-      **Goal:** Ensure users reach the right specialist quickly.
-    Description: System instruction/prompt for SupervisorAgent routing logic
-  
-  SupervisorAgentIdleSessionTTL:
-    Type: Number
-    Default: 600
-    MinValue: 60
-    MaxValue: 3600
-    Description: Idle session timeout in seconds for SupervisorAgent (60-3600)
 Resources:
+  # VetDocAgent - deployed as separate stack
+#  VetDocAgentStack:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL: ./vetdoc-agent/template.yaml
+#      Parameters:
+#        Environment: !Ref Environment
+
+  # SupervisorAgent - deployed as separate stack
+#  SupervisorAgentStack:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL: ./supervisor-agent/template.yaml
+#      Parameters:
+#        Environment: !Ref Environment
+
   EventsTopic:
     Type: AWS::SNS::Topic
     Properties:
@@ -353,140 +276,7 @@ Resources:
             Path: /chat-history
             Method: get
 
-  VetDocAgentRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub '${AWS::StackName}-VetDocAgentRole'
-      Description: IAM role for VetDocAgent to invoke Bedrock foundation models
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: bedrock.amazonaws.com
-            Action: sts:AssumeRole
-            Condition:
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
-              ArnLike:
-                aws:SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
-      Policies:
-        - PolicyName: BedrockModelInvokePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - bedrock:InvokeModel
-                  - bedrock:InvokeModelWithResponseStream
-                Resource:
-                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-*'
-      Tags:
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Agent
-          Value: VetDocAgent
 
-  VetDocAgent:
-    Type: AWS::Bedrock::Agent
-    Properties:
-      AgentName: !Ref VetDocAgentName
-      Description: Veterinary documentation assistant for Purrsurance pet insurance
-      AgentResourceRoleArn: !GetAtt VetDocAgentRole.Arn
-      FoundationModel: !Ref VetDocAgentFoundationModel
-      Instruction: !Ref VetDocAgentInstruction
-      IdleSessionTTLInSeconds: !Ref VetDocAgentIdleSessionTTL
-      AutoPrepare: true
-      Tags:
-        Environment: !Ref Environment
-        Service: VetDocAgent
-        ManagedBy: SAM
-
-  VetDocAgentAlias:
-    Type: AWS::Bedrock::AgentAlias
-    Properties:
-      AgentId: !Ref VetDocAgent
-      AgentAliasName: !Sub '${Environment}-alias'
-      Description: !Sub 'Agent alias for ${Environment} environment'
-      Tags:
-        Environment: !Ref Environment
-        Agent: VetDocAgent
-
-  SupervisorAgentRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub '${AWS::StackName}-SupervisorAgentRole'
-      Description: IAM role for SupervisorAgent to invoke Bedrock foundation models and route to other agents
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: bedrock.amazonaws.com
-            Action: sts:AssumeRole
-            Condition:
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
-              ArnLike:
-                aws:SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
-      Policies:
-        - PolicyName: BedrockModelInvokePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - bedrock:InvokeModel
-                  - bedrock:InvokeModelWithResponseStream
-                Resource:
-                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-*'
-        - PolicyName: BedrockAgentInvokePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - bedrock:InvokeAgent
-                Resource:
-                  - !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
-      Tags:
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Agent
-          Value: SupervisorAgent
-        - Key: Role
-          Value: Supervisor
-
-  SupervisorAgent:
-    Type: AWS::Bedrock::Agent
-    Properties:
-      AgentName: !Ref SupervisorAgentName
-      Description: Supervisor agent with routing capabilities for Purrsurance system
-      AgentResourceRoleArn: !GetAtt SupervisorAgentRole.Arn
-      FoundationModel: !Ref SupervisorAgentFoundationModel
-      Instruction: !Ref SupervisorAgentInstruction
-      IdleSessionTTLInSeconds: !Ref SupervisorAgentIdleSessionTTL
-      AutoPrepare: true
-      Tags:
-        Environment: !Ref Environment
-        Service: SupervisorAgent
-        ManagedBy: SAM
-        Purpose: Routing
-
-  SupervisorAgentAlias:
-    Type: AWS::Bedrock::AgentAlias
-    Properties:
-      AgentId: !Ref SupervisorAgent
-      AgentAliasName: !Sub '${Environment}-supervisor-alias'
-      Description: !Sub 'Supervisor agent alias for ${Environment} environment'
-      Tags:
-        Environment: !Ref Environment
-        Agent: SupervisorAgent
-        Role: Supervisor
 
   SSEHttpApi:
     Type: AWS::Serverless::HttpApi
@@ -587,46 +377,4 @@ Outputs:
     Description: "GetChatHistory Lambda Function ARN"
     Value: !GetAtt GetChatHistoryFunction.Arn
 
-  VetDocAgentId:
-    Description: "VetDocAgent Bedrock Agent ID"
-    Value: !Ref VetDocAgent
-    Export:
-      Name: !Sub '${AWS::StackName}-VetDocAgentId'
-  
-  VetDocAgentAliasId:
-    Description: "VetDocAgent Alias ID"
-    Value: !GetAtt VetDocAgentAlias.AgentAliasId
-    Export:
-      Name: !Sub '${AWS::StackName}-VetDocAgentAliasId'
-  
-  VetDocAgentArn:
-    Description: "VetDocAgent ARN"
-    Value: !GetAtt VetDocAgent.AgentArn
-    Export:
-      Name: !Sub '${AWS::StackName}-VetDocAgentArn'
-  
-  VetDocAgentRoleArn:
-    Description: "VetDocAgent IAM Role ARN"
-    Value: !GetAtt VetDocAgentRole.Arn
 
-  SupervisorAgentId:
-    Description: "SupervisorAgent Bedrock Agent ID"
-    Value: !Ref SupervisorAgent
-    Export:
-      Name: !Sub '${AWS::StackName}-SupervisorAgentId'
-  
-  SupervisorAgentAliasId:
-    Description: "SupervisorAgent Alias ID"
-    Value: !GetAtt SupervisorAgentAlias.AgentAliasId
-    Export:
-      Name: !Sub '${AWS::StackName}-SupervisorAgentAliasId'
-  
-  SupervisorAgentArn:
-    Description: "SupervisorAgent ARN"
-    Value: !GetAtt SupervisorAgent.AgentArn
-    Export:
-      Name: !Sub '${AWS::StackName}-SupervisorAgentArn'
-  
-  SupervisorAgentRoleArn:
-    Description: "SupervisorAgent IAM Role ARN"
-    Value: !GetAtt SupervisorAgentRole.Arn

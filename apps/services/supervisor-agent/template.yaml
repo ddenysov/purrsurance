@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SupervisorAgent Configuration
+  
+  Supervisor/Router Agent for Purrsurance pet insurance system
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Environment name
+
+  # SupervisorAgent Configuration
+  SupervisorAgentName:
+    Type: String
+    Default: SupervisorAgent
+    Description: Name for the Supervisor/Router Agent
+  
+  SupervisorAgentFoundationModel:
+    Type: String
+    Default: anthropic.claude-3-5-haiku-20241022-v1:0
+    Description: Foundation model for SupervisorAgent (Claude 3.5 Haiku for fast routing)
+    AllowedValues:
+      - anthropic.claude-3-haiku-20240307-v1:0
+
+  SupervisorAgentInstruction:
+    Type: String
+    Default: |
+      You are SupervisorAgent, an intelligent request router for the Purrsurance pet insurance system.
+      
+      Your primary role is to analyze incoming user requests and route them to the appropriate specialized agent:
+      
+      **Routing Guidelines:**
+      
+      1. **VetDocAgent** - Route requests about:
+         - Veterinary medical documentation
+         - Medical record keeping
+         - Veterinary knowledge and procedures
+         - Pet health conditions and symptoms
+         - Medical terminology
+      
+      2. **Insurance/Policy Questions** - Route requests about:
+         - Policy coverage and benefits
+         - Claims processing and status
+         - Premium calculations
+         - Policy terms and conditions
+         - Insurance product information
+      
+      3. **General Inquiries** - Handle directly:
+         - Greeting and general conversation
+         - Navigation help
+         - System status questions
+         - Simple FAQs
+      
+      **Response Format:**
+      When routing, clearly indicate which agent should handle the request and why.
+      For general inquiries, provide a brief, helpful response directly.
+      
+      **Tone:** Professional, efficient, and helpful.
+      **Goal:** Ensure users reach the right specialist quickly.
+    Description: System instruction/prompt for SupervisorAgent routing logic
+  
+  SupervisorAgentIdleSessionTTL:
+    Type: Number
+    Default: 600
+    MinValue: 60
+    MaxValue: 3600
+    Description: Idle session timeout in seconds for SupervisorAgent (60-3600)
+
+Resources:
+  SupervisorAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-SupervisorAgentRole'
+      Description: IAM role for SupervisorAgent to invoke Bedrock foundation models and route to other agents
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+        - PolicyName: BedrockModelInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-*'
+        - PolicyName: BedrockAgentInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeAgent
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Agent
+          Value: SupervisorAgent
+        - Key: Role
+          Value: Supervisor
+
+  SupervisorAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: !Ref SupervisorAgentName
+      Description: Supervisor agent with routing capabilities for Purrsurance system
+      AgentResourceRoleArn: !GetAtt SupervisorAgentRole.Arn
+      FoundationModel: !Ref SupervisorAgentFoundationModel
+      Instruction: !Ref SupervisorAgentInstruction
+      IdleSessionTTLInSeconds: !Ref SupervisorAgentIdleSessionTTL
+      AutoPrepare: true
+      Tags:
+        Environment: !Ref Environment
+        Service: SupervisorAgent
+        ManagedBy: SAM
+        Purpose: Routing
+
+  SupervisorAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId: !Ref SupervisorAgent
+      AgentAliasName: !Sub '${Environment}-supervisor-alias'
+      Description: !Sub 'Supervisor agent alias for ${Environment} environment'
+      Tags:
+        Environment: !Ref Environment
+        Agent: SupervisorAgent
+        Role: Supervisor
+
+Outputs:
+  SupervisorAgentId:
+    Description: "SupervisorAgent Bedrock Agent ID"
+    Value: !Ref SupervisorAgent
+    Export:
+      Name: !Sub '${AWS::StackName}-SupervisorAgentId'
+  
+  SupervisorAgentAliasId:
+    Description: "SupervisorAgent Alias ID"
+    Value: !GetAtt SupervisorAgentAlias.AgentAliasId
+    Export:
+      Name: !Sub '${AWS::StackName}-SupervisorAgentAliasId'
+  
+  SupervisorAgentArn:
+    Description: "SupervisorAgent ARN"
+    Value: !GetAtt SupervisorAgent.AgentArn
+    Export:
+      Name: !Sub '${AWS::StackName}-SupervisorAgentArn'
+  
+  SupervisorAgentRoleArn:
+    Description: "SupervisorAgent IAM Role ARN"
+    Value: !GetAtt SupervisorAgentRole.Arn
