@@ -79,6 +79,7 @@ Resources:
             Action:
               - dynamodb:Query
               - dynamodb:GetItem
+              - dynamodb:Scan
             Resource:
               Fn::ImportValue: !Sub '${EventPublisherStackName}-EventsTableArn'
       FunctionUrlConfig:

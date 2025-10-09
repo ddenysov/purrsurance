@@ -5,8 +5,10 @@
  * Polls DynamoDB for new events and streams them via SSE
  */
 
+/* global awslambda */
+
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { config, getPrintableConfig } from './config.mjs';
 import { logger } from './logger.mjs';
 import { 
@@ -35,35 +37,191 @@ initialize();
 
 /**
  * Query DynamoDB for new events since last timestamp
- * @param {string} sessionId - Session ID to query events for
+ * DEBUG MODE: Disabled session filter to see all events
+ * @param {string} sessionId - Session ID to query events for (currently not filtered)
  * @param {number} lastTimestamp - Last event timestamp
  * @returns {Promise<Array>} Array of new events
  */
 async function queryNewEvents(sessionId, lastTimestamp) {
   const params = {
     TableName: config.dynamodb.tableName,
-    KeyConditionExpression: 'partitionKey = :pk AND #ts > :lastTs',
+    FilterExpression: '#ts > :lastTs',
     ExpressionAttributeNames: {
       '#ts': 'timestamp',
     },
     ExpressionAttributeValues: {
-      ':pk': sessionId, // Use sessionId as partition key
       ':lastTs': lastTimestamp,
     },
-    ScanIndexForward: true, // Sort by timestamp ascending
   };
 
   try {
-    const command = new QueryCommand(params);
+    logger.info('DEBUG: Scanning all events (session filter disabled)', {
+      tableName: config.dynamodb.tableName,
+      lastTimestamp,
+      sessionId: sessionId + ' (ignored)',
+    });
+    
+    const command = new ScanCommand(params);
     const result = await docClient.send(command);
+    
+    logger.info('DEBUG: Found events', {
+      count: result.Items?.length || 0,
+      items: result.Items?.map(item => ({
+        partitionKey: item.partitionKey,
+        timestamp: item.timestamp,
+        eventType: item.eventType,
+      })),
+    });
+    
     return result.Items || [];
   } catch (error) {
-    logger.error('Error querying DynamoDB', {
+    logger.error('Error scanning DynamoDB', {
       error: error.message,
       tableName: config.dynamodb.tableName,
       sessionId,
     });
     throw error;
+  }
+}
+
+/**
+ * Stream mock events for testing
+ * Sends test events at regular intervals
+ * @param {Object} responseStream - Lambda response stream
+ * @param {string} requestId - Request identifier
+ * @param {string} sessionId - Session ID
+ */
+async function streamMockEvents(responseStream, requestId, sessionId) {
+  let eventCount = 0;
+  let mockTimer = null;
+  let maxDurationTimer = null;
+  let isStreamActive = true;
+  const startTime = Date.now();
+  
+  const mockEventTypes = ['claim_status', 'policy_updated', 'message', 'notification'];
+  
+  try {
+    // Send connection established message
+    const connectionMsg = createConnectionMessage(requestId);
+    responseStream.write(connectionMsg);
+    logger.info('SSE mock connection established', { requestId, sessionId });
+    
+    // Setup max duration timer
+    maxDurationTimer = setTimeout(() => {
+      logger.info('Max stream duration reached', { 
+        requestId, 
+        duration: config.sse.maxStreamDuration 
+      });
+      isStreamActive = false;
+    }, config.sse.maxStreamDuration);
+    
+    // Send mock events every 5 seconds
+    const sendMockEvent = () => {
+      if (!isStreamActive) return;
+      
+      try {
+        eventCount++;
+        const mockEventType = mockEventTypes[eventCount % mockEventTypes.length];
+        
+        // Create mock event data
+        const mockData = {
+          type: mockEventType,
+          id: `mock-${eventCount}`,
+          timestamp: Date.now(),
+          payload: {
+            eventType: mockEventType,
+            timestamp: Date.now(),
+            data: {
+              message: `Mock event ${eventCount} - ${mockEventType}`,
+              count: eventCount,
+              sessionId: sessionId,
+            }
+          }
+        };
+        
+        // Format as SSE message
+        const sseMessage = formatSSE({
+          id: eventCount,
+          data: mockData,
+        });
+        
+        // Write to stream
+        responseStream.write(sseMessage);
+        
+        logger.info('Sent mock SSE event', { 
+          requestId,
+          sessionId,
+          eventCount, 
+          eventType: mockEventType,
+        });
+        
+      } catch (error) {
+        logger.error('Error sending mock event', {
+          requestId,
+          error: error.message,
+        });
+      }
+      
+      // Schedule next mock event
+      if (isStreamActive) {
+        mockTimer = setTimeout(sendMockEvent, 5000); // Every 5 seconds
+      }
+    };
+    
+    // Start sending mock events
+    sendMockEvent();
+    
+    // Wait for stream to end
+    await new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (!isStreamActive) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 1000);
+    });
+    
+    // Send goodbye message
+    const goodbyeMsg = createGoodbyeMessage();
+    responseStream.write(goodbyeMsg);
+    
+  } catch (error) {
+    logger.error('Error streaming mock events', {
+      requestId,
+      error: error.message,
+      stack: error.stack,
+    });
+    
+    // Try to send error message
+    try {
+      const errorMsg = createError(error.message);
+      responseStream.write(errorMsg);
+    } catch (writeError) {
+      logger.error('Failed to write error message', { 
+        requestId, 
+        error: writeError.message 
+      });
+    }
+  } finally {
+    // Cleanup
+    isStreamActive = false;
+    
+    if (mockTimer) {
+      clearTimeout(mockTimer);
+    }
+    if (maxDurationTimer) {
+      clearTimeout(maxDurationTimer);
+    }
+    
+    const duration = Date.now() - startTime;
+    logger.info('SSE mock stream ended', { 
+      requestId, 
+      eventCount, 
+      duration: `${duration}ms` 
+    });
+    
+    // End the stream
+    responseStream.end();
   }
 }
 
@@ -254,7 +412,7 @@ async function streamDynamoDBEvents(responseStream, requestId, sessionId) {
  */
 export const lambdaHandler = awslambda.streamifyResponse(
   async (event, responseStream, context) => {
-    const requestId = context.requestId || 'local-' + Date.now();
+    const requestId = context.requestId;
     
     // Extract sessionId from query parameters
     const queryParams = event.queryStringParameters || {};
@@ -262,29 +420,32 @@ export const lambdaHandler = awslambda.streamifyResponse(
     
     logger.info('Processing SSE request', {
       requestId,
-      sessionId,
+      sessionId: sessionId || 'DEBUG: no session filter',
       httpMethod: event.httpMethod || event.requestContext?.http?.method,
       path: event.path || event.requestContext?.http?.path,
     });
     
-    // Validate sessionId
-    if (!sessionId) {
-      logger.error('Missing sessionId in request', { requestId });
-      const errorMsg = createError('Missing sessionId parameter');
-      
-      const metadata = {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'text/event-stream',
-        },
-      };
-      responseStream = awslambda.HttpResponseStream.from(responseStream, metadata);
-      responseStream.write(errorMsg);
-      responseStream.end();
-      return;
-    }
+    // DEBUG MODE: sessionId validation disabled
+    // if (!sessionId) {
+    //   logger.error('Missing sessionId in request', { requestId });
+    //   const errorMsg = createError('Missing sessionId parameter');
+    //   
+    //   const metadata = {
+    //     statusCode: 400,
+    //     headers: {
+    //       'Content-Type': 'text/event-stream',
+    //       'Access-Control-Allow-Origin': config.cors.allowOrigin,
+    //       'Access-Control-Allow-Methods': config.cors.allowMethods,
+    //       'Access-Control-Allow-Headers': config.cors.allowHeaders,
+    //     },
+    //   };
+    //   responseStream = awslambda.HttpResponseStream.from(responseStream, metadata);
+    //   responseStream.write(errorMsg);
+    //   responseStream.end();
+    //   return;
+    // }
     
-    // Set SSE headers
+    // Set SSE headers with CORS
     const metadata = {
       statusCode: 200,
       headers: {
