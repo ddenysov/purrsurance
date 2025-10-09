@@ -26,6 +26,10 @@ Parameters:
     Type: String
     Description: Name of the Event Publisher CloudFormation stack to get Events Table name
   
+  EventPublisherUrl:
+    Type: String
+    Description: URL of the Event Publisher API endpoint for sending policy events
+  
   LogLevel:
     Type: String
     Default: info
@@ -80,6 +84,7 @@ Resources:
         Variables:
           ENVIRONMENT: !Ref Environment
           EVENTS_TOPIC_ARN: !Ref PolicyEventsTopic
+          EVENT_PUBLISHER_URL: !Ref EventPublisherUrl
           LOG_LEVEL: !Ref LogLevel
           NODE_ENV: production
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'

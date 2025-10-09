@@ -5,7 +5,8 @@ Lambda function for AWS Bedrock Agent that retrieves detailed policy information
 ## Features
 
 - Retrieves complete policy details including pet, owner, medical records, and claims
-- Publishes `policy_updated` event to SNS topic for downstream processing
+- Publishes events to Event Publisher service via HTTP for real-time event tracking
+- Publishes `policy_updated` event to SNS topic for downstream processing (legacy)
 - Designed for Bedrock Agent function response format (no OpenAPI schema required)
 
 ## Architecture
@@ -13,7 +14,11 @@ Lambda function for AWS Bedrock Agent that retrieves detailed policy information
 ```
 Bedrock Agent → Lambda Function → Returns Response
                       ↓
-                  SNS Topic → Event Saver → DynamoDB
+        ┌─────────────┴─────────────┐
+        ↓                           ↓
+  Event Publisher API          SNS Topic
+        ↓                           ↓
+    DynamoDB                  Event Saver
 ```
 
 ## Event Publishing

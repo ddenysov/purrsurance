@@ -8,6 +8,11 @@
   },
   "inputText": "Get policy details for PETS-INS-2025-000123",
   "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
   "actionGroup": "PolicyActions",
   "function": "getPolicyDetails",
   "parameters": [
