@@ -238,24 +238,19 @@ export const lambdaHandler = async (event, context) => {
 
   // Send event to Event Publisher (non-blocking)
   await sendEventToPublisher(sessionId, responseBodyContent, 'PolicyDetailsRetrieved');
-
-  // This is the required response structure for the `functionResponse` format
-  const agentResponse = {
-    messageVersion: '1.0',
-    response: {
-      functionResponse: {
-        responseBody: {
-          // The agent expects a content type, TEXT is the simplest.
-          // The body must be a string.
+  return {
+    'messageVersion': '1.0',
+    'response': {
+      'actionGroup': 'PolicyDetailsActionGroup',
+      'function': 'GetPolicyDetails',
+      'functionResponse': {
+        'responseBody': {
           'TEXT': {
-            'body': JSON.stringify(responseBodyContent)
-          }
-        }
+            'body': JSON.stringify(responseBodyContent, null, 2),
+          },
+        },
       }
     }
   };
-
-  console.log('Returning Agent Response:', JSON.stringify(agentResponse, null, 2));
-  return agentResponse;
 };
 
