@@ -22,17 +22,24 @@ Parameters:
       - prod
     Description: Environment name
   
-  IntentionClassifierStackName:
+  IntentionClassifierAgentId:
     Type: String
-    Description: Name of the IntentionClassifierAgent CloudFormation stack (e.g. purrsurance-agent-intention-classifier)
+    Description: Intention Classifier Agent ID
+    Default: ""
   
-  PolicyManagerStackName:
+  IntentionClassifierAgentAliasId:
     Type: String
-    Description: Name of the PolicyManager CloudFormation stack (e.g. purrsurance-agent-policy-manager)
+    Description: Intention Classifier Agent Alias ID
+    Default: ""
   
-  PolicyAgentStackName:
+  PolicyManagerAgentId:
     Type: String
-    Description: Name of the PolicyAgent CloudFormation stack (optional, for additional policy agent)
+    Description: Policy Manager Agent ID
+    Default: ""
+  
+  PolicyManagerAgentAliasId:
+    Type: String
+    Description: Policy Manager Agent Alias ID
     Default: ""
   
   ChatHistoryTableName:
@@ -61,20 +68,14 @@ Resources:
         Variables:
           ENVIRONMENT: !Ref Environment
           # Intention Classifier Agent
-          INTENTION_CLASSIFIER_AGENT_ID: !ImportValue
-            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentId'
-          INTENTION_CLASSIFIER_AGENT_ALIAS_ID: !ImportValue
-            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentAliasId'
+          INTENTION_CLASSIFIER_AGENT_ID: !Ref IntentionClassifierAgentId
+          INTENTION_CLASSIFIER_AGENT_ALIAS_ID: !Ref IntentionClassifierAgentAliasId
           # Policy Manager Agent
-          POLICY_MANAGER_AGENT_ID: !ImportValue
-            Fn::Sub: '${PolicyManagerStackName}-PolicyManagerAgentId'
-          POLICY_MANAGER_AGENT_ALIAS_ID: !ImportValue
-            Fn::Sub: '${PolicyManagerStackName}-PolicyManagerAgentAliasId'
+          POLICY_MANAGER_AGENT_ID: !Ref PolicyManagerAgentId
+          POLICY_MANAGER_AGENT_ALIAS_ID: !Ref PolicyManagerAgentAliasId
           # Legacy support (kept for backward compatibility)
-          BEDROCK_AGENT_ID: !ImportValue
-            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentId'
-          BEDROCK_AGENT_ALIAS_ID: !ImportValue
-            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentAliasId'
+          BEDROCK_AGENT_ID: !Ref IntentionClassifierAgentId
+          BEDROCK_AGENT_ALIAS_ID: !Ref IntentionClassifierAgentAliasId
           CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTableName
           LOG_LEVEL: !Ref LogLevel
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'

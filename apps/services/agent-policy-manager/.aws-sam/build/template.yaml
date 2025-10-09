@@ -23,11 +23,10 @@ Parameters:
     Description: Name for the Policy Manager Agent
   PolicyManagerAgentFoundationModel:
     Type: String
-    Default: us.anthropic.claude-3-5-sonnet-20241022-v2:0
+    Default: us.anthropic.claude-3-5-haiku-20241022-v1:0
     Description: Foundation model for AgentPolicyManager (Claude 3.5 Sonnet for intelligent
       conversation)
     AllowedValues:
-    - us.anthropic.claude-3-5-sonnet-20241022-v2:0
     - us.anthropic.claude-3-5-haiku-20241022-v1:0
   PolicyManagerAgentInstruction:
     Type: String
