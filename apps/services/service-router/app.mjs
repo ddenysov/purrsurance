@@ -63,7 +63,7 @@ function createResponse(statusCode, body, additionalHeaders = {}) {
     body: JSON.stringify(body),
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': config.cors.allowOrigin,
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': config.cors.allowMethods,
       'Access-Control-Allow-Headers': config.cors.allowHeaders,
       'Access-Control-Max-Age': config.cors.maxAge.toString(),
@@ -338,7 +338,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   
   const server = http.createServer(async (req, res) => {
     // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', config.cors.allowOrigin);
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', config.cors.allowMethods);
     res.setHeader('Access-Control-Allow-Headers', config.cors.allowHeaders);
     

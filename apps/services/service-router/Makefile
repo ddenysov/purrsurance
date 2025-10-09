@@ -1,4 +1,4 @@
-.PHONY: help install build deploy delete invoke logs clean test validate sync-agents list-agents
+.PHONY: help install build deploy delete invoke logs clean test validate sync-agents list-agents get-urls update-env
 
 # Default target
 help:
@@ -14,6 +14,8 @@ help:
 	@echo "  make validate     - Validate SAM template"
 	@echo "  make sync-agents  - Sync agent IDs from AWS Bedrock to config files"
 	@echo "  make list-agents  - List all AWS Bedrock agents"
+	@echo "  make get-urls     - Get deployed API endpoint URL"
+	@echo "  make update-env   - Update env.json with deployed API endpoint URL"
 
 # Install dependencies
 install:
@@ -75,4 +77,32 @@ sync-agents:
 list-agents:
 	@echo "Listing AWS Bedrock agents..."
 	@aws bedrock-agent list-agents --query 'agentSummaries[*].[agentName,agentId,agentStatus]' --output table
+
+# Get deployed API endpoint URL
+get-urls:
+	@echo "Fetching deployment URLs..."
+	@aws cloudformation describe-stacks \
+		--stack-name purrsurance-service-router \
+		--query 'Stacks[0].Outputs[?OutputKey==`ServiceRouterApi`].[OutputKey,OutputValue]' \
+		--output table
+
+# Update env.json with deployed API endpoint URL
+update-env:
+	@echo "Updating env.json with deployed API endpoint URL..."
+	@API_URL=$$(aws cloudformation describe-stacks \
+		--stack-name purrsurance-service-router \
+		--query 'Stacks[0].Outputs[?OutputKey==`ServiceRouterApi`].OutputValue' \
+		--output text 2>/dev/null || echo ""); \
+	if [ -z "$$API_URL" ]; then \
+		echo "Error: Could not fetch API URL. Is the stack deployed?"; \
+		exit 1; \
+	fi; \
+	echo "API URL: $$API_URL"; \
+	if [ -f env.json ]; then \
+		jq --arg url "$$API_URL" '.ServiceRouterFunction.API_ENDPOINT = $$url' env.json > env.json.tmp && mv env.json.tmp env.json; \
+		echo "env.json updated successfully!"; \
+	else \
+		echo "Error: env.json not found"; \
+		exit 1; \
+	fi
 

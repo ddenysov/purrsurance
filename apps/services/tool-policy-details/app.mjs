@@ -7,15 +7,10 @@
  * @param {Object} event - The event payload from the Bedrock Agent.
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
-import http from 'http';
 import {SNSClient, PublishCommand} from "@aws-sdk/client-sns";
 
 const snsClient = new SNSClient({});
 const topicArn = process.env.EVENTS_TOPIC_ARN;
-
-// Check if running locally
-const IS_LOCAL = process.env.IS_LOCAL === 'true';
-const PORT = process.env.PORT || 3003;
 
 export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
@@ -198,75 +193,4 @@ export const lambdaHandler = async (event, context) => {
   console.log('Returning Agent Response:', JSON.stringify(agentResponse, null, 2));
   return agentResponse;
 };
-
-// Local development server
-if (IS_LOCAL) {
-  console.log('🚀 Starting local development mode...');
-  
-  const server = http.createServer(async (req, res) => {
-    // Enable CORS for local development
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      res.writeHead(200);
-      res.end();
-      return;
-    }
-    
-    // Only accept POST requests
-    if (req.method !== 'POST') {
-      res.writeHead(405, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        error: 'Method Not Allowed',
-        message: 'Only POST requests are supported',
-      }));
-      return;
-    }
-    
-    // Read request body
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-    
-    req.on('end', async () => {
-      try {
-        // Parse the request body
-        const event = JSON.parse(body);
-        
-        // Create Lambda-like context object
-        const context = {
-          requestId: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          functionName: 'GetPolicyDetailsFunction',
-          awsRequestId: `local-${Date.now()}`,
-        };
-        
-        // Call Lambda handler
-        const response = await lambdaHandler(event, context);
-        
-        // Send response
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(response, null, 2));
-      } catch (error) {
-        console.error('Local server error:', error.message);
-        console.error(error.stack);
-        
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          error: 'Internal Server Error',
-          message: error.message,
-          stack: error.stack,
-        }));
-      }
-    });
-  });
-  
-  server.listen(PORT, () => {
-    console.log(`\n🚀 GetPolicyDetails Service is running on http://localhost:${PORT}`);
-    console.log(`\n📝 Test with:\ncurl -X POST http://localhost:${PORT} \\\n  -H "Content-Type: application/json" \\\n  -d @events/bedrock-agent-event.json\n`);
-  });
-}
 
