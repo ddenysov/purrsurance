@@ -1,0 +1,205 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AgentPolicyManager Configuration
+  
+  Policy Manager Agent for Purrsurance pet insurance system
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+
+  # Reference to tool-policy-details stack to get the function ARN
+  ToolPolicyDetailsStackName:
+    Type: String
+    Default: purrsurance-tool-policy-details
+    Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction ARN
+
+  # AgentPolicyManager Configuration
+  PolicyManagerAgentName:
+    Type: String
+    Default: AgentPolicyManager
+    Description: Name for the Policy Manager Agent
+  
+  PolicyManagerAgentFoundationModel:
+    Type: String
+    Default: us.anthropic.claude-3-5-sonnet-20241022-v2:0
+    Description: Foundation model for AgentPolicyManager (Claude 3.5 Sonnet for intelligent conversation)
+    AllowedValues:
+      - us.anthropic.claude-3-5-sonnet-20241022-v2:0
+      - us.anthropic.claude-3-5-haiku-20241022-v1:0
+
+  PolicyManagerAgentInstruction:
+    Type: String
+    Default: |
+      You are a helpful insurance policy assistant for Purrsurance pet insurance. Your main task is to help users retrieve their policy details.
+
+      **Your workflow:**
+
+      1. **Extract Policy ID**: When a user asks about their policy, try to identify the policy ID from their message. Policy IDs typically look like "POL-2025-001234" or similar formats.
+
+      2. **Request Missing Information**: If the user has not provided a policy ID, politely ask them to provide it. For example:
+         - "I'd be happy to help you with your policy details. Could you please provide your policy ID? It typically looks like POL-YYYY-XXXXXX."
+
+      3. **Retrieve Policy Details**: Once you have a policy ID, use the GetPolicyDetails tool to fetch the policy information.
+
+      4. **Present Information Clearly**: After retrieving the policy details, present the information in a clear, friendly, and conversational manner. Focus on what's most relevant to the user's question.
+
+      5. **Handle Errors Gracefully**: If there's an error retrieving the policy (e.g., invalid policy ID), inform the user politely and ask them to verify their policy ID.
+
+      **Important Guidelines:**
+      - Always be polite, professional, and empathetic
+      - Keep responses concise but informative
+      - If a user asks about multiple aspects, address them systematically
+      - Protect sensitive information and only share policy details when appropriate
+      - If asked about something outside policy details, politely explain your scope
+
+      **Example Interactions:**
+
+      User: "I want to know about my policy POL-2025-001234"
+      You: [Use GetPolicyDetails tool with policyId="POL-2025-001234", then present the details]
+
+      User: "What's covered in my insurance?"
+      You: "I'd be happy to help you understand your coverage. Could you please provide your policy ID?"
+
+      User: "Here's my policy: POL-2025-999999"
+      You: [Use GetPolicyDetails tool and present coverage information]
+
+    Description: System instruction/prompt for AgentPolicyManager
+  
+  PolicyManagerAgentIdleSessionTTL:
+    Type: Number
+    Default: 900
+    MinValue: 60
+    MaxValue: 3600
+    Description: Idle session timeout in seconds for AgentPolicyManager (60-3600)
+
+Resources:
+  # IAM Role for the Policy Manager Agent
+  PolicyManagerAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role for AgentPolicyManager to invoke Bedrock foundation models and Lambda functions
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+        - PolicyName: BedrockModelInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/*'
+        - PolicyName: InvokePolicyDetailsFunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - Fn::ImportValue:
+                      !Sub '${ToolPolicyDetailsStackName}-FunctionArn'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Agent
+          Value: AgentPolicyManager
+        - Key: Role
+          Value: PolicyManager
+
+  # The Bedrock Agent
+  PolicyManagerAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: !Ref PolicyManagerAgentName
+      Description: Policy manager agent for Purrsurance system
+      AgentResourceRoleArn: !GetAtt PolicyManagerAgentRole.Arn
+      FoundationModel: !Ref PolicyManagerAgentFoundationModel
+      Instruction: !Ref PolicyManagerAgentInstruction
+      IdleSessionTTLInSeconds: !Ref PolicyManagerAgentIdleSessionTTL
+      AutoPrepare: true
+      Tags:
+        Environment: !Ref Environment
+        Service: AgentPolicyManager
+        ManagedBy: SAM
+        Purpose: PolicyManagement
+
+  # Note: Action Groups must be added via AWS CLI or Console after stack creation
+  # AWS::Bedrock::AgentActionGroup is not yet fully supported in CloudFormation
+  # Use the following AWS CLI command to add the action group:
+  #
+  # aws bedrock-agent create-agent-action-group \
+  #   --agent-id <AGENT_ID> \
+  #   --agent-version DRAFT \
+  #   --action-group-name PolicyDetailsActionGroup \
+  #   --action-group-executor lambda=<LAMBDA_ARN> \
+  #   --function-schema '{"functions":[{"name":"GetPolicyDetails","description":"Retrieves detailed information about an insurance policy","parameters":{"policyId":{"description":"The unique identifier for the insurance policy","type":"string","required":true}}}]}'
+  #
+  # Permission for Bedrock Agent to invoke the Lambda function
+  PolicyDetailsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: 
+        Fn::ImportValue:
+          !Sub '${ToolPolicyDetailsStackName}-FunctionArn'
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt PolicyManagerAgent.AgentArn
+
+  # Agent Alias
+  PolicyManagerAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId: !Ref PolicyManagerAgent
+      AgentAliasName: !Sub '${Environment}-policy-manager-alias'
+      Description: !Sub 'Policy manager agent alias for ${Environment} environment'
+      Tags:
+        Environment: !Ref Environment
+        Agent: AgentPolicyManager
+        Role: PolicyManager
+
+Outputs:
+  PolicyManagerAgentId:
+    Description: "AgentPolicyManager Bedrock Agent ID"
+    Value: !Ref PolicyManagerAgent
+    Export:
+      Name: !Sub '${AWS::StackName}-PolicyManagerAgentId'
+  
+  PolicyManagerAgentAliasId:
+    Description: "AgentPolicyManager Alias ID"
+    Value: !GetAtt PolicyManagerAgentAlias.AgentAliasId
+    Export:
+      Name: !Sub '${AWS::StackName}-PolicyManagerAgentAliasId'
+  
+  PolicyManagerAgentArn:
+    Description: "AgentPolicyManager ARN"
+    Value: !GetAtt PolicyManagerAgent.AgentArn
+    Export:
+      Name: !Sub '${AWS::StackName}-PolicyManagerAgentArn'
+  
+  PolicyManagerAgentRoleArn:
+    Description: "AgentPolicyManager IAM Role ARN"
+    Value: !GetAtt PolicyManagerAgentRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-PolicyManagerAgentRoleArn'
+

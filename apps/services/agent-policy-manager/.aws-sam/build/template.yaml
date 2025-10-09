@@ -1,0 +1,200 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'AgentPolicyManager Configuration
+
+  Policy Manager Agent for Purrsurance pet insurance system
+
+  '
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+    - prod
+    Description: Environment name
+  ToolPolicyDetailsStackName:
+    Type: String
+    Default: purrsurance-tool-policy-details
+    Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction
+      ARN
+  PolicyManagerAgentName:
+    Type: String
+    Default: AgentPolicyManager
+    Description: Name for the Policy Manager Agent
+  PolicyManagerAgentFoundationModel:
+    Type: String
+    Default: us.anthropic.claude-3-5-sonnet-20241022-v2:0
+    Description: Foundation model for AgentPolicyManager (Claude 3.5 Sonnet for intelligent
+      conversation)
+    AllowedValues:
+    - us.anthropic.claude-3-5-sonnet-20241022-v2:0
+    - us.anthropic.claude-3-5-haiku-20241022-v1:0
+  PolicyManagerAgentInstruction:
+    Type: String
+    Default: "You are a helpful insurance policy assistant for Purrsurance pet insurance.\
+      \ Your main task is to help users retrieve their policy details.\n\n**Your workflow:**\n\
+      \n1. **Extract Policy ID**: When a user asks about their policy, try to identify\
+      \ the policy ID from their message. Policy IDs typically look like \"POL-2025-001234\"\
+      \ or similar formats.\n\n2. **Request Missing Information**: If the user has\
+      \ not provided a policy ID, politely ask them to provide it. For example:\n\
+      \   - \"I'd be happy to help you with your policy details. Could you please\
+      \ provide your policy ID? It typically looks like POL-YYYY-XXXXXX.\"\n\n3. **Retrieve\
+      \ Policy Details**: Once you have a policy ID, use the GetPolicyDetails tool\
+      \ to fetch the policy information.\n\n4. **Present Information Clearly**: After\
+      \ retrieving the policy details, present the information in a clear, friendly,\
+      \ and conversational manner. Focus on what's most relevant to the user's question.\n\
+      \n5. **Handle Errors Gracefully**: If there's an error retrieving the policy\
+      \ (e.g., invalid policy ID), inform the user politely and ask them to verify\
+      \ their policy ID.\n\n**Important Guidelines:**\n- Always be polite, professional,\
+      \ and empathetic\n- Keep responses concise but informative\n- If a user asks\
+      \ about multiple aspects, address them systematically\n- Protect sensitive information\
+      \ and only share policy details when appropriate\n- If asked about something\
+      \ outside policy details, politely explain your scope\n\n**Example Interactions:**\n\
+      \nUser: \"I want to know about my policy POL-2025-001234\"\nYou: [Use GetPolicyDetails\
+      \ tool with policyId=\"POL-2025-001234\", then present the details]\n\nUser:\
+      \ \"What's covered in my insurance?\"\nYou: \"I'd be happy to help you understand\
+      \ your coverage. Could you please provide your policy ID?\"\n\nUser: \"Here's\
+      \ my policy: POL-2025-999999\"\nYou: [Use GetPolicyDetails tool and present\
+      \ coverage information]\n"
+    Description: System instruction/prompt for AgentPolicyManager
+  PolicyManagerAgentIdleSessionTTL:
+    Type: Number
+    Default: 900
+    MinValue: 60
+    MaxValue: 3600
+    Description: Idle session timeout in seconds for AgentPolicyManager (60-3600)
+Resources:
+  PolicyManagerAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role for AgentPolicyManager to invoke Bedrock foundation models
+        and Lambda functions
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: bedrock.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+      - PolicyName: BedrockModelInvokePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - bedrock:InvokeModel
+            - bedrock:InvokeModelWithResponseStream
+            Resource:
+            - Fn::Sub: arn:aws:bedrock:${AWS::Region}::foundation-model/*
+      - PolicyName: InvokePolicyDetailsFunction
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource:
+            - Fn::ImportValue:
+                Fn::Sub: ${ToolPolicyDetailsStackName}-FunctionArn
+      Tags:
+      - Key: Environment
+        Value:
+          Ref: Environment
+      - Key: Agent
+        Value: AgentPolicyManager
+      - Key: Role
+        Value: PolicyManager
+  PolicyManagerAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName:
+        Ref: PolicyManagerAgentName
+      Description: Policy manager agent for Purrsurance system
+      AgentResourceRoleArn:
+        Fn::GetAtt:
+        - PolicyManagerAgentRole
+        - Arn
+      FoundationModel:
+        Ref: PolicyManagerAgentFoundationModel
+      Instruction:
+        Ref: PolicyManagerAgentInstruction
+      IdleSessionTTLInSeconds:
+        Ref: PolicyManagerAgentIdleSessionTTL
+      AutoPrepare: true
+      Tags:
+        Environment:
+          Ref: Environment
+        Service: AgentPolicyManager
+        ManagedBy: SAM
+        Purpose: PolicyManagement
+  PolicyDetailsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: ${ToolPolicyDetailsStackName}-FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - PolicyManagerAgent
+        - AgentArn
+  PolicyManagerAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId:
+        Ref: PolicyManagerAgent
+      AgentAliasName:
+        Fn::Sub: ${Environment}-policy-manager-alias
+      Description:
+        Fn::Sub: Policy manager agent alias for ${Environment} environment
+      Tags:
+        Environment:
+          Ref: Environment
+        Agent: AgentPolicyManager
+        Role: PolicyManager
+Outputs:
+  PolicyManagerAgentId:
+    Description: AgentPolicyManager Bedrock Agent ID
+    Value:
+      Ref: PolicyManagerAgent
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-PolicyManagerAgentId
+  PolicyManagerAgentAliasId:
+    Description: AgentPolicyManager Alias ID
+    Value:
+      Fn::GetAtt:
+      - PolicyManagerAgentAlias
+      - AgentAliasId
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-PolicyManagerAgentAliasId
+  PolicyManagerAgentArn:
+    Description: AgentPolicyManager ARN
+    Value:
+      Fn::GetAtt:
+      - PolicyManagerAgent
+      - AgentArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-PolicyManagerAgentArn
+  PolicyManagerAgentRoleArn:
+    Description: AgentPolicyManager IAM Role ARN
+    Value:
+      Fn::GetAtt:
+      - PolicyManagerAgentRole
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-PolicyManagerAgentRoleArn
