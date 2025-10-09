@@ -11,7 +11,10 @@
     "@aws-sdk/client-sns": "^3.0.0"
   },
   "scripts": {
-    "test": "mocha tests/unit/"
+    "test": "mocha tests/unit/",
+    "start": "./start-local.sh",
+    "dev": "./start-local.sh",
+    "test:local": "./test-with-server.sh"
   },
   "devDependencies": {
     "chai": "^4.3.6",

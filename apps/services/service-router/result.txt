@@ -1,0 +1,66 @@
+🚀 Starting Service Router locally...
+======================================
+Loading environment variables from env.json using jq...
+✅ Environment variables loaded
+
+Starting server on port 3002...
+
+{"timestamp":"2025-10-09T14:43:03.942Z","level":"INFO","message":"Initializing Lambda function","config":{"environment":"local","isLocal":true,"bedrock":{"intentionClassifier":{"agentId":"***PZO4","agentAliasId":"KPKIPXSELH"},"policyManager":{"agentId":"***LY8L","agentAliasId":"G5AGXDEJLX"},"vetDoc":{"agentId":"***t-id","agentAliasId":"TSTALIASID"},"region":"us-east-1","useMock":true,"enableTrace":false},"agentMapping":{"PolicyAgent":"policyManager","VetDocAgent":"vetDoc"},"dynamodb":{"chatHistoryTable":"agent-operator-prod-ChatHistory"},"cors":{"allowOrigin":"*","allowMethods":"GET,POST,OPTIONS","allowHeaders":"Content-Type,Authorization","maxAge":86400},"logging":{"level":"info"}}}
+{"timestamp":"2025-10-09T14:43:03.943Z","level":"INFO","message":"Lambda function initialized successfully"}
+{"timestamp":"2025-10-09T14:43:03.949Z","level":"INFO","message":"Local development server started","port":"3002","url":"http://localhost:3002","environment":"local","isLocal":true,"useMock":false}
+
+🚀 Service Router is running on http://localhost:3002
+
+📝 Test with:
+curl -X POST http://localhost:3002 \
+  -H "Content-Type: application/json" \
+  -d '{"message": "My policy id is POL-2025-123456", "globalSessionId": "test-session-123"}'
+
+{"timestamp":"2025-10-09T14:43:09.512Z","level":"INFO","message":"Processing request","requestId":"local-1760020989512-8jsjaxniw","httpMethod":"POST","path":"/","isLocal":true}
+{"timestamp":"2025-10-09T14:43:09.512Z","level":"INFO","message":"QUERY"}
+{"timestamp":"2025-10-09T14:43:09.512Z","level":"INFO","message":"Classifying user intention","requestId":"local-1760020989512-8jsjaxniw","messageLength":31}
+{"timestamp":"2025-10-09T14:43:09.512Z","level":"INFO","message":"Invoking Intention Classifier Agent","inputText":"My policy ID is POL-2025-123456","agentId":"VGAVD9PZO4","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:11.046Z","level":"INFO","message":"Intention Classifier Agent invocation successful","completion":"PolicyAgent","sessionId":"session-1760020989515-unpacw","responseLength":11,"agentId":"VGAVD9PZO4"}
+{"timestamp":"2025-10-09T14:43:11.046Z","level":"INFO","message":"Intention classification result","requestId":"local-1760020989512-8jsjaxniw","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:11.047Z","level":"INFO","message":"Routing request to agent","requestId":"local-1760020989512-8jsjaxniw","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:11.047Z","level":"INFO","message":"Routing to agent","requestId":"local-1760020989512-8jsjaxniw","classification":"PolicyAgent","agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:11.047Z","level":"INFO","message":"Invoking PolicyAgent","inputText":"My policy ID is POL-2025-123456","agentId":"ZRNALBLY8L","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:16.961Z","level":"INFO","message":"PolicyAgent invocation successful","completion":"Welcome! Here are your policy details:\n\nYour pet insurance policy is for Max, a 3-year-old Golden Retriever. You have our Premium Coverage plan with:\n- Annual coverage limit: $10,000\n- Deductible: $250\n- Reimbursement rate: 90%\n\nYour policy is active and will renew on December 31, 2025. Your monthly premium is $45.","sessionId":"session-1760020991048-jc4lod","responseLength":316,"agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:16.961Z","level":"WARN","message":"No globalSessionId provided, skipping chat history save","requestId":"local-1760020989512-8jsjaxniw"}
+{"timestamp":"2025-10-09T14:43:16.961Z","level":"INFO","message":"Request processed successfully","requestId":"local-1760020989512-8jsjaxniw","classification":"PolicyAgent","responseLength":316}
+{"timestamp":"2025-10-09T14:43:17.020Z","level":"INFO","message":"Processing request","requestId":"local-1760020997020-apkcxepdb","httpMethod":"POST","path":"/favicon.ico","isLocal":true}
+{"timestamp":"2025-10-09T14:43:17.020Z","level":"INFO","message":"QUERY"}
+{"timestamp":"2025-10-09T14:43:17.021Z","level":"INFO","message":"Classifying user intention","requestId":"local-1760020997020-apkcxepdb","messageLength":31}
+{"timestamp":"2025-10-09T14:43:17.021Z","level":"INFO","message":"Invoking Intention Classifier Agent","inputText":"My policy ID is POL-2025-123456","agentId":"VGAVD9PZO4","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:18.446Z","level":"INFO","message":"Intention Classifier Agent invocation successful","completion":"PolicyAgent","sessionId":"session-1760020997021-76jy0r","responseLength":11,"agentId":"VGAVD9PZO4"}
+{"timestamp":"2025-10-09T14:43:18.446Z","level":"INFO","message":"Intention classification result","requestId":"local-1760020997020-apkcxepdb","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:18.446Z","level":"INFO","message":"Routing request to agent","requestId":"local-1760020997020-apkcxepdb","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:18.446Z","level":"INFO","message":"Routing to agent","requestId":"local-1760020997020-apkcxepdb","classification":"PolicyAgent","agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:18.446Z","level":"INFO","message":"Invoking PolicyAgent","inputText":"My policy ID is POL-2025-123456","agentId":"ZRNALBLY8L","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:21.211Z","level":"INFO","message":"PolicyAgent invocation successful","completion":"\n\n<error>Invalid policy ID format or policy not found. Please check the policy ID and try again.","sessionId":"session-1760020998447-cy1owk","responseLength":96,"agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:21.211Z","level":"WARN","message":"No globalSessionId provided, skipping chat history save","requestId":"local-1760020997020-apkcxepdb"}
+{"timestamp":"2025-10-09T14:43:21.212Z","level":"INFO","message":"Request processed successfully","requestId":"local-1760020997020-apkcxepdb","classification":"PolicyAgent","responseLength":96}
+{"timestamp":"2025-10-09T14:43:40.953Z","level":"INFO","message":"Processing request","requestId":"local-1760021020953-2kqs960dd","httpMethod":"POST","path":"/","isLocal":true}
+{"timestamp":"2025-10-09T14:43:40.954Z","level":"INFO","message":"QUERY"}
+{"timestamp":"2025-10-09T14:43:40.954Z","level":"INFO","message":"Classifying user intention","requestId":"local-1760021020953-2kqs960dd","messageLength":31}
+{"timestamp":"2025-10-09T14:43:40.954Z","level":"INFO","message":"Invoking Intention Classifier Agent","inputText":"My policy ID is POL-2025-123456","agentId":"VGAVD9PZO4","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:42.756Z","level":"INFO","message":"Intention Classifier Agent invocation successful","completion":"PolicyAgent","sessionId":"session-1760021020954-b15o2m","responseLength":11,"agentId":"VGAVD9PZO4"}
+{"timestamp":"2025-10-09T14:43:42.756Z","level":"INFO","message":"Intention classification result","requestId":"local-1760021020953-2kqs960dd","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:42.756Z","level":"INFO","message":"Routing request to agent","requestId":"local-1760021020953-2kqs960dd","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:42.756Z","level":"INFO","message":"Routing to agent","requestId":"local-1760021020953-2kqs960dd","classification":"PolicyAgent","agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:42.756Z","level":"INFO","message":"Invoking PolicyAgent","inputText":"My policy ID is POL-2025-123456","agentId":"ZRNALBLY8L","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:48.754Z","level":"INFO","message":"PolicyAgent invocation successful","completion":"Welcome! Here are your policy details:\n\nYour pet insurance policy is for Max, a 3-year-old Golden Retriever. You have our Premium Coverage Plan which includes:\n- Accident & Illness Coverage\n- Routine Care Coverage\n- Dental Coverage\n- 90% reimbursement rate\n- $250 annual deductible\n\nYour policy is active and current on payments. The next payment is due on 2024-02-15.","sessionId":"session-1760021022756-vpam","responseLength":368,"agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:48.754Z","level":"WARN","message":"No globalSessionId provided, skipping chat history save","requestId":"local-1760021020953-2kqs960dd"}
+{"timestamp":"2025-10-09T14:43:48.754Z","level":"INFO","message":"Request processed successfully","requestId":"local-1760021020953-2kqs960dd","classification":"PolicyAgent","responseLength":368}
+{"timestamp":"2025-10-09T14:43:48.806Z","level":"INFO","message":"Processing request","requestId":"local-1760021028806-ao89ux8v4","httpMethod":"POST","path":"/favicon.ico","isLocal":true}
+{"timestamp":"2025-10-09T14:43:48.806Z","level":"INFO","message":"QUERY"}
+{"timestamp":"2025-10-09T14:43:48.806Z","level":"INFO","message":"Classifying user intention","requestId":"local-1760021028806-ao89ux8v4","messageLength":31}
+{"timestamp":"2025-10-09T14:43:48.806Z","level":"INFO","message":"Invoking Intention Classifier Agent","inputText":"My policy ID is POL-2025-123456","agentId":"VGAVD9PZO4","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:49.867Z","level":"INFO","message":"Intention Classifier Agent invocation successful","completion":"PolicyAgent","sessionId":"session-1760021028806-7dxsj5","responseLength":11,"agentId":"VGAVD9PZO4"}
+{"timestamp":"2025-10-09T14:43:49.867Z","level":"INFO","message":"Intention classification result","requestId":"local-1760021028806-ao89ux8v4","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:49.867Z","level":"INFO","message":"Routing request to agent","requestId":"local-1760021028806-ao89ux8v4","classification":"PolicyAgent"}
+{"timestamp":"2025-10-09T14:43:49.867Z","level":"INFO","message":"Routing to agent","requestId":"local-1760021028806-ao89ux8v4","classification":"PolicyAgent","agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:49.868Z","level":"INFO","message":"Invoking PolicyAgent","inputText":"My policy ID is POL-2025-123456","agentId":"ZRNALBLY8L","inputLength":31,"hasSessionId":false,"hasGlobalSessionId":false}
+{"timestamp":"2025-10-09T14:43:52.989Z","level":"ERROR","message":"Error processing response stream","error":"Your request rate is too high. Reduce the frequency of requests. Check your Bedrock model invocation quotas to find the acceptable frequency.","chunksReceived":0}
+{"timestamp":"2025-10-09T14:43:52.990Z","level":"ERROR","message":"Error invoking PolicyAgent","error":"Failed to process response stream: Your request rate is too high. Reduce the frequency of requests. Check your Bedrock model invocation quotas to find the acceptable frequency.","stack":"Error: Failed to process response stream: Your request rate is too high. Reduce the frequency of requests. Check your Bedrock model invocation quotas to find the acceptable frequency.\n    at processResponseStream (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/bedrockClient.mjs:205:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async invokeSpecificAgent (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/bedrockClient.mjs:112:24)\n    at async routeToAgent (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/app.mjs:178:10)\n    at async lambdaHandler (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/app.mjs:257:27)\n    at async IncomingMessage.<anonymous> (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/app.mjs:374:26)","agentId":"ZRNALBLY8L"}
+{"timestamp":"2025-10-09T14:43:52.990Z","level":"ERROR","message":"Error processing request","requestId":"local-1760021028806-ao89ux8v4","error":"Failed to invoke PolicyAgent: Failed to process response stream: Your request rate is too high. Reduce the frequency of requests. Check your Bedrock model invocation quotas to find the acceptable frequency.","stack":"Error: Failed to invoke PolicyAgent: Failed to process response stream: Your request rate is too high. Reduce the frequency of requests. Check your Bedrock model invocation quotas to find the acceptable frequency.\n    at invokeSpecificAgent (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/bedrockClient.mjs:135:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async routeToAgent (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/app.mjs:178:10)\n    at async lambdaHandler (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/app.mjs:257:27)\n    at async IncomingMessage.<anonymous> (file:///Users/dmytro.denysov/Work/Sites/purrsurance/apps/services/service-router/app.mjs:374:26)"}
