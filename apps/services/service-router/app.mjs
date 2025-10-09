@@ -12,7 +12,12 @@
  */
 
 import { config, validateConfig, getPrintableConfig } from './config.mjs';
-import { invokeBedrockAgent, testBedrockConnection } from './bedrockClient.mjs';
+import { 
+  invokeBedrockAgent, 
+  testBedrockConnection,
+  invokeIntentionClassifier,
+  invokePolicyManagerAgent 
+} from './bedrockClient.mjs';
 import { logger } from './logger.mjs';
 import { saveChatMessage } from './chatHistoryService.mjs';
 
@@ -86,6 +91,83 @@ function parseRequestBody(event) {
 }
 
 /**
+ * Classify user intention using Intention Classifier Agent
+ * @param {string} message - User message
+ * @param {string} requestId - Request ID for logging
+ * @returns {Promise<string>} Classification result: "PolicyAgent", "VetDocAgent", or "AgentNotFoundException"
+ */
+async function classifyUserIntention(message, requestId) {
+  try {
+    logger.info('Classifying user intention', {
+      requestId,
+      messageLength: message.length,
+    });
+    
+    const classifierResponse = await invokeIntentionClassifier(message);
+    const classification = classifierResponse.completion.trim();
+    
+    logger.info('Intention classification result', {
+      requestId,
+      classification,
+    });
+    
+    return classification;
+  } catch (error) {
+    logger.error('Error classifying user intention', {
+      requestId,
+      error: error.message,
+    });
+    throw error;
+  }
+}
+
+/**
+ * Route request to appropriate agent based on classification
+ * @param {string} classification - Classification result from Intention Classifier
+ * @param {string} message - User message
+ * @param {string} sessionId - Session ID for Bedrock Agent
+ * @param {string} globalSessionId - Global session ID for chat history
+ * @param {string} requestId - Request ID for logging
+ * @returns {Promise<Object>} Agent response
+ */
+async function routeToAgent(classification, message, sessionId, globalSessionId, requestId) {
+  logger.info('Routing request to agent', {
+    requestId,
+    classification,
+  });
+  
+  switch (classification) {
+    case 'PolicyAgent':
+      logger.info('Routing to Policy Manager Agent', { requestId });
+      return await invokePolicyManagerAgent(message, sessionId, globalSessionId);
+    
+    case 'VetDocAgent':
+      logger.warn('VetDocAgent not implemented yet', { requestId });
+      return {
+        completion: 'I apologize, but the veterinary consultation service is not available at the moment. Please try again later or contact our support team.',
+        sessionId: sessionId || `session-${Date.now()}`,
+        contentType: 'text/plain',
+      };
+    
+    case 'AgentNotFoundException':
+      logger.info('No specific agent needed', { requestId });
+      return {
+        completion: 'Hello! I can help you with insurance policy information or veterinary consultations for your pet. How can I assist you today?',
+        sessionId: sessionId || `session-${Date.now()}`,
+        contentType: 'text/plain',
+      };
+    
+    default:
+      logger.warn('Unknown classification result', { requestId, classification });
+      return {
+        completion: 'I apologize, but I\'m not sure how to help with that. Could you please rephrase your question? I can assist with insurance policies or pet health concerns.',
+        sessionId: sessionId || `session-${Date.now()}`,
+        contentType: 'text/plain',
+      };
+  }
+}
+
+/**
  * Main Lambda handler
  */
 export const lambdaHandler = async (event, context) => {
@@ -122,13 +204,6 @@ export const lambdaHandler = async (event, context) => {
       });
     }
     
-    logger.info('Invoking Bedrock Agent', {
-      requestId,
-      messageLength: message.length,
-      hasSessionId: !!sessionId,
-      hasGlobalSessionId: !!globalSessionId,
-    });
-    
     // Save user message to database (if globalSessionId is provided)
     if (globalSessionId) {
       try {
@@ -152,8 +227,17 @@ export const lambdaHandler = async (event, context) => {
       }
     }
     
-    // Invoke Bedrock Agent with session attributes
-    const agentResponse = await invokeBedrockAgent(message, sessionId, globalSessionId);
+    // Step 1: Classify user intention
+    const classification = await classifyUserIntention(message, requestId);
+    
+    // Step 2: Route to appropriate agent based on classification
+    const agentResponse = await routeToAgent(
+      classification,
+      message,
+      sessionId,
+      globalSessionId,
+      requestId
+    );
     
     // Save assistant response to database (if globalSessionId is provided)
     if (globalSessionId) {
@@ -184,6 +268,7 @@ export const lambdaHandler = async (event, context) => {
     
     logger.info('Request processed successfully', {
       requestId,
+      classification,
       responseLength: agentResponse.completion.length,
     });
     
@@ -196,6 +281,7 @@ export const lambdaHandler = async (event, context) => {
       },
       metadata: {
         requestId,
+        classification,
         timestamp: new Date().toISOString(),
         environment: config.environment,
       },

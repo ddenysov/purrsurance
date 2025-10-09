@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   service-router
   
-  Lambda function that routes chat messages to AWS Bedrock Agent
+  Lambda function that classifies user intentions and routes chat messages to appropriate AWS Bedrock Agents
 
 Globals:
   Function:
@@ -26,6 +26,10 @@ Parameters:
     Type: String
     Description: Name of the IntentionClassifierAgent CloudFormation stack (e.g. purrsurance-agent-intention-classifier)
   
+  PolicyManagerStackName:
+    Type: String
+    Description: Name of the PolicyManager CloudFormation stack (e.g. purrsurance-agent-policy-manager)
+  
   ChatHistoryTableName:
     Type: String
     Description: DynamoDB table name for chat history
@@ -46,11 +50,22 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: app.lambdaHandler
-      Description: Routes chat messages to AWS Bedrock Agent
+      Description: Classifies user intentions and routes chat messages to appropriate AWS Bedrock Agents (Policy Manager, VetDoc, etc.)
       MemorySize: 512
       Environment:
         Variables:
           ENVIRONMENT: !Ref Environment
+          # Intention Classifier Agent
+          INTENTION_CLASSIFIER_AGENT_ID: !ImportValue
+            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentId'
+          INTENTION_CLASSIFIER_AGENT_ALIAS_ID: !ImportValue
+            Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentAliasId'
+          # Policy Manager Agent
+          POLICY_MANAGER_AGENT_ID: !ImportValue
+            Fn::Sub: '${PolicyManagerStackName}-PolicyManagerAgentId'
+          POLICY_MANAGER_AGENT_ALIAS_ID: !ImportValue
+            Fn::Sub: '${PolicyManagerStackName}-PolicyManagerAgentAliasId'
+          # Legacy support (kept for backward compatibility)
           BEDROCK_AGENT_ID: !ImportValue
             Fn::Sub: '${IntentionClassifierStackName}-IntentionClassifierAgentId'
           BEDROCK_AGENT_ALIAS_ID: !ImportValue

@@ -58,21 +58,24 @@ async function getMockResponse(inputText) {
 }
 
 /**
- * Invoke AWS Bedrock Agent
+ * Invoke a specific AWS Bedrock Agent by ID and Alias
+ * @param {string} agentId - Bedrock Agent ID
+ * @param {string} agentAliasId - Bedrock Agent Alias ID
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {string} globalSessionId - Optional global session ID for SSE event routing
+ * @param {string} agentName - Optional agent name for logging
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null) {
+export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, agentName = 'Bedrock Agent') {
   try {
     // Use mock for local development if configured
     if (config.bedrock.useMock) {
       return await getMockResponse(inputText);
     }
     
-    logger.info('Invoking Bedrock Agent', {
-      agentId: config.bedrock.agentId,
+    logger.info(`Invoking ${agentName}`, {
+      agentId: agentId,
       inputLength: inputText.length,
       hasSessionId: !!sessionId,
       hasGlobalSessionId: !!globalSessionId,
@@ -82,8 +85,8 @@ export async function invokeBedrockAgent(inputText, sessionId = null, globalSess
     
     // Prepare command parameters
     const commandParams = {
-      agentId: config.bedrock.agentId,
-      agentAliasId: config.bedrock.agentAliasId,
+      agentId: agentId,
+      agentAliasId: agentAliasId,
       sessionId: sessionId || `session-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       inputText: inputText,
       enableTrace: config.bedrock.sessionConfig.enableTrace,
@@ -107,7 +110,7 @@ export async function invokeBedrockAgent(inputText, sessionId = null, globalSess
     // Process the response stream
     const completion = await processResponseStream(response);
     
-    logger.info('Bedrock Agent invocation successful', {
+    logger.info(`${agentName} invocation successful`, {
       sessionId: commandParams.sessionId,
       responseLength: completion.length,
     });
@@ -119,14 +122,67 @@ export async function invokeBedrockAgent(inputText, sessionId = null, globalSess
       trace: config.bedrock.sessionConfig.enableTrace ? response.trace : undefined,
     };
   } catch (error) {
-    logger.error('Error invoking Bedrock Agent', {
+    logger.error(`Error invoking ${agentName}`, {
       error: error.message,
       stack: error.stack,
-      agentId: config.bedrock.agentId,
+      agentId: agentId,
     });
     
-    throw new Error(`Failed to invoke Bedrock Agent: ${error.message}`);
+    throw new Error(`Failed to invoke ${agentName}: ${error.message}`);
   }
+}
+
+/**
+ * Invoke AWS Bedrock Agent (legacy function for backward compatibility)
+ * @param {string} inputText - User input text
+ * @param {string} sessionId - Optional session ID for conversation continuity
+ * @param {string} globalSessionId - Optional global session ID for SSE event routing
+ * @returns {Promise<Object>} Agent response
+ */
+export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null) {
+  return invokeSpecificAgent(
+    config.bedrock.agentId,
+    config.bedrock.agentAliasId,
+    inputText,
+    sessionId,
+    globalSessionId,
+    'Bedrock Agent'
+  );
+}
+
+/**
+ * Invoke Intention Classifier Agent
+ * @param {string} inputText - User input text
+ * @param {string} sessionId - Optional session ID for conversation continuity
+ * @returns {Promise<Object>} Agent response with classification
+ */
+export async function invokeIntentionClassifier(inputText, sessionId = null) {
+  return invokeSpecificAgent(
+    config.bedrock.intentionClassifier.agentId,
+    config.bedrock.intentionClassifier.agentAliasId,
+    inputText,
+    sessionId,
+    null,
+    'Intention Classifier Agent'
+  );
+}
+
+/**
+ * Invoke Policy Manager Agent
+ * @param {string} inputText - User input text
+ * @param {string} sessionId - Optional session ID for conversation continuity
+ * @param {string} globalSessionId - Optional global session ID for SSE event routing
+ * @returns {Promise<Object>} Agent response
+ */
+export async function invokePolicyManagerAgent(inputText, sessionId = null, globalSessionId = null) {
+  return invokeSpecificAgent(
+    config.bedrock.policyManager.agentId,
+    config.bedrock.policyManager.agentAliasId,
+    inputText,
+    sessionId,
+    globalSessionId,
+    'Policy Manager Agent'
+  );
 }
 
 /**

@@ -17,6 +17,17 @@ export const config = {
   
   // AWS Bedrock Agent configuration
   bedrock: {
+    // Intention Classifier Agent
+    intentionClassifier: {
+      agentId: process.env.INTENTION_CLASSIFIER_AGENT_ID,
+      agentAliasId: process.env.INTENTION_CLASSIFIER_AGENT_ALIAS_ID || 'TSTALIASID',
+    },
+    // Policy Manager Agent
+    policyManager: {
+      agentId: process.env.POLICY_MANAGER_AGENT_ID,
+      agentAliasId: process.env.POLICY_MANAGER_AGENT_ALIAS_ID || 'TSTALIASID',
+    },
+    // Legacy support (for backward compatibility)
     agentId: process.env.BEDROCK_AGENT_ID,
     agentAliasId: process.env.BEDROCK_AGENT_ALIAS_ID || 'TSTALIASID',
     region: process.env.AWS_REGION || 'us-east-1',
@@ -54,11 +65,20 @@ export function validateConfig() {
   
   // In non-local/non-mock mode, Bedrock config is required
   if (!config.isLocal && !config.bedrock.useMock) {
-    if (!config.bedrock.agentId) {
-      errors.push('BEDROCK_AGENT_ID is required');
+    // Check Intention Classifier Agent config
+    if (!config.bedrock.intentionClassifier.agentId) {
+      errors.push('INTENTION_CLASSIFIER_AGENT_ID is required');
     }
-    if (!config.bedrock.agentAliasId) {
-      errors.push('BEDROCK_AGENT_ALIAS_ID is required');
+    if (!config.bedrock.intentionClassifier.agentAliasId) {
+      errors.push('INTENTION_CLASSIFIER_AGENT_ALIAS_ID is required');
+    }
+    
+    // Check Policy Manager Agent config
+    if (!config.bedrock.policyManager.agentId) {
+      errors.push('POLICY_MANAGER_AGENT_ID is required');
+    }
+    if (!config.bedrock.policyManager.agentAliasId) {
+      errors.push('POLICY_MANAGER_AGENT_ALIAS_ID is required');
     }
   }
   
@@ -76,8 +96,14 @@ export function getPrintableConfig() {
     environment: config.environment,
     isLocal: config.isLocal,
     bedrock: {
-      agentId: config.bedrock.agentId ? '***' + config.bedrock.agentId.slice(-4) : 'not set',
-      agentAliasId: config.bedrock.agentAliasId,
+      intentionClassifier: {
+        agentId: config.bedrock.intentionClassifier.agentId ? '***' + config.bedrock.intentionClassifier.agentId.slice(-4) : 'not set',
+        agentAliasId: config.bedrock.intentionClassifier.agentAliasId,
+      },
+      policyManager: {
+        agentId: config.bedrock.policyManager.agentId ? '***' + config.bedrock.policyManager.agentId.slice(-4) : 'not set',
+        agentAliasId: config.bedrock.policyManager.agentAliasId,
+      },
       region: config.bedrock.region,
       useMock: config.bedrock.useMock,
       enableTrace: config.bedrock.sessionConfig.enableTrace,

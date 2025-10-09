@@ -18,7 +18,7 @@ confirm_changeset = true
 resolve_s3 = true
 region = "us-east-1"
 s3_prefix = "service-router"
-parameter_overrides = "Environment=\"prod\" IntentionClassifierStackName=\"purrsurance-agent-intention-classifier\" ChatHistoryTableName=\"agent-operator-prod-ChatHistory\" LogLevel=\"info\""
+parameter_overrides = "Environment=\"prod\" IntentionClassifierStackName=\"purrsurance-agent-intention-classifier\" PolicyManagerStackName=\"purrsurance-agent-policy-manager\" ChatHistoryTableName=\"agent-operator-prod-ChatHistory\" LogLevel=\"info\""
 
 [default.package.parameters]
 resolve_s3 = true
