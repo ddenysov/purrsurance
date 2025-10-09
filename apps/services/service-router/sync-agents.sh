@@ -65,21 +65,28 @@ get_agent_aliases() {
     local AGENT_ID=$1
     local AGENT_NAME=$2
     
-    echo -e "${YELLOW}Fetching aliases for $AGENT_NAME...${NC}"
+    # Output informational messages to stderr so they don't get captured
+    echo -e "${YELLOW}Fetching aliases for $AGENT_NAME...${NC}" >&2
     
     ALIASES=$(aws bedrock-agent list-agent-aliases --agent-id "$AGENT_ID" --query 'agentAliasSummaries[*].[agentAliasName,agentAliasId,agentAliasStatus]' --output json)
     
     if [ "$(echo "$ALIASES" | jq length)" -eq 0 ]; then
-        echo -e "${RED}  No aliases found for this agent${NC}"
+        echo -e "${RED}  No aliases found for this agent${NC}" >&2
         return 1
     fi
     
-    echo -e "${GREEN}  Available Aliases:${NC}"
-    echo "$ALIASES" | jq -r '.[] | "  - \(.[0]): \(.[1]) [\(.[2])]"'
-    echo ""
+    echo -e "${GREEN}  Available Aliases:${NC}" >&2
+    echo "$ALIASES" | jq -r '.[] | "  - \(.[0]): \(.[1]) [\(.[2])]"' >&2
+    echo "" >&2
     
-    # Return the first PREPARED alias ID
-    ALIAS_ID=$(echo "$ALIASES" | jq -r '.[] | select(.[2] == "PREPARED") | .[1]' | head -n 1)
+    # Try to find a prod alias first (prefer production aliases)
+    ALIAS_ID=$(echo "$ALIASES" | jq -r '.[] | select(.[2] == "PREPARED" and (.[0] | contains("prod"))) | .[1]' | head -n 1)
+    
+    # If no prod alias found, get the first PREPARED alias
+    if [ -z "$ALIAS_ID" ]; then
+        ALIAS_ID=$(echo "$ALIASES" | jq -r '.[] | select(.[2] == "PREPARED") | .[1]' | head -n 1)
+    fi
+    
     echo "$ALIAS_ID"
 }
 
