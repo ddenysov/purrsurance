@@ -70,11 +70,12 @@ async function getMockResponse(inputText) {
 export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, agentName = 'Bedrock Agent') {
   try {
     // Use mock for local development if configured
-    if (config.bedrock.useMock) {
-      return await getMockResponse(inputText);
-    }
+    //if (config.bedrock.useMock) {
+    //  return await getMockResponse(inputText);
+   // }
     
     logger.info(`Invoking ${agentName}`, {
+      inputText: inputText,
       agentId: agentId,
       inputLength: inputText.length,
       hasSessionId: !!sessionId,
@@ -111,13 +112,14 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
     const completion = await processResponseStream(response);
     
     logger.info(`${agentName} invocation successful`, {
+      completion: completion,
       sessionId: commandParams.sessionId,
       responseLength: completion.length,
       agentId: agentId,
     });
     
     return {
-      completion: 'Agent routed completion [' + agentId +'][' + completion + ']',
+      completion: completion,
       sessionId: commandParams.sessionId,
       contentType: 'text/plain',
       agentId: agentId,

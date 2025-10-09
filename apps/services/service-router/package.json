@@ -14,7 +14,9 @@
     "@aws-sdk/lib-dynamodb": "^3.600.0"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
+    "start": "node app.mjs",
+    "dev": "./start-local.sh"
   },
   "devDependencies": {
     "jest": "^29.7.0"

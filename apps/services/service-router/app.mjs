@@ -205,10 +205,15 @@ export const lambdaHandler = async (event, context) => {
       return createResponse(200, { message: 'OK' });
     }
     
-    // Parse request body
+    // Get message from query parameters
+    const queryParams = event.queryStringParameters || {};
+    const message = queryParams.message || 'My policy ID is POL-2025-123456';
+
+    logger.info('QUERY', event.queryStringParameters);
+    
+    // Parse request body for other parameters
     const body = parseRequestBody(event);
     const { 
-      message = 'My policy ID is abcd-1234',
       sessionId, 
       globalSessionId 
     } = body;
@@ -300,6 +305,7 @@ export const lambdaHandler = async (event, context) => {
       metadata: {
         requestId,
         classification,
+        message,
         agentId: agentResponse.agentId,
         timestamp: new Date().toISOString(),
         environment: config.environment,
@@ -321,3 +327,79 @@ export const lambdaHandler = async (event, context) => {
     });
   }
 };
+
+/**
+ * Local development server
+ * Runs only when file is executed directly with node
+ */
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const http = await import('http');
+  const PORT = process.env.PORT || 3002;
+  
+  const server = http.createServer(async (req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', config.cors.allowOrigin);
+    res.setHeader('Access-Control-Allow-Methods', config.cors.allowMethods);
+    res.setHeader('Access-Control-Allow-Headers', config.cors.allowHeaders);
+    
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+
+    // Read request body
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    
+    req.on('end', async () => {
+      try {
+        // Create Lambda-like event object
+        const event = {
+          httpMethod: 'POST',
+          path: req.url,
+          body: body,
+          headers: req.headers,
+        };
+        
+        // Create Lambda-like context object
+        const context = {
+          requestId: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        };
+        
+        // Call Lambda handler
+        const response = await lambdaHandler(event, context);
+        
+        // Send response
+        res.writeHead(response.statusCode, response.headers);
+        res.end(response.body);
+      } catch (error) {
+        logger.error('Local server error', {
+          error: error.message,
+          stack: error.stack,
+        });
+        
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          error: 'Internal Server Error',
+          message: error.message,
+        }));
+      }
+    });
+  });
+  
+  server.listen(PORT, () => {
+    logger.info('Local development server started', {
+      port: PORT,
+      url: `http://localhost:${PORT}`,
+      environment: config.environment,
+      isLocal: config.isLocal,
+      useMock: false,
+    });
+    console.log(`\n🚀 Service Router is running on http://localhost:${PORT}`);
+    console.log(`\n📝 Test with:\ncurl -X POST http://localhost:${PORT} \\\n  -H "Content-Type: application/json" \\\n  -d '{"message": "My policy id is POL-2025-123456", "globalSessionId": "test-session-123"}'\n`);
+  });
+}
