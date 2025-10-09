@@ -276,7 +276,7 @@ export const lambdaHandler = async (event, context) => {
     return createResponse(200, {
       message: 'Success',
       data: {
-        response: agentResponse.completion,
+        response: classification + ' ' + agentResponse.completion,
         sessionId: agentResponse.sessionId,
       },
       metadata: {

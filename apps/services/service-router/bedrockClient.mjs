@@ -116,7 +116,7 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
     });
     
     return {
-      completion: completion,
+      completion: 'Agent routed completion [' + agentId +'][' + completion + ']',
       sessionId: commandParams.sessionId,
       contentType: 'text/plain',
       trace: config.bedrock.sessionConfig.enableTrace ? response.trace : undefined,
