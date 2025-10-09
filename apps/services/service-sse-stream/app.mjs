@@ -8,7 +8,7 @@
 /* global awslambda */
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, QueryCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { config, getPrintableConfig } from './config.mjs';
 import { logger } from './logger.mjs';
 import { 
@@ -37,45 +37,30 @@ initialize();
 
 /**
  * Query DynamoDB for new events since last timestamp
- * DEBUG MODE: Disabled session filter to see all events
- * @param {string} sessionId - Session ID to query events for (currently not filtered)
+ * @param {string} sessionId - Session ID to query events for
  * @param {number} lastTimestamp - Last event timestamp
  * @returns {Promise<Array>} Array of new events
  */
 async function queryNewEvents(sessionId, lastTimestamp) {
   const params = {
     TableName: config.dynamodb.tableName,
-    FilterExpression: '#ts > :lastTs',
+    KeyConditionExpression: 'partitionKey = :pk AND #ts > :lastTs',
     ExpressionAttributeNames: {
       '#ts': 'timestamp',
     },
     ExpressionAttributeValues: {
+      ':pk': sessionId, // Use sessionId as partition key
       ':lastTs': lastTimestamp,
     },
+    ScanIndexForward: true, // Sort by timestamp ascending
   };
 
   try {
-    logger.info('DEBUG: Scanning all events (session filter disabled)', {
-      tableName: config.dynamodb.tableName,
-      lastTimestamp,
-      sessionId: sessionId + ' (ignored)',
-    });
-    
-    const command = new ScanCommand(params);
+    const command = new QueryCommand(params);
     const result = await docClient.send(command);
-    
-    logger.info('DEBUG: Found events', {
-      count: result.Items?.length || 0,
-      items: result.Items?.map(item => ({
-        partitionKey: item.partitionKey,
-        timestamp: item.timestamp,
-        eventType: item.eventType,
-      })),
-    });
-    
     return result.Items || [];
   } catch (error) {
-    logger.error('Error scanning DynamoDB', {
+    logger.error('Error querying DynamoDB', {
       error: error.message,
       tableName: config.dynamodb.tableName,
       sessionId,
@@ -420,30 +405,30 @@ export const lambdaHandler = awslambda.streamifyResponse(
     
     logger.info('Processing SSE request', {
       requestId,
-      sessionId: sessionId || 'DEBUG: no session filter',
+      sessionId,
       httpMethod: event.httpMethod || event.requestContext?.http?.method,
       path: event.path || event.requestContext?.http?.path,
     });
     
-    // DEBUG MODE: sessionId validation disabled
-    // if (!sessionId) {
-    //   logger.error('Missing sessionId in request', { requestId });
-    //   const errorMsg = createError('Missing sessionId parameter');
-    //   
-    //   const metadata = {
-    //     statusCode: 400,
-    //     headers: {
-    //       'Content-Type': 'text/event-stream',
-    //       'Access-Control-Allow-Origin': config.cors.allowOrigin,
-    //       'Access-Control-Allow-Methods': config.cors.allowMethods,
-    //       'Access-Control-Allow-Headers': config.cors.allowHeaders,
-    //     },
-    //   };
-    //   responseStream = awslambda.HttpResponseStream.from(responseStream, metadata);
-    //   responseStream.write(errorMsg);
-    //   responseStream.end();
-    //   return;
-    // }
+    // Validate sessionId
+    if (!sessionId) {
+      logger.error('Missing sessionId in request', { requestId });
+      const errorMsg = createError('Missing sessionId parameter');
+      
+      const metadata = {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Access-Control-Allow-Origin': config.cors.allowOrigin,
+          'Access-Control-Allow-Methods': config.cors.allowMethods,
+          'Access-Control-Allow-Headers': config.cors.allowHeaders,
+        },
+      };
+      responseStream = awslambda.HttpResponseStream.from(responseStream, metadata);
+      responseStream.write(errorMsg);
+      responseStream.end();
+      return;
+    }
     
     // Set SSE headers with CORS
     const metadata = {

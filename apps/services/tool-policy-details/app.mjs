@@ -70,13 +70,14 @@ export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
 
-  // Extract sessionId from event (can be in sessionId or sessionAttributes)
-  const sessionId = event.sessionId || 
-                    event.sessionState?.sessionAttributes?.sessionId || 
+  // Extract sessionId from event (prioritize globalSessionId from sessionAttributes)
+  const sessionId = event.sessionState?.sessionAttributes?.sessionId || 
                     event.sessionAttributes?.sessionId || 
+                    event.sessionId || 
                     'unknown-session';
   
   console.log('Extracted sessionId:', sessionId);
+  console.log('Bedrock sessionId (internal):', event.sessionId);
 
   let responseBodyContent = {};
 

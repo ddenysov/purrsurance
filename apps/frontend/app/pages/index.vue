@@ -330,7 +330,7 @@ onMounted(() => {
       // For example, show a notification, update UI, etc.
     })
 
-    onEvent('policy_updated', (event) => {
+    onEvent('PolicyDetailsRetrieved', (event) => {
       console.log('[EventBus] Policy updated event received:', event)
       latestPolicyEvent.value = event
       // Process and validate policy_updated event
