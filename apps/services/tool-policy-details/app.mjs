@@ -39,9 +39,8 @@ export const lambdaHandler = async (event, context) => {
   try {
     // Find the policyId parameter passed by the agent.
     // NOTE: Without an OpenAPI schema, the agent may not be able to extract parameters effectively.
-    // This is a known limitation. We'll use a default for demonstration.
     const policyIdParam = parameters.find(p => p.name === 'policyId');
-    const policyId = policyIdParam ? policyIdParam.value : 'PETS-INS-2025-000123'; // Default for testing
+    const policyId = policyIdParam?.value;
 
     if (!policyId) {
       responseBodyContent = { 
@@ -69,7 +68,7 @@ export const lambdaHandler = async (event, context) => {
             licenseTag: "KY-2025-00987",
             passportNumber: "UA-PET-000112233"
           },
-          photoUrl: "https://www.shutterstock.com/image-photo/portrait-funny-white-cat-sticking-600nw-2451690317.jpg",
+          photoUrl: process.env.DEFAULT_PET_PHOTO_URL || "",
           weight: {
             currentKg: 4.3,
             lastUpdated: "2025-09-20",

@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  tool-policy-details
+  
+  Lambda function that returns policy details for Bedrock Agent
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+  
+  EventPublisherStackName:
+    Type: String
+    Description: Name of the Event Publisher CloudFormation stack to get Events Table name
+  
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - warn
+      - info
+      - debug
+    Description: Logging level
+
+Resources:
+  # SNS Topic for policy events
+  PolicyEventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-policy-events'
+      DisplayName: Policy Events Topic
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Service
+          Value: tool-policy-details
+
+  # Subscribe Event Publisher to this topic
+  PolicyEventsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: lambda
+      TopicArn: !Ref PolicyEventsTopic
+      Endpoint: !ImportValue
+        Fn::Sub: '${EventPublisherStackName}-FunctionArn'
+
+  # Permission for SNS to invoke Event Publisher Lambda
+  PolicyEventsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !ImportValue
+        Fn::Sub: '${EventPublisherStackName}-FunctionArn'
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref PolicyEventsTopic
+
+  # Lambda Function for getting policy details
+  GetPolicyDetailsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: app.lambdaHandler
+      Description: Returns policy details for Bedrock Agent (Function Response Format)
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          EVENTS_TOPIC_ARN: !Ref PolicyEventsTopic
+          LOG_LEVEL: !Ref LogLevel
+          NODE_ENV: production
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt PolicyEventsTopic.TopicName
+
+Outputs:
+  GetPolicyDetailsFunction:
+    Description: Get Policy Details Lambda Function ARN
+    Value: !GetAtt GetPolicyDetailsFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionArn'
+  
+  GetPolicyDetailsFunctionIamRole:
+    Description: Implicit IAM Role created for Get Policy Details function
+    Value: !GetAtt GetPolicyDetailsFunctionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionRoleArn'
+  
+  PolicyEventsTopicArn:
+    Description: SNS Topic ARN for policy events
+    Value: !Ref PolicyEventsTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-PolicyEventsTopicArn'
+  
+  PolicyEventsTopicName:
+    Description: SNS Topic Name for policy events
+    Value: !GetAtt PolicyEventsTopic.TopicName
+    Export:
+      Name: !Sub '${AWS::StackName}-PolicyEventsTopicName'
+
