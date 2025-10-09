@@ -113,12 +113,14 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
     logger.info(`${agentName} invocation successful`, {
       sessionId: commandParams.sessionId,
       responseLength: completion.length,
+      agentId: agentId,
     });
     
     return {
       completion: 'Agent routed completion [' + agentId +'][' + completion + ']',
       sessionId: commandParams.sessionId,
       contentType: 'text/plain',
+      agentId: agentId,
       trace: config.bedrock.sessionConfig.enableTrace ? response.trace : undefined,
     };
   } catch (error) {
@@ -167,23 +169,6 @@ export async function invokeIntentionClassifier(inputText, sessionId = null) {
   );
 }
 
-/**
- * Invoke Policy Manager Agent
- * @param {string} inputText - User input text
- * @param {string} sessionId - Optional session ID for conversation continuity
- * @param {string} globalSessionId - Optional global session ID for SSE event routing
- * @returns {Promise<Object>} Agent response
- */
-export async function invokePolicyManagerAgent(inputText, sessionId = null, globalSessionId = null) {
-  return invokeSpecificAgent(
-    config.bedrock.policyManager.agentId,
-    config.bedrock.policyManager.agentAliasId,
-    inputText,
-    sessionId,
-    globalSessionId,
-    'Policy Manager Agent'
-  );
-}
 
 /**
  * Process the response stream from Bedrock Agent

@@ -30,6 +30,11 @@ Parameters:
     Type: String
     Description: Name of the PolicyManager CloudFormation stack (e.g. purrsurance-agent-policy-manager)
   
+  PolicyAgentStackName:
+    Type: String
+    Description: Name of the PolicyAgent CloudFormation stack (optional, for additional policy agent)
+    Default: ""
+  
   ChatHistoryTableName:
     Type: String
     Description: DynamoDB table name for chat history

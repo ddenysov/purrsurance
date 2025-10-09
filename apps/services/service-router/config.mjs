@@ -27,6 +27,11 @@ export const config = {
       agentId: process.env.POLICY_MANAGER_AGENT_ID,
       agentAliasId: process.env.POLICY_MANAGER_AGENT_ALIAS_ID || 'TSTALIASID',
     },
+    // VetDoc Agent (for future implementation)
+    vetDoc: {
+      agentId: process.env.VETDOC_AGENT_ID,
+      agentAliasId: process.env.VETDOC_AGENT_ALIAS_ID || 'TSTALIASID',
+    },
     // Legacy support (for backward compatibility)
     agentId: process.env.BEDROCK_AGENT_ID,
     agentAliasId: process.env.BEDROCK_AGENT_ALIAS_ID || 'TSTALIASID',
@@ -35,6 +40,12 @@ export const config = {
     sessionConfig: {
       enableTrace: process.env.ENABLE_TRACE === 'true' || false,
     },
+  },
+  
+  // Agent routing mapping: maps classifier output to agent configuration
+  agentMapping: {
+    'PolicyAgent': 'policyManager',
+    'VetDocAgent': 'vetDoc',
   },
   
   // DynamoDB configuration
@@ -88,6 +99,29 @@ export function validateConfig() {
 }
 
 /**
+ * Get agent configuration by classification name
+ * @param {string} classification - Classification result from Intention Classifier
+ * @returns {Object|null} Agent configuration object or null if not found
+ */
+export function getAgentConfig(classification) {
+  const agentKey = config.agentMapping[classification];
+  if (!agentKey) {
+    return null;
+  }
+  
+  const agentConfig = config.bedrock[agentKey];
+  if (!agentConfig || !agentConfig.agentId) {
+    return null;
+  }
+  
+  return {
+    agentId: agentConfig.agentId,
+    agentAliasId: agentConfig.agentAliasId,
+    name: classification,
+  };
+}
+
+/**
  * Get printable config (without sensitive data)
  * @returns {Object} Safe config object for logging
  */
@@ -104,10 +138,15 @@ export function getPrintableConfig() {
         agentId: config.bedrock.policyManager.agentId ? '***' + config.bedrock.policyManager.agentId.slice(-4) : 'not set',
         agentAliasId: config.bedrock.policyManager.agentAliasId,
       },
+      vetDoc: {
+        agentId: config.bedrock.vetDoc.agentId ? '***' + config.bedrock.vetDoc.agentId.slice(-4) : 'not set',
+        agentAliasId: config.bedrock.vetDoc.agentAliasId,
+      },
       region: config.bedrock.region,
       useMock: config.bedrock.useMock,
       enableTrace: config.bedrock.sessionConfig.enableTrace,
     },
+    agentMapping: config.agentMapping,
     dynamodb: {
       chatHistoryTable: config.dynamodb.chatHistoryTable,
     },

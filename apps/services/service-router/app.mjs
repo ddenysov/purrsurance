@@ -11,12 +11,12 @@
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  */
 
-import { config, validateConfig, getPrintableConfig } from './config.mjs';
+import { config, validateConfig, getPrintableConfig, getAgentConfig } from './config.mjs';
 import { 
   invokeBedrockAgent, 
   testBedrockConnection,
   invokeIntentionClassifier,
-  invokePolicyManagerAgent 
+  invokeSpecificAgent 
 } from './bedrockClient.mjs';
 import { logger } from './logger.mjs';
 import { saveChatMessage } from './chatHistoryService.mjs';
@@ -136,35 +136,53 @@ async function routeToAgent(classification, message, sessionId, globalSessionId,
     classification,
   });
   
-  switch (classification) {
-    case 'PolicyAgent':
-      logger.info('Routing to Policy Manager Agent', { requestId });
-      return await invokePolicyManagerAgent(message, sessionId, globalSessionId);
-    
-    case 'VetDocAgent':
-      logger.warn('VetDocAgent not implemented yet', { requestId });
-      return {
-        completion: 'I apologize, but the veterinary consultation service is not available at the moment. Please try again later or contact our support team.',
-        sessionId: sessionId || `session-${Date.now()}`,
-        contentType: 'text/plain',
-      };
-    
-    case 'AgentNotFoundException':
-      logger.info('No specific agent needed', { requestId });
-      return {
-        completion: 'Hello! I can help you with insurance policy information or veterinary consultations for your pet. How can I assist you today?',
-        sessionId: sessionId || `session-${Date.now()}`,
-        contentType: 'text/plain',
-      };
-    
-    default:
-      logger.warn('Unknown classification result', { requestId, classification });
-      return {
-        completion: 'I apologize, but I\'m not sure how to help with that. Could you please rephrase your question? I can assist with insurance policies or pet health concerns.',
-        sessionId: sessionId || `session-${Date.now()}`,
-        contentType: 'text/plain',
-      };
+  // Handle special case: no agent needed
+  if (classification === 'AgentNotFoundException') {
+    logger.info('No specific agent needed', { requestId });
+    return {
+      completion: 'Hello! I can help you with insurance policy information or veterinary consultations for your pet. How can I assist you today?',
+      sessionId: sessionId || `session-${Date.now()}`,
+      contentType: 'text/plain',
+    };
   }
+  
+  // Get agent configuration from mapping
+  const agentConfig = getAgentConfig(classification);
+  
+  if (!agentConfig) {
+    logger.warn('Agent configuration not found for classification', { requestId, classification });
+    return {
+      completion: 'I apologize, but I\'m not sure how to help with that. Could you please rephrase your question? I can assist with insurance policies or pet health concerns.',
+      sessionId: sessionId || `session-${Date.now()}`,
+      contentType: 'text/plain',
+    };
+  }
+  
+  // Check if agent is configured (has agentId)
+  if (!agentConfig.agentId) {
+    logger.warn('Agent not yet configured', { requestId, classification });
+    return {
+      completion: `I apologize, but the ${agentConfig.name} service is not available at the moment. Please try again later or contact our support team.`,
+      sessionId: sessionId || `session-${Date.now()}`,
+      contentType: 'text/plain',
+    };
+  }
+  
+  // Invoke the agent using the mapped configuration
+  logger.info('Routing to agent', { 
+    requestId, 
+    classification,
+    agentId: agentConfig.agentId,
+  });
+  
+  return await invokeSpecificAgent(
+    agentConfig.agentId,
+    agentConfig.agentAliasId,
+    message,
+    sessionId,
+    globalSessionId,
+    agentConfig.name
+  );
 }
 
 /**
@@ -282,6 +300,7 @@ export const lambdaHandler = async (event, context) => {
       metadata: {
         requestId,
         classification,
+        agentId: agentResponse.agentId,
         timestamp: new Date().toISOString(),
         environment: config.environment,
       },
