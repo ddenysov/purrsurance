@@ -212,15 +212,10 @@ export const lambdaHandler = async (event, context) => {
       return createResponse(200, { message: 'OK' });
     }
     
-    // Get message from query parameters
-    const queryParams = event.queryStringParameters || {};
-    const message = queryParams.message || 'My policy ID is POL-2025-123456';
-
-    requestLogger.info('QUERY', event.queryStringParameters);
-    
-    // Parse request body for other parameters
+    // Parse request body
     const body = parseRequestBody(event);
     const { 
+      message,
       sessionId, 
       globalSessionId 
     } = body;
