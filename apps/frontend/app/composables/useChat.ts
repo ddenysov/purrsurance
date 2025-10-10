@@ -3,10 +3,14 @@ import { usePetProfile } from './usePetProfile'
 import { useSession } from './useSession'
 import { sendChatMessage } from '~/utils/chatService'
 import { parseMarkdown } from '~/utils/markdown'
+import { usePetProfileStore } from '~/stores/petProfile'
 
 export const useChat = () => {
   // Get global session ID
   const { sessionId: globalSessionId } = useSession()
+  
+  // Get pet profile store to access policyId
+  const petProfileStore = usePetProfileStore()
   
   // Chat messages state
   const messages = ref<ChatMessage[]>([
@@ -72,11 +76,19 @@ export const useChat = () => {
     isTyping.value = true
 
     try {
-      // Send message to backend with both global sessionId and Bedrock sessionId
+      // Get policyId from store if available
+      const policyId = petProfileStore.petProfile.policy?.policyId || null
+      
+      if (policyId) {
+        console.log('[Chat] Sending message with policyId:', policyId)
+      }
+      
+      // Send message to backend with sessionIds and policyId
       const response = await sendChatMessage(
         text.trim(),
         session.value.sessionId,
-        globalSessionId.value
+        globalSessionId.value,
+        policyId
       )
       
       // Update Bedrock session ID for conversation continuity

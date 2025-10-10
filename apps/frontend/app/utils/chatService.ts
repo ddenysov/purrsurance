@@ -22,17 +22,19 @@ function getChatApiConfig() {
  * @param message - User message text
  * @param bedrockSessionId - Optional Bedrock Agent session ID for conversation continuity
  * @param globalSessionId - Global session ID for SSE event routing
+ * @param policyId - Optional policy ID from pet profile
  * @returns Backend response with AI reply
  * @throws Error if request fails
  */
 export async function sendChatMessage(
   message: string,
   bedrockSessionId: string | null = null,
-  globalSessionId: string | null = null
+  globalSessionId: string | null = null,
+  policyId: string | null = null
 ): Promise<BackendChatResponse> {
   try {
     // Prepare request payload
-    const payload: { message: string; sessionId?: string; globalSessionId?: string } = {
+    const payload: { message: string; sessionId?: string; globalSessionId?: string; policyId?: string } = {
       message: message.trim(),
     }
     
@@ -46,10 +48,16 @@ export async function sendChatMessage(
       payload.globalSessionId = globalSessionId
     }
     
+    // Include policyId if available (from pet profile)
+    if (policyId) {
+      payload.policyId = policyId
+    }
+    
     console.log('Sending chat message:', {
       messageLength: message.length,
       hasBedrockSessionId: !!bedrockSessionId,
       hasGlobalSessionId: !!globalSessionId,
+      hasPolicyId: !!policyId,
     })
     
     // Get chat API configuration
@@ -68,7 +76,20 @@ export async function sendChatMessage(
       requestId: response.data.metadata?.requestId,
       bedrockSessionId: response.data.data?.sessionId,
       responseLength: response.data.data?.response?.length,
+      logsCount: response.data.metadata?.logs?.length,
     })
+    
+    // Log backend logs if available
+    if (response.data.metadata?.logs && response.data.metadata.logs.length > 0) {
+      console.group(`Backend Logs (${response.data.metadata.logs.length} entries)`)
+      response.data.metadata.logs.forEach(log => {
+        const logMethod = log.level === 'ERROR' ? 'error' : 
+                         log.level === 'WARN' ? 'warn' : 
+                         log.level === 'DEBUG' ? 'debug' : 'log'
+        console[logMethod](`[${log.timestamp}] ${log.message}`, log)
+      })
+      console.groupEnd()
+    }
     
     // Validate response structure
     if (!response.data?.data?.response) {
@@ -110,7 +131,7 @@ export async function sendChatMessage(
  */
 export async function testBackendConnection(): Promise<boolean> {
   try {
-    await sendChatMessage('Hello', null)
+    await sendChatMessage('Hello', null, null, null)
     return true
   } catch (error) {
     console.error('Backend connection test failed:', error)

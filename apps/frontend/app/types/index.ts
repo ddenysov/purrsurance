@@ -39,6 +39,16 @@ export interface ChatSession {
 }
 
 /**
+ * Log entry structure
+ */
+export interface LogEntry {
+  timestamp: string
+  level: 'ERROR' | 'WARN' | 'INFO' | 'DEBUG'
+  message: string
+  [key: string]: any
+}
+
+/**
  * Backend API response structure
  */
 export interface BackendChatResponse {
@@ -51,6 +61,7 @@ export interface BackendChatResponse {
     requestId: string
     timestamp: string
     environment: string
+    logs?: LogEntry[]
   }
 }
 

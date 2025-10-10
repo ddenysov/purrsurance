@@ -30,6 +30,18 @@ function formatLog(level, message, data = {}) {
 }
 
 /**
+ * Create log entry object
+ */
+function createLogEntry(level, message, data = {}) {
+  return {
+    timestamp: new Date().toISOString(),
+    level: level.toUpperCase(),
+    message,
+    ...data,
+  };
+}
+
+/**
  * Log at specific level
  */
 function log(level, message, data) {
@@ -44,4 +56,32 @@ export const logger = {
   info: (message, data) => log('info', message, data),
   debug: (message, data) => log('debug', message, data),
 };
+
+/**
+ * Create contextual logger that collects logs in memory
+ * Use this for request-scoped logging where you want to return logs in response
+ */
+export function createContextualLogger() {
+  const logs = [];
+  
+  function logWithBuffer(level, message, data) {
+    // Add to buffer
+    const logEntry = createLogEntry(level, message, data);
+    logs.push(logEntry);
+    
+    // Also log to console (for CloudWatch)
+    if (LOG_LEVELS[level] <= currentLevel) {
+      console.log(JSON.stringify(logEntry));
+    }
+  }
+  
+  return {
+    error: (message, data) => logWithBuffer('error', message, data),
+    warn: (message, data) => logWithBuffer('warn', message, data),
+    info: (message, data) => logWithBuffer('info', message, data),
+    debug: (message, data) => logWithBuffer('debug', message, data),
+    getLogs: () => logs,
+    clearLogs: () => logs.length = 0,
+  };
+}
 

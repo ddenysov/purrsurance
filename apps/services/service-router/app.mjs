@@ -18,7 +18,7 @@ import {
   invokeIntentionClassifier,
   invokeSpecificAgent 
 } from './bedrockClient.mjs';
-import { logger } from './logger.mjs';
+import { logger, createContextualLogger } from './logger.mjs';
 import { saveChatMessage } from './chatHistoryService.mjs';
 
 /**
@@ -94,16 +94,18 @@ function parseRequestBody(event) {
  * Classify user intention using Intention Classifier Agent
  * @param {string} message - User message
  * @param {string} requestId - Request ID for logging
+ * @param {Object} logger - Logger instance
  * @returns {Promise<string>} Classification result: "PolicyAgent", "VetDocAgent", or "AgentNotFoundException"
  */
-async function classifyUserIntention(message, requestId) {
+async function classifyUserIntention(message, requestId, logger) {
   try {
     logger.info('Classifying user intention', {
       requestId,
       messageLength: message.length,
+      userMessage: message,
     });
     
-    const classifierResponse = await invokeIntentionClassifier(message);
+    const classifierResponse = await invokeIntentionClassifier(message, null, logger);
     const classification = classifierResponse.completion.trim();
     
     logger.info('Intention classification result', {
@@ -128,9 +130,10 @@ async function classifyUserIntention(message, requestId) {
  * @param {string} sessionId - Session ID for Bedrock Agent
  * @param {string} globalSessionId - Global session ID for chat history
  * @param {string} requestId - Request ID for logging
+ * @param {Object} logger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-async function routeToAgent(classification, message, sessionId, globalSessionId, requestId) {
+async function routeToAgent(classification, message, sessionId, globalSessionId, requestId, logger) {
   logger.info('Routing request to agent', {
     requestId,
     classification,
@@ -181,7 +184,8 @@ async function routeToAgent(classification, message, sessionId, globalSessionId,
     message,
     sessionId,
     globalSessionId,
-    agentConfig.name
+    agentConfig.name,
+    logger
   );
 }
 
@@ -191,7 +195,10 @@ async function routeToAgent(classification, message, sessionId, globalSessionId,
 export const lambdaHandler = async (event, context) => {
   const requestId = context.requestId || 'local-' + Date.now();
   
-  logger.info('Processing request', {
+  // Create contextual logger for this request
+  const requestLogger = createContextualLogger();
+  
+  requestLogger.info('Processing request', {
     requestId,
     httpMethod: event.httpMethod,
     path: event.path,
@@ -201,7 +208,7 @@ export const lambdaHandler = async (event, context) => {
   try {
     // Handle CORS preflight
     if (event.httpMethod === 'OPTIONS') {
-      logger.debug('Handling CORS preflight request');
+      requestLogger.debug('Handling CORS preflight request');
       return createResponse(200, { message: 'OK' });
     }
     
@@ -209,7 +216,7 @@ export const lambdaHandler = async (event, context) => {
     const queryParams = event.queryStringParameters || {};
     const message = queryParams.message || 'My policy ID is POL-2025-123456';
 
-    logger.info('QUERY', event.queryStringParameters);
+    requestLogger.info('QUERY', event.queryStringParameters);
     
     // Parse request body for other parameters
     const body = parseRequestBody(event);
@@ -220,10 +227,16 @@ export const lambdaHandler = async (event, context) => {
     
     // Validate input
     if (typeof message !== 'string' || message.trim().length === 0) {
-      logger.warn('Invalid message in request', { body });
+      requestLogger.warn('Invalid message in request', { body });
       return createResponse(400, {
         error: 'Bad Request',
         message: 'Field "message" must be a non-empty string',
+        metadata: {
+          requestId,
+          timestamp: new Date().toISOString(),
+          environment: config.environment,
+          logs: requestLogger.getLogs(),
+        },
       });
     }
     
@@ -243,7 +256,7 @@ export const lambdaHandler = async (event, context) => {
         });
       } catch (error) {
         // Log error but don't fail the request
-        logger.error('Failed to save user message', {
+        requestLogger.error('Failed to save user message', {
           requestId,
           error: error.message,
         });
@@ -251,7 +264,7 @@ export const lambdaHandler = async (event, context) => {
     }
     
     // Step 1: Classify user intention
-    const classification = await classifyUserIntention(message, requestId);
+    const classification = await classifyUserIntention(message, requestId, requestLogger);
     
     // Step 2: Route to appropriate agent based on classification
     const agentResponse = await routeToAgent(
@@ -259,7 +272,8 @@ export const lambdaHandler = async (event, context) => {
       message,
       sessionId,
       globalSessionId,
-      requestId
+      requestId,
+      requestLogger
     );
     
     // Save assistant response to database (if globalSessionId is provided)
@@ -278,24 +292,24 @@ export const lambdaHandler = async (event, context) => {
         });
       } catch (error) {
         // Log error but don't fail the request
-        logger.error('Failed to save assistant response', {
+        requestLogger.error('Failed to save assistant response', {
           requestId,
           error: error.message,
         });
       }
     } else {
-      logger.warn('No globalSessionId provided, skipping chat history save', {
+      requestLogger.warn('No globalSessionId provided, skipping chat history save', {
         requestId,
       });
     }
     
-    logger.info('Request processed successfully', {
+    requestLogger.info('Request processed successfully', {
       requestId,
       classification,
       responseLength: agentResponse.completion.length,
     });
     
-    // Return successful response
+    // Return successful response with logs
     return createResponse(200, {
       message: 'Success',
       data: {
@@ -309,21 +323,25 @@ export const lambdaHandler = async (event, context) => {
         agentId: agentResponse.agentId,
         timestamp: new Date().toISOString(),
         environment: config.environment,
+        logs: requestLogger.getLogs(),
       },
     });
     
   } catch (error) {
-    logger.error('Error processing request', {
+    requestLogger.error('Error processing request', {
       requestId,
       error: error.message,
       stack: error.stack,
     });
     
-    // Return error response
+    // Return error response with logs
     return createResponse(500, {
       error: 'Internal Server Error',
       message: error.message,
       requestId,
+      metadata: {
+        logs: requestLogger.getLogs(),
+      },
     });
   }
 };
