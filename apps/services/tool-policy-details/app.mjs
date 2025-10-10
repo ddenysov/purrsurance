@@ -101,7 +101,7 @@ export const lambdaHandler = async (event, context) => {
         licenseTag: "KY-2025-00987",
         passportNumber: "UA-PET-000112233"
       },
-      photoUrl: process.env.DEFAULT_PET_PHOTO_URL || "",
+      photoUrl: "https://www.shutterstock.com/image-photo/portrait-funny-white-cat-sticking-600nw-2451690317.jpg",
       weight: {
         currentKg: 4.3,
         lastUpdated: "2025-09-20",
