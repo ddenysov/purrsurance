@@ -104,11 +104,6 @@ export const lambdaHandler = async (event, context) => {
       photoUrl: "https://www.shutterstock.com/image-photo/portrait-funny-white-cat-sticking-600nw-2451690317.jpg",
       weight: {
         currentKg: 4.3,
-        lastUpdated: "2025-09-20",
-        history: [
-          {date: "2025-06-20", kg: 4.1},
-          {date: "2025-03-15", kg: 3.9}
-        ]
       },
       spayedNeutered: true,
       lifestyle: {

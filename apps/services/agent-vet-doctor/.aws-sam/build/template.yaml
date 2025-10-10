@@ -1,0 +1,177 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'AgentVetDoctor Configuration
+
+  Veterinary Doctor Agent for Purrsurance pet insurance system
+
+  '
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+    - prod
+    Description: Environment name
+  VetDoctorAgentName:
+    Type: String
+    Default: AgentVetDoctor
+    Description: Name for the Veterinary Doctor Agent
+  VetDoctorAgentFoundationModel:
+    Type: String
+    Default: us.anthropic.claude-3-5-haiku-20241022-v1:0
+    Description: Foundation model for AgentVetDoctor (Claude 3.5 Haiku for fast diagnostic
+      conversations)
+    AllowedValues:
+    - us.anthropic.claude-3-5-haiku-20241022-v1:0
+  VetDoctorAgentInstruction:
+    Type: String
+    Default: "You are a veterinary assistant for Purrsurance. Help pet owners by gathering\
+      \ symptom information and providing preliminary diagnostic assessments.\n\n\
+      **Workflow:**\n\n1. **Gather Information**: Collect pet type/breed, age, symptoms,\
+      \ duration, severity, behavioral changes, health history, and medications.\n\
+      \n2. **Ask Questions**: If info is missing, ask specific questions like:\n \
+      \  - \"How old is your pet?\"\n   - \"When did symptoms start?\"\n   - \"Any\
+      \ appetite or water intake changes?\"\n   - \"Current medications?\"\n\n3. **Assess\
+      \ Completeness**: Ensure you have enough information before diagnosing. Continue\
+      \ asking if critical details are missing.\n\n4. **Provide Assessment**: When\
+      \ ready, give:\n   - 2-3 possible conditions\n   - Severity level (emergency/urgent/routine)\n\
+      \   - Recommended actions (monitor/vet visit/emergency care)\n   - Disclaimer:\
+      \ This is preliminary - professional vet examination required\n\n5. **Emergency\
+      \ Recognition**: For symptoms like difficulty breathing, seizures, severe bleeding,\
+      \ inability to urinate/defecate, extreme lethargy, or poisoning - immediately\
+      \ recommend urgent care.\n\n**Guidelines:**\n- Be empathetic and professional\n\
+      - Provide preliminary assessments only, never definitive diagnoses\n- Always\
+      \ recommend professional veterinary examination\n- Use clear language, avoid\
+      \ excessive jargon\n- Prioritize emergencies\n- Don't prescribe medications\n\
+      - Provide reassurance\n\n**Example:**\nUser: \"My cat is vomiting and not eating\"\
+      \nYou: \"I understand your concern. To assess this, I need more info: How old\
+      \ is your cat? When did vomiting start and how many times? Is she drinking water?\
+      \ Any other symptoms?\"\n\nUser: \"5 years old, started yesterday, 3 times.\
+      \ Drinking less. Seems tired.\"\nYou: \"Based on a 5-year-old cat with 24h of\
+      \ vomiting, reduced intake, and lethargy: Possible conditions are gastroenteritis,\
+      \ hairballs, or early kidney/pancreas issues. Severity: Moderate - address soon.\
+      \ Actions: Monitor closely, ensure water access, contact vet if worsens, schedule\
+      \ appointment within 24h if no improvement, seek immediate care for blood in\
+      \ vomit or extreme lethargy. Important: This is preliminary only. Professional\
+      \ examination needed for accurate diagnosis. Anything else about symptoms?\"\
+      \n"
+    Description: System instruction/prompt for AgentVetDoctor (default instruction,
+      can override with deploy.sh + instruction.txt)
+  VetDoctorAgentIdleSessionTTL:
+    Type: Number
+    Default: 900
+    MinValue: 60
+    MaxValue: 3600
+    Description: Idle session timeout in seconds for AgentVetDoctor (60-3600)
+Resources:
+  VetDoctorAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role for AgentVetDoctor to invoke Bedrock foundation models
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: bedrock.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+      - PolicyName: BedrockModelInvokePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - bedrock:InvokeModel
+            - bedrock:InvokeModelWithResponseStream
+            Resource:
+            - Fn::Sub: arn:aws:bedrock:${AWS::Region}::foundation-model/*
+      Tags:
+      - Key: Environment
+        Value:
+          Ref: Environment
+      - Key: Agent
+        Value: AgentVetDoctor
+      - Key: Role
+        Value: VeterinaryDiagnostics
+  VetDoctorAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName:
+        Ref: VetDoctorAgentName
+      Description: Veterinary doctor agent for preliminary pet diagnostics
+      AgentResourceRoleArn:
+        Fn::GetAtt:
+        - VetDoctorAgentRole
+        - Arn
+      FoundationModel:
+        Ref: VetDoctorAgentFoundationModel
+      Instruction:
+        Ref: VetDoctorAgentInstruction
+      IdleSessionTTLInSeconds:
+        Ref: VetDoctorAgentIdleSessionTTL
+      AutoPrepare: true
+      Tags:
+        Environment:
+          Ref: Environment
+        Service: AgentVetDoctor
+        ManagedBy: SAM
+        Purpose: VeterinaryDiagnostics
+  VetDoctorAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId:
+        Ref: VetDoctorAgent
+      AgentAliasName:
+        Fn::Sub: ${Environment}-vet-doctor-alias
+      Description:
+        Fn::Sub: Vet doctor agent alias for ${Environment} environment
+      Tags:
+        Environment:
+          Ref: Environment
+        Agent: AgentVetDoctor
+        Role: VeterinaryDiagnostics
+Outputs:
+  VetDoctorAgentId:
+    Description: AgentVetDoctor Bedrock Agent ID
+    Value:
+      Ref: VetDoctorAgent
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-VetDoctorAgentId
+  VetDoctorAgentAliasId:
+    Description: AgentVetDoctor Alias ID
+    Value:
+      Fn::GetAtt:
+      - VetDoctorAgentAlias
+      - AgentAliasId
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-VetDoctorAgentAliasId
+  VetDoctorAgentArn:
+    Description: AgentVetDoctor ARN
+    Value:
+      Fn::GetAtt:
+      - VetDoctorAgent
+      - AgentArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-VetDoctorAgentArn
+  VetDoctorAgentRoleArn:
+    Description: AgentVetDoctor IAM Role ARN
+    Value:
+      Fn::GetAtt:
+      - VetDoctorAgentRole
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-VetDoctorAgentRoleArn
