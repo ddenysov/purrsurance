@@ -195,6 +195,8 @@ export const lambdaHandler = async (event, context) => {
     const updatedContext = {
       ...currentContext.context,
       policyDetails: responseBodyContent,
+      pet: responseBodyContent.pet,
+      petOwner: responseBodyContent.owner,
       policyDetailsUpdatedAt: Date.now()
     };
     

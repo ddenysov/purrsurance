@@ -65,11 +65,12 @@ async function getMockResponse(inputText, requestLogger = logger) {
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {string} globalSessionId - Optional global session ID for SSE event routing
+ * @param {Object} sessionContext - Optional session context from chat history
  * @param {string} agentName - Optional agent name for logging
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, agentName = 'Bedrock Agent', requestLogger = logger) {
+export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, sessionContext = null, agentName = 'Bedrock Agent', requestLogger = logger) {
   try {
     // Use mock for local development if configured
     //if (config.bedrock.useMock) {
@@ -82,6 +83,8 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
       inputLength: inputText.length,
       hasSessionId: !!sessionId,
       hasGlobalSessionId: !!globalSessionId,
+      hasSessionContext: !!sessionContext,
+      sessionContext: sessionContext,
     });
     
     const client = getBedrockClient();
@@ -97,15 +100,46 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
     
     // Add session attributes if globalSessionId is provided
     // This allows Lambda functions called by Bedrock Agent to access the sessionId
-    if (globalSessionId) {
+    if (globalSessionId || sessionContext) {
       commandParams.sessionState = {
-        sessionAttributes: {
-          sessionId: globalSessionId,
-        },
+        sessionAttributes: {},
       };
+      
+      if (globalSessionId) {
+        commandParams.sessionState.sessionAttributes.sessionId = globalSessionId;
+      }
+      
+      // Add session context fields as individual attributes
+      if (sessionContext) {
+        // Add petId if exists
+        if (sessionContext.petId) {
+          commandParams.sessionState.sessionAttributes.petId = sessionContext.petId;
+        }
+        
+        // Add petName if exists
+        if (sessionContext.petName) {
+          commandParams.sessionState.sessionAttributes.petName = sessionContext.petName;
+        }
+        
+        // Add any other context fields that exist
+        if (sessionContext.petBreed) {
+          commandParams.sessionState.sessionAttributes.petBreed = sessionContext.petBreed;
+        }
+        
+        if (sessionContext.petAge) {
+          commandParams.sessionState.sessionAttributes.petAge = String(sessionContext.petAge);
+        }
+      }
     }
     
-    requestLogger.debug('Bedrock Agent command parameters', commandParams);
+    requestLogger.debug('Bedrock Agent command parameters', {
+      agentId: commandParams.agentId,
+      agentAliasId: commandParams.agentAliasId,
+      sessionId: commandParams.sessionId,
+      inputTextLength: commandParams.inputText.length,
+      enableTrace: commandParams.enableTrace,
+      sessionAttributes: commandParams.sessionState?.sessionAttributes || null,
+    });
     
     const command = new InvokeAgentCommand(commandParams);
     const response = await client.send(command);
@@ -143,16 +177,18 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {string} globalSessionId - Optional global session ID for SSE event routing
+ * @param {Object} sessionContext - Optional session context from chat history
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null, requestLogger = logger) {
+export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null, sessionContext = null, requestLogger = logger) {
   return invokeSpecificAgent(
     config.bedrock.agentId,
     config.bedrock.agentAliasId,
     inputText,
     sessionId,
     globalSessionId,
+    sessionContext,
     'Bedrock Agent',
     requestLogger
   );
@@ -202,6 +238,7 @@ export async function invokeIntentionClassifier(inputText, chatHistory = null, s
     config.bedrock.intentionClassifier.agentAliasId,
     formattedInput,
     sessionId,
+    null,
     null,
     'Intention Classifier Agent',
     requestLogger
@@ -253,7 +290,7 @@ export async function testBedrockConnection() {
   try {
     logger.info('Testing Bedrock Agent connection');
     
-    const result = await invokeBedrockAgent('Hello, this is a connection test');
+    const result = await invokeBedrockAgent('Hello, this is a connection test', null, null, null);
     
     return result && result.completion && result.completion.length > 0;
   } catch (error) {

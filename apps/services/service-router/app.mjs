@@ -137,11 +137,12 @@ async function classifyUserIntention(message, chatHistory, requestId, logger) {
  * @param {string} message - User message
  * @param {string} sessionId - Session ID for Bedrock Agent
  * @param {string} globalSessionId - Global session ID for chat history
+ * @param {Object} sessionContext - Session context from chat history
  * @param {string} requestId - Request ID for logging
  * @param {Object} logger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-async function routeToAgent(classification, message, sessionId, globalSessionId, requestId, logger) {
+async function routeToAgent(classification, message, sessionId, globalSessionId, sessionContext, requestId, logger) {
   logger.info('Routing request to agent', {
     requestId,
     classification,
@@ -192,6 +193,7 @@ async function routeToAgent(classification, message, sessionId, globalSessionId,
     message,
     sessionId,
     globalSessionId,
+    sessionContext,
     agentConfig.name,
     logger
   );
@@ -253,11 +255,14 @@ export const lambdaHandler = async (event, context) => {
     }
     
     // Initialize session context on first user request (if globalSessionId is provided)
+    let sessionContext = null;
     if (globalSessionId) {
       try {
-        const sessionContext = await chatHistoryService.initializeSessionContext(globalSessionId);
+        sessionContext = await chatHistoryService.initializeSessionContext(globalSessionId);
+        sessionContext = sessionContext?.context;
         requestLogger.info('Session context initialized', {
           requestId,
+          sessionContext,
           sessionId: globalSessionId,
           isNewContext: !sessionContext.createdAt || sessionContext.createdAt === sessionContext.updatedAt,
         });
@@ -302,6 +307,7 @@ export const lambdaHandler = async (event, context) => {
       message,
       sessionId,
       globalSessionId,
+      sessionContext,
       requestId,
       requestLogger
     );
