@@ -19,7 +19,7 @@ import {
   invokeSpecificAgent 
 } from './bedrockClient.mjs';
 import { logger, createContextualLogger } from './logger.mjs';
-import { saveChatMessage } from './chatHistoryService.mjs';
+import { saveChatMessage, initializeSessionContext } from './chatHistoryService.mjs';
 
 /**
  * Initialize handler (runs once per cold start)
@@ -244,6 +244,24 @@ export const lambdaHandler = async (event, context) => {
         requestId,
         historyLength: chatHistory.length,
       });
+    }
+    
+    // Initialize session context on first user request (if globalSessionId is provided)
+    if (globalSessionId) {
+      try {
+        const sessionContext = await initializeSessionContext(globalSessionId);
+        requestLogger.info('Session context initialized', {
+          requestId,
+          sessionId: globalSessionId,
+          isNewContext: !sessionContext.createdAt || sessionContext.createdAt === sessionContext.updatedAt,
+        });
+      } catch (error) {
+        // Log error but don't fail the request
+        requestLogger.error('Failed to initialize session context', {
+          requestId,
+          error: error.message,
+        });
+      }
     }
     
     // Save user message to database (if globalSessionId is provided)

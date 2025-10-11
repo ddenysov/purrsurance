@@ -5,7 +5,7 @@
  */
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { logger } from './logger.mjs';
 
 // Initialize DynamoDB client
@@ -181,6 +181,185 @@ export async function getRecentMessages(sessionId, count = 10) {
     
   } catch (error) {
     logger.error('Failed to retrieve recent messages', {
+      sessionId,
+      error: error.message,
+      stack: error.stack,
+    });
+    
+    throw error;
+  }
+}
+
+/**
+ * Initialize or get session context
+ * Creates a new context if it doesn't exist, or returns existing context
+ * 
+ * @param {string} sessionId - Global session ID
+ * @returns {Promise<Object>} Session context object
+ */
+export async function initializeSessionContext(sessionId) {
+  if (!sessionId) {
+    throw new Error('sessionId is required');
+  }
+  
+  try {
+    // Check if context already exists
+    const existingContext = await getSessionContext(sessionId);
+    
+    if (existingContext) {
+      logger.info('Session context already exists', {
+        sessionId,
+        createdAt: existingContext.createdAt,
+      });
+      return existingContext;
+    }
+    
+    // Create new context
+    const timestamp = Date.now();
+    const contextId = `context-${sessionId}`;
+    
+    // Calculate TTL (90 days from now)
+    const ttl = Math.floor(Date.now() / 1000) + (90 * 24 * 60 * 60);
+    
+    const contextItem = {
+      sessionId,
+      timestamp: 0, // Use 0 to make it always first in sorted results
+      messageId: contextId,
+      sender: 'system',
+      content: 'session_context',
+      context: {}, // Empty context object
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      ttl,
+    };
+    
+    await dynamoDB.send(new PutCommand({
+      TableName: CHAT_HISTORY_TABLE,
+      Item: contextItem,
+      ConditionExpression: 'attribute_not_exists(sessionId) AND attribute_not_exists(#ts)',
+      ExpressionAttributeNames: {
+        '#ts': 'timestamp',
+      },
+    }));
+    
+    logger.info('Session context created', {
+      sessionId,
+      contextId,
+      timestamp,
+    });
+    
+    return contextItem;
+    
+  } catch (error) {
+    // If condition failed, context was created by another request
+    if (error.name === 'ConditionalCheckFailedException') {
+      logger.info('Session context created by concurrent request', { sessionId });
+      return await getSessionContext(sessionId);
+    }
+    
+    logger.error('Failed to initialize session context', {
+      sessionId,
+      error: error.message,
+      stack: error.stack,
+    });
+    
+    throw error;
+  }
+}
+
+/**
+ * Get session context
+ * 
+ * @param {string} sessionId - Global session ID
+ * @returns {Promise<Object|null>} Session context object or null if not found
+ */
+export async function getSessionContext(sessionId) {
+  if (!sessionId) {
+    throw new Error('sessionId is required');
+  }
+  
+  try {
+    const params = {
+      TableName: CHAT_HISTORY_TABLE,
+      KeyConditionExpression: 'sessionId = :sessionId AND #ts = :timestamp',
+      ExpressionAttributeNames: {
+        '#ts': 'timestamp',
+      },
+      ExpressionAttributeValues: {
+        ':sessionId': sessionId,
+        ':timestamp': 0,
+      },
+      Limit: 1,
+    };
+    
+    const result = await dynamoDB.send(new QueryCommand(params));
+    
+    if (result.Items && result.Items.length > 0) {
+      const context = result.Items[0];
+      logger.info('Session context retrieved', {
+        sessionId,
+        hasContext: !!context.context,
+      });
+      return context;
+    }
+    
+    return null;
+    
+  } catch (error) {
+    logger.error('Failed to retrieve session context', {
+      sessionId,
+      error: error.message,
+      stack: error.stack,
+    });
+    
+    throw error;
+  }
+}
+
+/**
+ * Update session context
+ * 
+ * @param {string} sessionId - Global session ID
+ * @param {Object} contextData - Context data to update
+ * @returns {Promise<Object>} Updated context object
+ */
+export async function updateSessionContext(sessionId, contextData) {
+  if (!sessionId) {
+    throw new Error('sessionId is required');
+  }
+  
+  if (!contextData || typeof contextData !== 'object') {
+    throw new Error('contextData must be an object');
+  }
+  
+  try {
+    const timestamp = Date.now();
+    
+    const params = {
+      TableName: CHAT_HISTORY_TABLE,
+      Key: {
+        sessionId,
+        timestamp: 0,
+      },
+      UpdateExpression: 'SET context = :context, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':context': contextData,
+        ':updatedAt': timestamp,
+      },
+      ReturnValues: 'ALL_NEW',
+    };
+    
+    const result = await dynamoDB.send(new UpdateCommand(params));
+    
+    logger.info('Session context updated', {
+      sessionId,
+      timestamp,
+    });
+    
+    return result.Attributes;
+    
+  } catch (error) {
+    logger.error('Failed to update session context', {
       sessionId,
       error: error.message,
       stack: error.stack,

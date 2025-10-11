@@ -62,10 +62,6 @@ Parameters:
     Description: Booking Manager Agent Alias ID
     Default: ""
   
-  ChatHistoryTableName:
-    Type: String
-    Description: DynamoDB table name for chat history
-  
   LogLevel:
     Type: String
     Default: info
@@ -77,6 +73,36 @@ Parameters:
     Description: Logging level
 
 Resources:
+  # DynamoDB Table for Chat History
+  ChatHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-ChatHistory'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        Enabled: true
+        AttributeName: ttl
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Service
+          Value: ChatHistory
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+  
+
   ServiceRouterFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -102,7 +128,7 @@ Resources:
           # Legacy support (kept for backward compatibility)
           BEDROCK_AGENT_ID: !Ref IntentionClassifierAgentId
           BEDROCK_AGENT_ALIAS_ID: !Ref IntentionClassifierAgentAliasId
-          CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTableName
+          CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTable
           LOG_LEVEL: !Ref LogLevel
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
       Policies:
@@ -114,7 +140,7 @@ Resources:
                 - bedrock:InvokeModel
               Resource: '*'
         - DynamoDBCrudPolicy:
-            TableName: !Ref ChatHistoryTableName
+            TableName: !Ref ChatHistoryTable
       Events:
         ChatApi:
           Type: Api
@@ -157,4 +183,16 @@ Outputs:
   ServiceRouterFunctionIamRole:
     Description: Implicit IAM Role created for Service Router function
     Value: !GetAtt ServiceRouterFunctionRole.Arn
+  
+  ChatHistoryTableName:
+    Description: DynamoDB table name for chat history
+    Value: !Ref ChatHistoryTable
+    Export:
+      Name: !Sub '${AWS::StackName}-ChatHistoryTableName'
+  
+  ChatHistoryTableArn:
+    Description: DynamoDB table ARN for chat history
+    Value: !GetAtt ChatHistoryTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ChatHistoryTableArn'
 
