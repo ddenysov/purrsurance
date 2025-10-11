@@ -32,6 +32,16 @@ async function build() {
     external: [],
   });
 
+  // Build event-publisher.mjs
+  await esbuild.build({
+    entryPoints: ['event-publisher.mjs'],
+    bundle: false,
+    platform: 'node',
+    format: 'esm',
+    outfile: 'dist/event-publisher.mjs',
+    external: [],
+  });
+
   console.log('✅ Build completed successfully');
 }
 

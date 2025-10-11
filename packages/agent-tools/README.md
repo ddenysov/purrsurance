@@ -48,6 +48,33 @@ export const lambdaHandler = async (event, context) => {
 };
 ```
 
+### Sending Events to Event Publisher
+
+```javascript
+import { sendEventToPublisher, extractSessionId } from '@purrsurance/agent-tools';
+
+const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
+
+export const lambdaHandler = async (event, context) => {
+  const sessionId = extractSessionId(event);
+  
+  const responseData = {
+    message: 'Action completed',
+    data: { /* your data */ }
+  };
+
+  // Send event to Event Publisher (non-blocking)
+  await sendEventToPublisher(
+    eventPublisherUrl,
+    sessionId,
+    responseData,
+    'ActionCompleted'
+  );
+  
+  return responseData;
+};
+```
+
 ## API
 
 ### createAgentResponse(event, responseBodyContent)
@@ -77,6 +104,18 @@ Extracts parameters from event as a key-value object.
 - `event` (Object) - The event payload from the Bedrock Agent
 
 **Returns:** Parameters as key-value pairs (Object)
+
+### sendEventToPublisher(eventPublisherUrl, sessionId, data, eventType)
+
+Sends an event to the Event Publisher service for tracking and analytics.
+
+**Parameters:**
+- `eventPublisherUrl` (string) - URL of the Event Publisher service
+- `sessionId` (string) - Session ID for event tracking
+- `data` (Object) - Event data payload
+- `eventType` (string) - Type of event (e.g., 'PolicyDetailsRetrieved', 'FindVetClinic')
+
+**Returns:** Promise that resolves when event is sent (non-blocking, errors are logged but not thrown)
 
 ## License
 

@@ -5,4 +5,5 @@
  */
 
 export { createAgentResponse, extractSessionId, extractParameters } from './response.mjs';
+export { sendEventToPublisher } from './event-publisher.mjs';
 

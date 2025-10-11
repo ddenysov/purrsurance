@@ -7,64 +7,9 @@
  * @param {Object} event - The event payload from the Bedrock Agent.
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
-import {SNSClient, PublishCommand} from "@aws-sdk/client-sns";
+import { createAgentResponse, extractSessionId, extractParameters, sendEventToPublisher } from "./vendor/agent-tools/index.mjs";
 
-const snsClient = new SNSClient({});
-const topicArn = process.env.EVENTS_TOPIC_ARN;
 const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
-
-/**
- * Send event to Event Publisher service
- * @param {string} sessionId - Session ID for event tracking
- * @param {Object} data - Event data payload
- * @param {string} eventType - Type of event
- */
-async function sendEventToPublisher(sessionId, data, eventType = 'PolicyDetailsRetrieved') {
-  if (!eventPublisherUrl) {
-    console.warn('EVENT_PUBLISHER_URL not configured, skipping event publishing');
-    return;
-  }
-
-  try {
-    const payload = JSON.stringify({
-      sessionId: sessionId,
-      eventType: eventType,
-      data: data,
-    });
-
-    console.log('Sending event to publisher', {
-      url: eventPublisherUrl,
-      sessionId: sessionId,
-      eventType: eventType,
-    });
-
-    const response = await fetch(eventPublisherUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Session-Id': sessionId,
-      },
-      body: payload,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to send event to publisher', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText,
-      });
-    } else {
-      const result = await response.json();
-      console.log('Event sent successfully', result);
-    }
-  } catch (error) {
-    console.error('Error sending event to publisher', {
-      error: error.message,
-      stack: error.stack,
-    });
-  }
-}
 
 export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
@@ -233,7 +178,7 @@ export const lambdaHandler = async (event, context) => {
 
 
   // Send event to Event Publisher (non-blocking)
-  await sendEventToPublisher(sessionId, responseBodyContent, 'PolicyDetailsRetrieved');
+  await sendEventToPublisher(eventPublisherUrl, sessionId, responseBodyContent, 'PolicyDetailsRetrieved');
   return {
     'messageVersion': '1.0',
     'response': {

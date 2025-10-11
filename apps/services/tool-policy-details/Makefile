@@ -1,4 +1,8 @@
-.PHONY: build deploy invoke clean help
+.PHONY: build deploy invoke clean help sync-packages
+
+PACKAGES_DIR = ../../../packages
+VENDOR_DIR = ./vendor
+
 
 help:
 	@echo "Available targets:"
@@ -10,7 +14,7 @@ help:
 build:
 	sam build
 
-deploy: build
+deploy: sync-packages build
 	sam deploy --no-confirm-changeset
 
 invoke:
@@ -19,3 +23,16 @@ invoke:
 clean:
 	rm -rf .aws-sam
 
+
+sync-packages:
+	@echo "Syncing packages from $(PACKAGES_DIR) to $(VENDOR_DIR)..."
+	@mkdir -p $(VENDOR_DIR)
+	@for package_dir in $(PACKAGES_DIR)/*/; do \
+		if [ -d "$$package_dir/dist" ]; then \
+			package_name=$$(basename $$package_dir); \
+			echo "  Copying $$package_name..."; \
+			mkdir -p $(VENDOR_DIR)/$$package_name; \
+			cp -r $$package_dir/dist/* $(VENDOR_DIR)/$$package_name/; \
+		fi \
+	done
+	@echo "Package sync complete!"
