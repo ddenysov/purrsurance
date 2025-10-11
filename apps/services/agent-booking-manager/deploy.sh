@@ -26,32 +26,11 @@ echo ""
 
 echo "📦 Deploying to AWS..."
 
-# Create a temporary override file
-TEMP_OVERRIDE=$(mktemp)
-cat > "$TEMP_OVERRIDE" << 'HEREDOC'
-Environment=prod
-HEREDOC
-
-# Append instruction parameter (properly escaped)
-echo -n "BookingManagerAgentInstruction=" >> "$TEMP_OVERRIDE"
-# Use awk to escape newlines and special characters
-awk '{printf "%s\\n", $0}' instruction.txt | sed 's/\\n$//' >> "$TEMP_OVERRIDE"
-
-# Deploy using parameter overrides from file
+# Deploy with default parameters (instruction will be updated later via AWS CLI)
 sam deploy \
   --no-confirm-changeset \
-  --parameter-overrides file://"$TEMP_OVERRIDE" 2>/dev/null || {
-    echo "⚠️  File-based parameter override failed, trying inline method..."
-    # Fallback: try inline (this may fail for very long instructions)
-    sam deploy \
-      --no-confirm-changeset \
-      --parameter-overrides \
-        Environment=prod \
-        BookingManagerAgentInstruction="$INSTRUCTION_CONTENT"
-  }
-
-# Clean up
-rm -f "$TEMP_OVERRIDE"
+  --parameter-overrides \
+    Environment=prod
 
 echo ""
 echo "✅ CloudFormation deployment complete!"
