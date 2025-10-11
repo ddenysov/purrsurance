@@ -20,23 +20,11 @@
           : 'bg-gray-100 text-gray-900'
       ]"
     >
-      <!-- Render HTML content from markdown -->
-      <div 
-        v-if="message.sender === 'assistant'"
-        class="prose prose-sm max-w-none"
-        :class="{
-          'prose-invert': message.sender === 'user'
-        }"
-        v-html="message.content"
+      <!-- Dynamic message type rendering -->
+      <component 
+        :is="messageComponent"
+        :message="message"
       />
-      
-      <!-- Plain text for user messages -->
-      <p 
-        v-else
-        class="text-sm whitespace-pre-wrap break-words"
-      >
-        {{ message.content }}
-      </p>
       
       <!-- Timestamp -->
       <div 
@@ -60,15 +48,30 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { ChatMessage } from '~/types'
 import { formatTime } from '~/utils/dateFormatter'
 import AssistantAvatar from './AssistantAvatar.vue'
+import TextMessage from './message-types/TextMessage.vue'
+import ConfirmationMessage from './message-types/ConfirmationMessage.vue'
 
 interface Props {
   message: ChatMessage
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const messageComponent = computed(() => {
+  const type = props.message.type || 'text'
+  
+  switch (type) {
+    case 'confirmation':
+      return ConfirmationMessage
+    case 'text':
+    default:
+      return TextMessage
+  }
+})
 </script>
 
 <style scoped>

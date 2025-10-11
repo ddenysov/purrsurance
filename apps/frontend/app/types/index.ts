@@ -28,6 +28,21 @@ export interface ChatMessage {
   content: string
   sender: 'user' | 'assistant'
   timestamp: Date
+  type?: 'text' | 'confirmation' | 'choice' | 'form'
+  metadata?: MessageMetadata
+}
+
+export interface MessageMetadata {
+  confirmationOptions?: {
+    yesLabel?: string
+    noLabel?: string
+    yesEvent: string
+    noEvent: string
+    eventPayload?: any
+  }
+  choiceOptions?: {
+    options: Array<{ label: string; value: string; event: string }>
+  }
 }
 
 /**

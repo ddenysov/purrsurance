@@ -71,6 +71,26 @@ export const useChat = () => {
       content: text.trim(),
       sender: 'user'
     })
+    
+    // Test command for confirmation message
+    if (text.trim().toLowerCase() === 'test_form') {
+      isTyping.value = false
+      addMessage({
+        content: 'Do you want to proceed with filing a claim for your pet?',
+        sender: 'assistant',
+        type: 'confirmation',
+        metadata: {
+          confirmationOptions: {
+            yesLabel: 'Yes, proceed',
+            noLabel: 'No, cancel',
+            yesEvent: 'claim:confirmed',
+            noEvent: 'claim:cancelled',
+            eventPayload: { source: 'chat', action: 'file_claim' }
+          }
+        }
+      })
+      return
+    }
 
     // Show typing indicator
     isTyping.value = true
