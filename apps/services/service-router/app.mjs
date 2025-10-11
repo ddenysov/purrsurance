@@ -93,19 +93,21 @@ function parseRequestBody(event) {
 /**
  * Classify user intention using Intention Classifier Agent
  * @param {string} message - User message
+ * @param {Array<{content: string, sender: string}>} chatHistory - Chat history from frontend
  * @param {string} requestId - Request ID for logging
  * @param {Object} logger - Logger instance
  * @returns {Promise<string>} Classification result: "PolicyAgent", "VetDocAgent", or "AgentNotFoundException"
  */
-async function classifyUserIntention(message, requestId, logger) {
+async function classifyUserIntention(message, chatHistory, requestId, logger) {
   try {
     logger.info('Classifying user intention', {
       requestId,
       messageLength: message.length,
+      historyLength: chatHistory ? chatHistory.length : 0,
       userMessage: message,
     });
     
-    const classifierResponse = await invokeIntentionClassifier(message, null, logger);
+    const classifierResponse = await invokeIntentionClassifier(message, chatHistory, null, logger);
     const classification = classifierResponse.completion.trim();
     
     logger.info('Intention classification result', {
@@ -217,7 +219,8 @@ export const lambdaHandler = async (event, context) => {
     const { 
       message,
       sessionId, 
-      globalSessionId 
+      globalSessionId,
+      chatHistory 
     } = body;
     
     // Validate input
@@ -232,6 +235,14 @@ export const lambdaHandler = async (event, context) => {
           environment: config.environment,
           logs: requestLogger.getLogs(),
         },
+      });
+    }
+    
+    // Log chat history if available
+    if (chatHistory && Array.isArray(chatHistory)) {
+      requestLogger.info('Chat history received', {
+        requestId,
+        historyLength: chatHistory.length,
       });
     }
     
@@ -259,7 +270,7 @@ export const lambdaHandler = async (event, context) => {
     }
     
     // Step 1: Classify user intention
-    const classification = await classifyUserIntention(message, requestId, requestLogger);
+    const classification = await classifyUserIntention(message, chatHistory, requestId, requestLogger);
     
     // Step 2: Route to appropriate agent based on classification
     const agentResponse = await routeToAgent(

@@ -159,17 +159,48 @@ export async function invokeBedrockAgent(inputText, sessionId = null, globalSess
 }
 
 /**
+ * Format chat history for Bedrock Agent input
+ * @param {Array<{content: string, sender: string}>} chatHistory - Chat history
+ * @returns {string} Formatted chat history string
+ */
+function formatChatHistory(chatHistory) {
+  if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
+    return '';
+  }
+  
+  const formattedMessages = chatHistory.map(msg => {
+    const role = msg.sender === 'user' ? 'User' : 'Assistant';
+    return `${role}: ${msg.content}`;
+  });
+  
+  return 'Chat History:\n' + formattedMessages.join('\n') + '\n\nBased on the above conversation, classify the user intention.';
+}
+
+/**
  * Invoke Intention Classifier Agent
  * @param {string} inputText - User input text
+ * @param {Array<{content: string, sender: string}>} chatHistory - Optional chat history from frontend
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response with classification
  */
-export async function invokeIntentionClassifier(inputText, sessionId = null, requestLogger = logger) {
+export async function invokeIntentionClassifier(inputText, chatHistory = null, sessionId = null, requestLogger = logger) {
+  // If chat history is provided, format it and prepend to input
+  let formattedInput = inputText;
+  if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
+    const historyText = formatChatHistory(chatHistory);
+    formattedInput = historyText;
+    
+    requestLogger.info('Formatted chat history for classifier', {
+      historyLength: chatHistory.length,
+      formattedLength: historyText.length,
+    });
+  }
+  
   return invokeSpecificAgent(
     config.bedrock.intentionClassifier.agentId,
     config.bedrock.intentionClassifier.agentAliasId,
-    inputText,
+    formattedInput,
     sessionId,
     null,
     'Intention Classifier Agent',
