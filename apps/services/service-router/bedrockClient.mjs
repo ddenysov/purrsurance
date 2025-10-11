@@ -111,25 +111,10 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
       
       // Add session context fields as individual attributes
       if (sessionContext) {
-        // Add petId if exists
-        if (sessionContext.petId) {
-          commandParams.sessionState.sessionAttributes.petId = sessionContext.petId;
-        }
-        
-        // Add petName if exists
-        if (sessionContext.petName) {
-          commandParams.sessionState.sessionAttributes.petName = sessionContext.petName;
-        }
-        
-        // Add any other context fields that exist
-        if (sessionContext.petBreed) {
-          commandParams.sessionState.sessionAttributes.petBreed = sessionContext.petBreed;
-        }
-        
-        if (sessionContext.petAge) {
-          commandParams.sessionState.sessionAttributes.petAge = String(sessionContext.petAge);
-        }
+        // Copy all sessionContext attributes to sessionAttributes
+        Object.assign(commandParams.sessionState.sessionAttributes, sessionContext);
       }
+    }
     }
     
     requestLogger.debug('Bedrock Agent command parameters', {
