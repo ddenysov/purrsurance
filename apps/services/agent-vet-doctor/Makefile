@@ -93,42 +93,11 @@ update-instruction:
 		--agent-resource-role-arn "$$ROLE_ARN" \
 		--idle-session-ttl-in-seconds 900 \
 		--output text > /dev/null; \
-	echo "🔄 Preparing agent (validating changes)..."; \
-	PREPARE_OUTPUT=$$(aws bedrock-agent prepare-agent \
+	echo "🔄 Preparing agent..."; \
+	aws bedrock-agent prepare-agent \
 		--agent-id "$$AGENT_ID" \
-		--output json); \
-	PREPARE_STATUS=$$(echo $$PREPARE_OUTPUT | jq -r '.agentStatus'); \
-	PREPARED_AT=$$(echo $$PREPARE_OUTPUT | jq -r '.preparedAt'); \
-	echo "   Prepare status: $$PREPARE_STATUS"; \
-	echo "   Prepared at: $$PREPARED_AT"; \
-	echo ""; \
-	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
-	echo "✅ Agent DRAFT Updated Successfully!"; \
-	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
-	echo "📌 Agent ID: $$AGENT_ID"; \
-	echo "📌 Status: $$PREPARE_STATUS"; \
-	echo "📌 Version: DRAFT (working version)"; \
-	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
-	echo ""; \
-	echo "💡 Note: The DRAFT version has been updated and is ready for testing."; \
-	echo "💡 To create a snapshot version and update the 'prod' alias, check your"; \
-	echo "💡 existing alias in AWS Console and update it manually to snapshot DRAFT."; \
-	echo ""; \
-	echo "📋 Current agent versions:"; \
-	aws bedrock-agent list-agent-versions \
-		--agent-id "$$AGENT_ID" \
-		--max-results 5 \
-		--query 'agentVersionSummaries[*].[agentVersion,agentStatus,createdAt]' \
-		--output table 2>/dev/null || echo "   (No versions yet)"; \
-	echo ""; \
-	echo "📋 Current agent aliases:"; \
-	aws bedrock-agent list-agent-aliases \
-		--agent-id "$$AGENT_ID" \
-		--max-results 5 \
-		--query 'agentAliasSummaries[*].[agentAliasName,agentAliasId,agentAliasStatus,routingConfiguration[0].agentVersion]' \
-		--output table 2>/dev/null || echo "   (No aliases yet)"; \
-	echo ""; \
-	echo "🎉 Instruction updated! Test with DRAFT version in AWS Console."
+		--output text > /dev/null; \
+	echo "✅ Instruction updated successfully!"
 
 # Setup action group for RecommendDoctorVisit tool
 setup-action-group:
