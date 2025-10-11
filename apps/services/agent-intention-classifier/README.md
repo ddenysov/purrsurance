@@ -4,10 +4,11 @@ AWS Bedrock Agent for classifying user intentions in the Purrsurance pet insuran
 
 ## Overview
 
-The Intention Classifier Agent analyzes user input and determines which specialized agent should handle the request. It classifies user intentions into three categories:
+The Intention Classifier Agent analyzes user input and determines which specialized agent should handle the request. It classifies user intentions into four categories:
 
 - **PolicyAgent** - For insurance policy, claims, and car accident related queries
 - **VetDocAgent** - For pet health symptoms and veterinary questions
+- **BookingAgent** - For booking and scheduling veterinarian appointments
 - **AgentNotFoundException** - For greetings and other unrelated queries
 
 ## Architecture
@@ -39,9 +40,24 @@ make deploy
 # Check status
 make status
 
+# Get Agent ID
+make get-agent-id
+
+# Update instruction only (fast, no full deploy)
+make update-instruction
+
 # Delete stack
 make delete
 ```
+
+### Updating Agent Instruction
+
+The agent instruction is stored in `instruction.txt`. To update it:
+
+1. Edit `instruction.txt` with your new instruction
+2. Run `make update-instruction`
+
+This will update the agent instruction and create a new alias without requiring a full CloudFormation deployment.
 
 ## Configuration
 
@@ -60,5 +76,13 @@ The stack exports:
 
 1. **Insurance queries** → PolicyAgent
 2. **Pet health symptoms** → VetDocAgent
-3. **Other queries** → AgentNotFoundException
+3. **Booking/scheduling appointments** → BookingAgent
+4. **Other queries** → AgentNotFoundException
+
+## Files
+
+- `template.yaml` - CloudFormation template for the agent
+- `instruction.txt` - Agent instruction prompt (can be updated separately)
+- `Makefile` - Build and deployment commands
+- `samconfig.toml` - SAM deployment configuration
 

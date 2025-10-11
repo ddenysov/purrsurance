@@ -75,7 +75,7 @@ Parameters:
       Now, analyze the user's request below and provide your answer.
 
       User Request:
-    Description: System instruction/prompt for IntentionClassifierAgent routing logic
+    Description: System instruction/prompt for IntentionClassifierAgent routing logic (default instruction, see instruction.txt)
   
   IntentionClassifierAgentIdleSessionTTL:
     Type: Number
@@ -172,4 +172,6 @@ Outputs:
   IntentionClassifierAgentRoleArn:
     Description: "IntentionClassifierAgent IAM Role ARN"
     Value: !GetAtt IntentionClassifierAgentRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-IntentionClassifierAgentRoleArn'
 

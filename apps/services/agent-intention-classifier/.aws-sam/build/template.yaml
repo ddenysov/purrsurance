@@ -27,7 +27,7 @@ Parameters:
     Type: String
     Default: 'You are a simple and precise classifier agent. Your sole task is to
       analyze the user''s text and determine their intent. You must return ONE of
-      these three exact values: `PolicyAgent`, `VetDocAgent`, or `AgentNotFoundException`.
+      these four exact values: `PolicyAgent`, `VetDocAgent`, `BookingAgent`, or `AgentNotFoundException`.
 
 
       Follow these rules STRICTLY:
@@ -39,7 +39,10 @@ Parameters:
       2.  If the text describes symptoms of illness or a pet feeling unwell (e.g.,
       a cat, dog, hamster), you must return `VetDocAgent`.
 
-      3.  In all other cases, including greetings, thank you messages, or any other
+      3.  If the text is about booking, scheduling, or making an appointment with
+      a veterinarian or doctor, you must return `BookingAgent`.
+
+      4.  In all other cases, including greetings, thank you messages, or any other
       unrelated text, you must return `AgentNotFoundException`.
 
 
@@ -47,9 +50,10 @@ Parameters:
 
       - Do not add any explanations.
 
-      - Do not write anything other than one of the three specified values.
+      - Do not write anything other than one of the four specified values.
 
-      - Your response must ALWAYS be just `PolicyAgent`, `VetDocAgent`, or `AgentNotFoundException`.
+      - Your response must ALWAYS be just `PolicyAgent`, `VetDocAgent`, `BookingAgent`,
+      or `AgentNotFoundException`.
 
 
       Here are some examples:
@@ -65,6 +69,16 @@ Parameters:
       Your Answer: PolicyAgent
 
 
+      User: "I need to book an appointment for my dog."
+
+      Your Answer: BookingAgent
+
+
+      User: "Can I schedule a vet visit for next week?"
+
+      Your Answer: BookingAgent
+
+
       User: "Hello!"
 
       Your Answer: AgentNotFoundException
@@ -78,6 +92,11 @@ Parameters:
       User: "My dog has been vomiting since this morning."
 
       Your Answer: VetDocAgent
+
+
+      User: "I want to make an appointment to see the vet."
+
+      Your Answer: BookingAgent
 
 
       User: "Thank you for your help."
