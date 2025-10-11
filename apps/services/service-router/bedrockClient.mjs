@@ -18,12 +18,12 @@ function createBedrockClient() {
   const clientConfig = {
     region: config.bedrock.region,
   };
-  
+
   // Add endpoint override for local testing if needed
   if (config.isLocal && process.env.BEDROCK_ENDPOINT) {
     clientConfig.endpoint = process.env.BEDROCK_ENDPOINT;
   }
-  
+
   return new BedrockAgentRuntimeClient(clientConfig);
 }
 
@@ -47,10 +47,10 @@ function getBedrockClient() {
  */
 async function getMockResponse(inputText, requestLogger = logger) {
   requestLogger.info('Using mock Bedrock Agent response');
-  
+
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   return {
     completion: `Mock Agent Response: You said "${inputText}". This is a simulated response for local testing.`,
     sessionId: `mock-session-${Date.now()}`,
@@ -65,30 +65,27 @@ async function getMockResponse(inputText, requestLogger = logger) {
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {string} globalSessionId - Optional global session ID for SSE event routing
- * @param {Object} sessionContext - Optional session context from chat history
  * @param {string} agentName - Optional agent name for logging
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, sessionContext = null, agentName = 'Bedrock Agent', requestLogger = logger) {
+export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, agentName = 'Bedrock Agent', requestLogger = logger) {
   try {
     // Use mock for local development if configured
     //if (config.bedrock.useMock) {
     //  return await getMockResponse(inputText, requestLogger);
-   // }
-    
+    // }
+
     requestLogger.info(`Invoking ${agentName}`, {
       inputText: inputText,
       agentId: agentId,
       inputLength: inputText.length,
       hasSessionId: !!sessionId,
       hasGlobalSessionId: !!globalSessionId,
-      hasSessionContext: !!sessionContext,
-      sessionContext: sessionContext,
     });
-    
+
     const client = getBedrockClient();
-    
+
     // Prepare command parameters
     const commandParams = {
       agentId: agentId,
@@ -97,48 +94,32 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
       inputText: inputText,
       enableTrace: config.bedrock.sessionConfig.enableTrace,
     };
-    
+
     // Add session attributes if globalSessionId is provided
     // This allows Lambda functions called by Bedrock Agent to access the sessionId
-    if (globalSessionId || sessionContext) {
+    if (globalSessionId) {
       commandParams.sessionState = {
-        sessionAttributes: {},
+        sessionAttributes: {
+          sessionId: globalSessionId,
+        },
       };
-      
-      if (globalSessionId) {
-        commandParams.sessionState.sessionAttributes.sessionId = globalSessionId;
-      }
-      
-      // Add session context fields as individual attributes
-      if (sessionContext) {
-        // Copy all sessionContext attributes to sessionAttributes
-        Object.assign(commandParams.sessionState.sessionAttributes, sessionContext);
-      }
     }
-    }
-    
-    requestLogger.debug('Bedrock Agent command parameters', {
-      agentId: commandParams.agentId,
-      agentAliasId: commandParams.agentAliasId,
-      sessionId: commandParams.sessionId,
-      inputTextLength: commandParams.inputText.length,
-      enableTrace: commandParams.enableTrace,
-      sessionAttributes: commandParams.sessionState?.sessionAttributes || null,
-    });
-    
+
+    requestLogger.debug('Bedrock Agent command parameters', commandParams);
+
     const command = new InvokeAgentCommand(commandParams);
     const response = await client.send(command);
-    
+
     // Process the response stream
     const completion = await processResponseStream(response, requestLogger);
-    
+
     requestLogger.info(`${agentName} invocation successful`, {
       completion: completion,
       sessionId: commandParams.sessionId,
       responseLength: completion.length,
       agentId: agentId,
     });
-    
+
     return {
       completion: completion,
       sessionId: commandParams.sessionId,
@@ -152,7 +133,7 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
       stack: error.stack,
       agentId: agentId,
     });
-    
+
     throw new Error(`Failed to invoke ${agentName}: ${error.message}`);
   }
 }
@@ -162,18 +143,16 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {string} globalSessionId - Optional global session ID for SSE event routing
- * @param {Object} sessionContext - Optional session context from chat history
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null, sessionContext = null, requestLogger = logger) {
+export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null, requestLogger = logger) {
   return invokeSpecificAgent(
     config.bedrock.agentId,
     config.bedrock.agentAliasId,
     inputText,
     sessionId,
     globalSessionId,
-    sessionContext,
     'Bedrock Agent',
     requestLogger
   );
@@ -188,12 +167,12 @@ function formatChatHistory(chatHistory) {
   if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
     return '';
   }
-  
+
   const formattedMessages = chatHistory.map(msg => {
     const role = msg.sender === 'user' ? 'User' : 'Assistant';
     return `${role}: ${msg.content}`;
   });
-  
+
   return 'Chat History:\n' + formattedMessages.join('\n') + '\n\nBased on the above conversation, classify the user intention.';
 }
 
@@ -211,19 +190,18 @@ export async function invokeIntentionClassifier(inputText, chatHistory = null, s
   if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
     const historyText = formatChatHistory(chatHistory);
     formattedInput = historyText;
-    
+
     requestLogger.info('Formatted chat history for classifier', {
       historyLength: chatHistory.length,
       formattedLength: historyText.length,
     });
   }
-  
+
   return invokeSpecificAgent(
     config.bedrock.intentionClassifier.agentId,
     config.bedrock.intentionClassifier.agentAliasId,
     formattedInput,
     sessionId,
-    null,
     null,
     'Intention Classifier Agent',
     requestLogger
@@ -239,7 +217,7 @@ export async function invokeIntentionClassifier(inputText, chatHistory = null, s
  */
 async function processResponseStream(response, requestLogger = logger) {
   const chunks = [];
-  
+
   try {
     // Bedrock Agent returns a stream of chunks
     if (response.completion) {
@@ -247,21 +225,21 @@ async function processResponseStream(response, requestLogger = logger) {
         if (chunk.chunk && chunk.chunk.bytes) {
           const decodedChunk = new TextDecoder('utf-8').decode(chunk.chunk.bytes);
           chunks.push(decodedChunk);
-          
+
           requestLogger.debug('Received chunk', {
             chunkSize: decodedChunk.length,
           });
         }
       }
     }
-    
+
     return chunks.join('');
   } catch (error) {
     requestLogger.error('Error processing response stream', {
       error: error.message,
       chunksReceived: chunks.length,
     });
-    
+
     throw new Error(`Failed to process response stream: ${error.message}`);
   }
 }
@@ -274,9 +252,9 @@ async function processResponseStream(response, requestLogger = logger) {
 export async function testBedrockConnection() {
   try {
     logger.info('Testing Bedrock Agent connection');
-    
-    const result = await invokeBedrockAgent('Hello, this is a connection test', null, null, null);
-    
+
+    const result = await invokeBedrockAgent('Hello, this is a connection test');
+
     return result && result.completion && result.completion.length > 0;
   } catch (error) {
     logger.error('Bedrock connection test failed', { error: error.message });
