@@ -1,135 +1,247 @@
 # Agent Booking Manager
 
+Booking Manager Agent for Purrsurance pet insurance system. Handles veterinary appointment scheduling and clinic finding for pets.
+
 ## Overview
 
-The **AgentBookingManager** is a specialized Bedrock AI agent responsible for managing veterinary appointment bookings for pets in the Purrsurance pet insurance system. It handles scheduling, rescheduling, cancellations, and provides guidance on appointment preparation.
+The **AgentBookingManager** is a conversational AI agent powered by AWS Bedrock that helps pet owners:
+- Schedule veterinary appointments
+- Find suitable vet clinics based on location, specialty, and urgency
+- Handle appointment changes (rescheduling, cancellations)
+- Provide guidance on preparation for vet visits
 
 ## Features
 
-- **Appointment Scheduling**: Helps users book routine checkups, urgent care, specialist visits, and follow-ups
-- **Information Gathering**: Intelligently collects necessary details (pet info, visit reason, preferred time)
-- **Urgency Recognition**: Identifies emergency situations and recommends immediate care
-- **Confirmation Management**: Confirms appointment details before finalizing
-- **Appointment Changes**: Handles rescheduling and cancellation requests
-- **Preparation Guidance**: Provides information on what to bring and how to prepare
+- **Intelligent Appointment Scheduling**: Guides users through the appointment booking process
+- **Clinic Finder**: Integrated with `tool-find-vet-clinic` to help users find appropriate veterinary clinics
+- **Urgency Recognition**: Identifies emergency situations and prioritizes urgent care
+- **Specialty Matching**: Helps users find specialized veterinary services (cardiology, dental, emergency, etc.)
+- **Insurance Integration**: Confirms clinic acceptance of Purrsurance pet insurance
 
 ## Architecture
 
-This agent uses:
-- **AWS Bedrock Agent**: Claude 3.5 Haiku for efficient conversational interactions
-- **IAM Role**: Permissions to invoke Bedrock foundation models
-- **Agent Alias**: For version management and deployment
+- **Foundation Model**: Claude 3.5 Haiku (fast, efficient conversations)
+- **Action Groups**: 
+  - `VetClinicFinderActionGroup` - Uses the `FindVetClinic` tool to search for vet clinics
+- **Tools**:
+  - `FindVetClinic` - Searches for vet clinics based on location, specialty, and urgency
 
 ## Deployment
 
 ### Prerequisites
 
 - AWS CLI configured with appropriate credentials
-- AWS SAM CLI installed
-- Access to AWS Bedrock in us-east-1 region
-- Appropriate IAM permissions to create Bedrock agents and related resources
+- SAM CLI installed
+- `tool-find-vet-clinic` Lambda function deployed
 
-### Quick Deploy
+### Deploy the Agent
 
 ```bash
-# Deploy the agent
+# Deploy the CloudFormation stack (reads instruction from instruction.txt)
 make deploy
 
-# Or use full deployment (same as deploy for this agent)
+# Or for full deployment with action group setup
 make deploy-full
 ```
 
-### Manual Deployment
+The `deploy` command will:
+1. Read the agent instruction from `instruction.txt`
+2. Build and deploy the CloudFormation stack with the custom instruction
+3. Update the agent with the latest instruction via AWS CLI
+
+The `deploy-full` command will:
+1. Do everything from `deploy`
+2. Set up the action group connecting the agent to the `FindVetClinic` tool
+3. Prepare the agent for use
+
+### Update Instruction Only (Fast)
+
+If you only need to update the agent's instruction without redeploying the stack:
 
 ```bash
-# Validate template
-make validate
-
-# Build
-make build
-
-# Deploy
-sam deploy --no-confirm-changeset
+make update-instruction
 ```
 
-## Usage
+This is much faster than a full deployment and will:
+- Read the instruction from `instruction.txt`
+- Update the agent instruction via AWS CLI
+- Prepare the agent
 
-### Commands
+**Use this when you're iterating on the agent's behavior!**
 
-- `make help` - Show available commands
-- `make build` - Build SAM application
-- `make deploy` - Deploy to AWS
-- `make validate` - Validate CloudFormation template
-- `make status` - Check deployment status
-- `make logs` - View recent stack events
-- `make clean` - Remove build artifacts
-- `make delete` - Delete the stack from AWS
+### Setup Action Group Manually
 
-## Agent Capabilities
+If you need to setup or update the action group separately:
 
-### Appointment Types
-- Routine checkups
-- Urgent care visits
-- Specialist consultations
-- Follow-up appointments
-- Vaccinations
-- Diagnostic procedures
+```bash
+make setup-action-group
+```
 
-### Information Collected
-- Pet details (name, species, breed)
-- Visit type and reason
-- Preferred date/time
-- Owner contact information
-- Special requirements or preparations
-
-### Emergency Handling
-If severe symptoms are detected (difficulty breathing, severe bleeding, seizures, suspected poisoning), the agent will:
-1. Acknowledge the urgency
-2. Recommend immediate emergency care
-3. Skip regular appointment booking process
-4. Provide emergency guidance
+This will:
+- Retrieve the Agent ID from CloudFormation outputs
+- Retrieve the Lambda Function ARN for `tool-find-vet-clinic`
+- Create or update the `VetClinicFinderActionGroup` action group
+- Configure the `FindVetClinic` function with proper parameters
+- Prepare the agent
 
 ## Configuration
 
-Key configuration parameters in `template.yaml`:
+### Agent Instruction
 
-- **BookingManagerAgentName**: Name of the agent (default: `AgentBookingManager`)
-- **BookingManagerAgentFoundationModel**: LLM model (default: Claude 3.5 Haiku)
-- **BookingManagerAgentIdleSessionTTL**: Session timeout in seconds (default: 900)
-- **Environment**: Deployment environment (default: `prod`)
+The agent's system instruction is stored in `instruction.txt`. This file contains the detailed workflow and guidelines for the agent.
 
-## Future Enhancements
+To update the instruction:
+1. Edit `instruction.txt`
+2. Run `make update-instruction` for quick update (recommended for testing)
+3. Or run `make deploy` for full deployment
 
-Potential future additions:
-- Lambda function for checking real appointment availability
-- Integration with calendar systems
-- Automated confirmation emails/SMS
-- Appointment reminder system
-- Integration with veterinary clinic management systems
+### Parameters
 
-## Stack Outputs
+- `BookingManagerAgentName`: Name of the agent (default: `AgentBookingManager`)
+- `BookingManagerAgentFoundationModel`: Claude model to use
+- `BookingManagerAgentInstruction`: System instructions for the agent (overridden by `instruction.txt` when using `deploy.sh`)
+- `BookingManagerAgentIdleSessionTTL`: Session timeout in seconds (60-3600)
 
-After deployment, the stack exports:
+### Environment Variables
 
-- `BookingManagerAgentId` - The Bedrock Agent ID
-- `BookingManagerAgentAliasId` - The Agent Alias ID
-- `BookingManagerAgentArn` - The Agent ARN
-- `BookingManagerAgentRoleArn` - IAM Role ARN
+The agent automatically uses environment variables from CloudFormation parameters.
 
-## Notes
+## Usage
 
-- This agent currently operates conversationally without external tools
-- For production use, consider adding Lambda functions to check real availability
-- The agent is designed to integrate with the Purrsurance multi-agent system
-- Session timeout is configurable (60-3600 seconds)
+### Testing in AWS Console
+
+1. Navigate to AWS Bedrock Console → Agents
+2. Select `AgentBookingManager`
+3. Use the test interface to chat with the agent
+
+### Example Conversations
+
+**Routine appointment:**
+```
+User: I need to book an appointment for my cat
+Agent: I'd be happy to help! What's your cat's name and what's the reason for the visit?
+User: Whiskers needs a routine checkup
+Agent: Let me find some vet clinics near you for Whiskers' routine checkup...
+```
+
+**Urgent care:**
+```
+User: My dog needs urgent care, he's vomiting
+Agent: I understand this is urgent. Let me find clinics with urgent care availability...
+```
+
+**Specialty search:**
+```
+User: I need a veterinary cardiologist for my senior dog
+Agent: I'll help you find a veterinary cardiology specialist...
+```
+
+## Tools
+
+### FindVetClinic
+
+Searches for veterinary clinics based on criteria.
+
+**Parameters:**
+- `location` (optional): City or area to search in
+- `specialty` (optional): Type of veterinary specialty (emergency, general, dental, cardiology, etc.)
+- `urgency` (optional): Urgency level (urgent, normal, routine)
+
+**Returns:**
+- List of clinics with contact information
+- Ratings and distance
+- Availability information
+- Insurance acceptance status
+
+## Makefile Commands
+
+```bash
+make help                # Show available commands
+make build               # Build SAM application
+make deploy              # Deploy to AWS (reads instruction.txt)
+make deploy-full         # Deploy stack + setup action group
+make update-instruction  # Update agent instruction only (fast, no full deploy)
+make setup-action-group  # Setup action group for FindVetClinic
+make get-agent-id        # Get Agent ID from stack
+make validate            # Validate SAM template
+make status              # Show stack status
+make logs                # View stack events
+make delete              # Delete CloudFormation stack
+make clean               # Clean build artifacts
+```
+
+## Integration with Other Services
+
+- **tool-find-vet-clinic**: Lambda function that searches for vet clinics
+- **service-event-publisher**: Receives events about clinic searches
+- **service-router**: Routes conversations to appropriate agents
+
+## Troubleshooting
+
+### Action Group Not Working
+
+```bash
+# Check if action group exists
+aws bedrock-agent list-agent-action-groups \
+  --agent-id $(make get-agent-id) \
+  --agent-version DRAFT
+
+# Re-run setup
+make setup-action-group
+```
+
+### Check Agent Status
+
+```bash
+make status
+```
+
+### View Logs
+
+```bash
+make logs
+```
+
+## Development
+
+### Update Agent Instructions
+
+Edit `instruction.txt` with your changes, then:
+
+```bash
+# Fast update (recommended for testing)
+make update-instruction
+
+# Or full deploy (if you have other changes)
+make deploy
+```
+
+The `update-instruction` command is much faster than a full deployment and is ideal for iterating on the agent's behavior.
+
+### Update Action Group Schema
+
+Edit `setup-action-group.sh` to modify the function schema, then run:
+
+```bash
+make setup-action-group
+```
+
+### Testing Changes
+
+1. Edit `instruction.txt` with your changes
+2. Run `make update-instruction` (takes ~10-15 seconds)
+3. Test in AWS Console or via API
+4. Repeat until satisfied
+5. Commit changes to git
 
 ## Related Services
 
-- `agent-vet-doctor` - Provides preliminary diagnostic assessments
-- `agent-policy-manager` - Manages insurance policy information
-- `service-router` - Routes requests to appropriate agents
+- [agent-vet-doctor](../agent-vet-doctor/) - Veterinary diagnostic assistant
+- [agent-policy-manager](../agent-policy-manager/) - Insurance policy management
+- [agent-intention-classifier](../agent-intention-classifier/) - User intent classification
+- [tool-find-vet-clinic](../tool-find-vet-clinic/) - Vet clinic search tool
+- [service-router](../service-router/) - Main conversation router
 
-## Support
+## License
 
-For issues or questions, refer to the main Purrsurance documentation or contact the development team.
-
+Part of the Purrsurance pet insurance system.
