@@ -19,7 +19,13 @@ import {
   invokeSpecificAgent 
 } from './bedrockClient.mjs';
 import { logger, createContextualLogger } from './logger.mjs';
-import { saveChatMessage, initializeSessionContext } from './chatHistoryService.mjs';
+import { createChatHistoryService } from './vendor/agent-tools/index.mjs';
+
+// Initialize chat history service
+const chatHistoryService = createChatHistoryService({
+  tableName: process.env.CHAT_HISTORY_TABLE_NAME || 'ChatHistory',
+  logger,
+});
 
 /**
  * Initialize handler (runs once per cold start)
@@ -249,7 +255,7 @@ export const lambdaHandler = async (event, context) => {
     // Initialize session context on first user request (if globalSessionId is provided)
     if (globalSessionId) {
       try {
-        const sessionContext = await initializeSessionContext(globalSessionId);
+        const sessionContext = await chatHistoryService.initializeSessionContext(globalSessionId);
         requestLogger.info('Session context initialized', {
           requestId,
           sessionId: globalSessionId,
@@ -267,7 +273,7 @@ export const lambdaHandler = async (event, context) => {
     // Save user message to database (if globalSessionId is provided)
     if (globalSessionId) {
       try {
-        await saveChatMessage({
+        await chatHistoryService.saveChatMessage({
           sessionId: globalSessionId,
           sender: 'user',
           content: message,
@@ -303,7 +309,7 @@ export const lambdaHandler = async (event, context) => {
     // Save assistant response to database (if globalSessionId is provided)
     if (globalSessionId) {
       try {
-        await saveChatMessage({
+        await chatHistoryService.saveChatMessage({
           sessionId: globalSessionId,
           sender: 'assistant',
           content: agentResponse.completion,

@@ -6,7 +6,8 @@
   "main": "dist/index.mjs",
   "exports": {
     ".": "./dist/index.mjs",
-    "./response": "./dist/response.mjs"
+    "./response": "./dist/response.mjs",
+    "./chat-history": "./dist/chat-history.mjs"
   },
   "files": [
     "dist"
@@ -22,8 +23,16 @@
   ],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.515.0",
+    "@aws-sdk/lib-dynamodb": "^3.515.0"
+  },
   "devDependencies": {
     "esbuild": "^0.19.8"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/lib-dynamodb": "^3.0.0"
   }
 }
 

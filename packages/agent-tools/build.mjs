@@ -42,6 +42,9 @@ async function build() {
     external: [],
   });
 
+  // Copy chat-history.mjs (no build needed, AWS SDK is external)
+  await fs.copyFile('chat-history.mjs', 'dist/chat-history.mjs');
+
   console.log('✅ Build completed successfully');
 }
 

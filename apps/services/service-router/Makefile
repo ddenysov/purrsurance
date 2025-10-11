@@ -1,5 +1,8 @@
 .PHONY: help install build deploy delete invoke logs clean test validate sync-agents list-agents get-urls update-env
 
+PACKAGES_DIR = ../../../packages
+VENDOR_DIR = ./vendor
+
 # Default target
 help:
 	@echo "Service Router Service - Available commands:"
@@ -23,7 +26,7 @@ install:
 	pnpm install
 
 # Build the SAM application
-build:
+build: sync-packages
 	@echo "Building SAM application..."
 	sam build
 
@@ -122,3 +125,15 @@ update-env:
 		exit 1; \
 	fi
 
+sync-packages:
+	@echo "Syncing packages from $(PACKAGES_DIR) to $(VENDOR_DIR)..."
+	@mkdir -p $(VENDOR_DIR)
+	@for package_dir in $(PACKAGES_DIR)/*/; do \
+		if [ -d "$$package_dir/dist" ]; then \
+			package_name=$$(basename $$package_dir); \
+			echo "  Copying $$package_name..."; \
+			mkdir -p $(VENDOR_DIR)/$$package_name; \
+			cp -r $$package_dir/dist/* $(VENDOR_DIR)/$$package_name/; \
+		fi \
+	done
+	@echo "Package sync complete!"
