@@ -52,6 +52,16 @@ Parameters:
     Description: VetDoc Agent Alias ID
     Default: ""
   
+  BookingManagerAgentId:
+    Type: String
+    Description: Booking Manager Agent ID
+    Default: ""
+  
+  BookingManagerAgentAliasId:
+    Type: String
+    Description: Booking Manager Agent Alias ID
+    Default: ""
+  
   ChatHistoryTableName:
     Type: String
     Description: DynamoDB table name for chat history
@@ -86,6 +96,9 @@ Resources:
           # VetDoc Agent
           VETDOC_AGENT_ID: !Ref VetDocAgentId
           VETDOC_AGENT_ALIAS_ID: !Ref VetDocAgentAliasId
+          # Booking Manager Agent
+          BOOKING_MANAGER_AGENT_ID: !Ref BookingManagerAgentId
+          BOOKING_MANAGER_AGENT_ALIAS_ID: !Ref BookingManagerAgentAliasId
           # Legacy support (kept for backward compatibility)
           BEDROCK_AGENT_ID: !Ref IntentionClassifierAgentId
           BEDROCK_AGENT_ALIAS_ID: !Ref IntentionClassifierAgentAliasId

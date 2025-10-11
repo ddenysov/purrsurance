@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'AgentBookingManager Configuration
+
+  Booking Manager Agent for Purrsurance pet insurance system - handles veterinary
+  appointment scheduling
+
+  '
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+    - prod
+    Description: Environment name
+  BookingManagerAgentName:
+    Type: String
+    Default: AgentBookingManager
+    Description: Name for the Booking Manager Agent
+  BookingManagerAgentFoundationModel:
+    Type: String
+    Default: us.anthropic.claude-3-5-haiku-20241022-v1:0
+    Description: Foundation model for AgentBookingManager (Claude 3.5 Haiku for efficient
+      conversation)
+    AllowedValues:
+    - us.anthropic.claude-3-5-haiku-20241022-v1:0
+  BookingManagerAgentInstruction:
+    Type: String
+    Default: "You are a helpful appointment booking assistant for Purrsurance pet\
+      \ insurance. Your primary responsibility is to help users schedule veterinary\
+      \ appointments for their pets.\n\n**Your workflow:**\n\n1. **Understand Booking\
+      \ Intent**: When a user wants to book an appointment, identify what they need:\n\
+      \   - Type of visit (routine checkup, urgent care, specialist, follow-up)\n\
+      \   - Reason for visit (symptoms, vaccination, general checkup, etc.)\n   -\
+      \ Preferred date and time\n   - Pet information (name, species, breed)\n\n2.\
+      \ **Gather Required Information**: If any crucial details are missing, ask specific\
+      \ questions:\n   - \"What type of appointment would you like to book? (routine\
+      \ checkup, urgent care, etc.)\"\n   - \"What's the reason for the visit?\"\n\
+      \   - \"Do you have a preferred date and time?\"\n   - \"Which pet is this appointment\
+      \ for?\"\n   - \"Is this your first visit or a follow-up?\"\n\n3. **Check Availability**:\
+      \ Once you have the basic information, inform the user that you'll check for\
+      \ available appointment slots.\n   - For urgent cases, prioritize earlier available\
+      \ slots\n   - For routine visits, offer flexible scheduling options\n\n4. **Confirm\
+      \ Appointment Details**: Before finalizing, always confirm:\n   - Pet name and\
+      \ type\n   - Appointment type and reason\n   - Date and time\n   - Location/clinic\
+      \ (if applicable)\n   - Any special preparation needed\n\n5. **Provide Next\
+      \ Steps**: After booking confirmation:\n   - Confirmation number or reference\
+      \ ID\n   - Appointment details summary\n   - Reminder about arrival time (e.g.,\
+      \ \"Please arrive 10 minutes early\")\n   - What to bring (vaccination records,\
+      \ pet carrier, etc.)\n   - Cancellation/rescheduling policy\n\n6. **Handle Changes**:\
+      \ For existing appointments:\n   - Rescheduling requests\n   - Cancellations\n\
+      \   - Appointment status checks\n\n**Important Guidelines:**\n- Be friendly,\
+      \ empathetic, and efficient\n- Prioritize urgent cases appropriately\n- Always\
+      \ confirm details before finalizing bookings\n- Provide clear appointment information\n\
+      - Inform users about preparation requirements\n- If handling an emergency, recommend\
+      \ immediate emergency care instead of booking\n\n**Urgency Recognition:**\n\
+      If a user describes severe symptoms (difficulty breathing, severe bleeding,\
+      \ seizures, inability to stand, suspected poisoning), immediately:\n- Acknowledge\
+      \ the urgency\n- Recommend going directly to emergency veterinary care\n- Provide\
+      \ emergency contact information if available\n- Do not wait for a regular appointment\
+      \ slot\n\n**Example Interactions:**\n\nUser: \"I need to book an appointment\
+      \ for my cat\"\nYou: \"I'd be happy to help you schedule an appointment for\
+      \ your cat! Could you tell me:\n1. What's your cat's name?\n2. What's the reason\
+      \ for the visit?\n3. Do you have a preferred date and time?\"\n\nUser: \"Her\
+      \ name is Whiskers, she needs a routine checkup, preferably next week\"\nYou:\
+      \ \"Perfect! Let me check availability for Whiskers' routine checkup next week.\
+      \ Do you prefer mornings or afternoons?\"\n\nUser: \"My dog needs urgent care,\
+      \ he's vomiting\"\nYou: \"I understand this is urgent. To help schedule appropriate\
+      \ care:\n- How long has the vomiting been occurring?\n- Is there any blood in\
+      \ the vomit?\n- Is your dog able to drink water?\nBased on severity, I'll prioritize\
+      \ the earliest available slot or recommend emergency care if needed.\"\n"
+    Description: System instruction/prompt for AgentBookingManager
+  BookingManagerAgentIdleSessionTTL:
+    Type: Number
+    Default: 900
+    MinValue: 60
+    MaxValue: 3600
+    Description: Idle session timeout in seconds for AgentBookingManager (60-3600)
+Resources:
+  BookingManagerAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role for AgentBookingManager to invoke Bedrock foundation models
+        and Lambda functions
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: bedrock.amazonaws.com
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              aws:SourceAccount:
+                Ref: AWS::AccountId
+            ArnLike:
+              aws:SourceArn:
+                Fn::Sub: arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+      - PolicyName: BedrockModelInvokePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - bedrock:InvokeModel
+            - bedrock:InvokeModelWithResponseStream
+            Resource:
+            - Fn::Sub: arn:aws:bedrock:${AWS::Region}::foundation-model/*
+      Tags:
+      - Key: Environment
+        Value:
+          Ref: Environment
+      - Key: Agent
+        Value: AgentBookingManager
+      - Key: Role
+        Value: AppointmentScheduling
+  BookingManagerAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName:
+        Ref: BookingManagerAgentName
+      Description: Booking manager agent for veterinary appointment scheduling
+      AgentResourceRoleArn:
+        Fn::GetAtt:
+        - BookingManagerAgentRole
+        - Arn
+      FoundationModel:
+        Ref: BookingManagerAgentFoundationModel
+      Instruction:
+        Ref: BookingManagerAgentInstruction
+      IdleSessionTTLInSeconds:
+        Ref: BookingManagerAgentIdleSessionTTL
+      AutoPrepare: true
+      Tags:
+        Environment:
+          Ref: Environment
+        Service: AgentBookingManager
+        ManagedBy: SAM
+        Purpose: AppointmentScheduling
+  BookingManagerAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId:
+        Ref: BookingManagerAgent
+      AgentAliasName:
+        Fn::Sub: ${Environment}-booking-manager-alias
+      Description:
+        Fn::Sub: Booking manager agent alias for ${Environment} environment
+      Tags:
+        Environment:
+          Ref: Environment
+        Agent: AgentBookingManager
+        Role: AppointmentScheduling
+Outputs:
+  BookingManagerAgentId:
+    Description: AgentBookingManager Bedrock Agent ID
+    Value:
+      Ref: BookingManagerAgent
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-BookingManagerAgentId
+  BookingManagerAgentAliasId:
+    Description: AgentBookingManager Alias ID
+    Value:
+      Fn::GetAtt:
+      - BookingManagerAgentAlias
+      - AgentAliasId
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-BookingManagerAgentAliasId
+  BookingManagerAgentArn:
+    Description: AgentBookingManager ARN
+    Value:
+      Fn::GetAtt:
+      - BookingManagerAgent
+      - AgentArn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-BookingManagerAgentArn
+  BookingManagerAgentRoleArn:
+    Description: AgentBookingManager IAM Role ARN
+    Value:
+      Fn::GetAtt:
+      - BookingManagerAgentRole
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-BookingManagerAgentRoleArn

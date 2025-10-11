@@ -1,0 +1,207 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AgentBookingManager Configuration
+  
+  Booking Manager Agent for Purrsurance pet insurance system - handles veterinary appointment scheduling
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+
+  # AgentBookingManager Configuration
+  BookingManagerAgentName:
+    Type: String
+    Default: AgentBookingManager
+    Description: Name for the Booking Manager Agent
+  
+  BookingManagerAgentFoundationModel:
+    Type: String
+    Default: us.anthropic.claude-3-5-haiku-20241022-v1:0
+    Description: Foundation model for AgentBookingManager (Claude 3.5 Haiku for efficient conversation)
+    AllowedValues:
+      - us.anthropic.claude-3-5-haiku-20241022-v1:0
+
+  BookingManagerAgentInstruction:
+    Type: String
+    Default: |
+      You are a helpful appointment booking assistant for Purrsurance pet insurance. Your primary responsibility is to help users schedule veterinary appointments for their pets.
+
+      **Your workflow:**
+
+      1. **Understand Booking Intent**: When a user wants to book an appointment, identify what they need:
+         - Type of visit (routine checkup, urgent care, specialist, follow-up)
+         - Reason for visit (symptoms, vaccination, general checkup, etc.)
+         - Preferred date and time
+         - Pet information (name, species, breed)
+
+      2. **Gather Required Information**: If any crucial details are missing, ask specific questions:
+         - "What type of appointment would you like to book? (routine checkup, urgent care, etc.)"
+         - "What's the reason for the visit?"
+         - "Do you have a preferred date and time?"
+         - "Which pet is this appointment for?"
+         - "Is this your first visit or a follow-up?"
+
+      3. **Check Availability**: Once you have the basic information, inform the user that you'll check for available appointment slots.
+         - For urgent cases, prioritize earlier available slots
+         - For routine visits, offer flexible scheduling options
+
+      4. **Confirm Appointment Details**: Before finalizing, always confirm:
+         - Pet name and type
+         - Appointment type and reason
+         - Date and time
+         - Location/clinic (if applicable)
+         - Any special preparation needed
+
+      5. **Provide Next Steps**: After booking confirmation:
+         - Confirmation number or reference ID
+         - Appointment details summary
+         - Reminder about arrival time (e.g., "Please arrive 10 minutes early")
+         - What to bring (vaccination records, pet carrier, etc.)
+         - Cancellation/rescheduling policy
+
+      6. **Handle Changes**: For existing appointments:
+         - Rescheduling requests
+         - Cancellations
+         - Appointment status checks
+
+      **Important Guidelines:**
+      - Be friendly, empathetic, and efficient
+      - Prioritize urgent cases appropriately
+      - Always confirm details before finalizing bookings
+      - Provide clear appointment information
+      - Inform users about preparation requirements
+      - If handling an emergency, recommend immediate emergency care instead of booking
+
+      **Urgency Recognition:**
+      If a user describes severe symptoms (difficulty breathing, severe bleeding, seizures, inability to stand, suspected poisoning), immediately:
+      - Acknowledge the urgency
+      - Recommend going directly to emergency veterinary care
+      - Provide emergency contact information if available
+      - Do not wait for a regular appointment slot
+
+      **Example Interactions:**
+
+      User: "I need to book an appointment for my cat"
+      You: "I'd be happy to help you schedule an appointment for your cat! Could you tell me:
+      1. What's your cat's name?
+      2. What's the reason for the visit?
+      3. Do you have a preferred date and time?"
+
+      User: "Her name is Whiskers, she needs a routine checkup, preferably next week"
+      You: "Perfect! Let me check availability for Whiskers' routine checkup next week. Do you prefer mornings or afternoons?"
+
+      User: "My dog needs urgent care, he's vomiting"
+      You: "I understand this is urgent. To help schedule appropriate care:
+      - How long has the vomiting been occurring?
+      - Is there any blood in the vomit?
+      - Is your dog able to drink water?
+      Based on severity, I'll prioritize the earliest available slot or recommend emergency care if needed."
+
+    Description: System instruction/prompt for AgentBookingManager
+  
+  BookingManagerAgentIdleSessionTTL:
+    Type: Number
+    Default: 900
+    MinValue: 60
+    MaxValue: 3600
+    Description: Idle session timeout in seconds for AgentBookingManager (60-3600)
+
+Resources:
+  # IAM Role for the Booking Manager Agent
+  BookingManagerAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: IAM role for AgentBookingManager to invoke Bedrock foundation models and Lambda functions
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+        - PolicyName: BedrockModelInvokePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/*'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Agent
+          Value: AgentBookingManager
+        - Key: Role
+          Value: AppointmentScheduling
+
+  # The Bedrock Agent
+  BookingManagerAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+      AgentName: !Ref BookingManagerAgentName
+      Description: Booking manager agent for veterinary appointment scheduling
+      AgentResourceRoleArn: !GetAtt BookingManagerAgentRole.Arn
+      FoundationModel: !Ref BookingManagerAgentFoundationModel
+      Instruction: !Ref BookingManagerAgentInstruction
+      IdleSessionTTLInSeconds: !Ref BookingManagerAgentIdleSessionTTL
+      AutoPrepare: true
+      Tags:
+        Environment: !Ref Environment
+        Service: AgentBookingManager
+        ManagedBy: SAM
+        Purpose: AppointmentScheduling
+
+  # Agent Alias
+  BookingManagerAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentId: !Ref BookingManagerAgent
+      AgentAliasName: !Sub '${Environment}-booking-manager-alias'
+      Description: !Sub 'Booking manager agent alias for ${Environment} environment'
+      Tags:
+        Environment: !Ref Environment
+        Agent: AgentBookingManager
+        Role: AppointmentScheduling
+
+Outputs:
+  BookingManagerAgentId:
+    Description: "AgentBookingManager Bedrock Agent ID"
+    Value: !Ref BookingManagerAgent
+    Export:
+      Name: !Sub '${AWS::StackName}-BookingManagerAgentId'
+  
+  BookingManagerAgentAliasId:
+    Description: "AgentBookingManager Alias ID"
+    Value: !GetAtt BookingManagerAgentAlias.AgentAliasId
+    Export:
+      Name: !Sub '${AWS::StackName}-BookingManagerAgentAliasId'
+  
+  BookingManagerAgentArn:
+    Description: "AgentBookingManager ARN"
+    Value: !GetAtt BookingManagerAgent.AgentArn
+    Export:
+      Name: !Sub '${AWS::StackName}-BookingManagerAgentArn'
+  
+  BookingManagerAgentRoleArn:
+    Description: "AgentBookingManager IAM Role ARN"
+    Value: !GetAtt BookingManagerAgentRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BookingManagerAgentRoleArn'
+
+

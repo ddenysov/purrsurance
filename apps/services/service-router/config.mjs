@@ -27,10 +27,15 @@ export const config = {
       agentId: process.env.POLICY_MANAGER_AGENT_ID,
       agentAliasId: process.env.POLICY_MANAGER_AGENT_ALIAS_ID || 'TSTALIASID',
     },
-    // VetDoc Agent (for future implementation)
+    // VetDoc Agent
     vetDoc: {
       agentId: process.env.VETDOC_AGENT_ID,
       agentAliasId: process.env.VETDOC_AGENT_ALIAS_ID || 'TSTALIASID',
+    },
+    // Booking Manager Agent
+    bookingManager: {
+      agentId: process.env.BOOKING_MANAGER_AGENT_ID,
+      agentAliasId: process.env.BOOKING_MANAGER_AGENT_ALIAS_ID || 'TSTALIASID',
     },
     // Legacy support (for backward compatibility)
     agentId: process.env.BEDROCK_AGENT_ID,
@@ -46,6 +51,7 @@ export const config = {
   agentMapping: {
     'PolicyAgent': 'policyManager',
     'VetDocAgent': 'vetDoc',
+    'BookingAgent': 'bookingManager',
   },
   
   // DynamoDB configuration
@@ -141,6 +147,10 @@ export function getPrintableConfig() {
       vetDoc: {
         agentId: config.bedrock.vetDoc.agentId ? '***' + config.bedrock.vetDoc.agentId.slice(-4) : 'not set',
         agentAliasId: config.bedrock.vetDoc.agentAliasId,
+      },
+      bookingManager: {
+        agentId: config.bedrock.bookingManager.agentId ? '***' + config.bedrock.bookingManager.agentId.slice(-4) : 'not set',
+        agentAliasId: config.bedrock.bookingManager.agentAliasId,
       },
       region: config.bedrock.region,
       useMock: config.bedrock.useMock,

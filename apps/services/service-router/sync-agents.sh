@@ -97,6 +97,8 @@ update_env_json() {
     local POLICY_ALIAS_ID=$4
     local VETDOC_AGENT_ID=$5
     local VETDOC_ALIAS_ID=$6
+    local BOOKING_AGENT_ID=$7
+    local BOOKING_ALIAS_ID=$8
     
     echo -e "${YELLOW}Updating $ENV_FILE...${NC}"
     
@@ -112,12 +114,16 @@ update_env_json() {
        --arg palias "$POLICY_ALIAS_ID" \
        --arg vaid "$VETDOC_AGENT_ID" \
        --arg valias "$VETDOC_ALIAS_ID" \
+       --arg baid "$BOOKING_AGENT_ID" \
+       --arg balias "$BOOKING_ALIAS_ID" \
        '.ServiceRouterFunction.INTENTION_CLASSIFIER_AGENT_ID = $iaid |
         .ServiceRouterFunction.INTENTION_CLASSIFIER_AGENT_ALIAS_ID = $ialias |
         .ServiceRouterFunction.POLICY_MANAGER_AGENT_ID = $paid |
         .ServiceRouterFunction.POLICY_MANAGER_AGENT_ALIAS_ID = $palias |
         .ServiceRouterFunction.VETDOC_AGENT_ID = $vaid |
         .ServiceRouterFunction.VETDOC_AGENT_ALIAS_ID = $valias |
+        .ServiceRouterFunction.BOOKING_MANAGER_AGENT_ID = $baid |
+        .ServiceRouterFunction.BOOKING_MANAGER_AGENT_ALIAS_ID = $balias |
         .ServiceRouterFunction.BEDROCK_AGENT_ID = $iaid |
         .ServiceRouterFunction.BEDROCK_AGENT_ALIAS_ID = $ialias' \
        "$ENV_FILE" > "$ENV_FILE.tmp" && mv "$ENV_FILE.tmp" "$ENV_FILE"
@@ -133,6 +139,8 @@ update_samconfig() {
     local POLICY_ALIAS_ID=$4
     local VETDOC_AGENT_ID=$5
     local VETDOC_ALIAS_ID=$6
+    local BOOKING_AGENT_ID=$7
+    local BOOKING_ALIAS_ID=$8
     
     echo -e "${YELLOW}Updating $SAMCONFIG_FILE...${NC}"
     
@@ -155,8 +163,8 @@ update_samconfig() {
     LOG_LEVEL=${LOG_LEVEL:-info}
     
     # Build new parameter_overrides line using printf to avoid newline issues
-    local NEW_LINE=$(printf 'parameter_overrides = "Environment=\\"%s\\" IntentionClassifierAgentId=\\"%s\\" IntentionClassifierAgentAliasId=\\"%s\\" PolicyManagerAgentId=\\"%s\\" PolicyManagerAgentAliasId=\\"%s\\" VetDocAgentId=\\"%s\\" VetDocAgentAliasId=\\"%s\\" ChatHistoryTableName=\\"%s\\" LogLevel=\\"%s\\""' \
-        "$ENVIRONMENT" "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID" "$CHAT_TABLE" "$LOG_LEVEL")
+    local NEW_LINE=$(printf 'parameter_overrides = "Environment=\\"%s\\" IntentionClassifierAgentId=\\"%s\\" IntentionClassifierAgentAliasId=\\"%s\\" PolicyManagerAgentId=\\"%s\\" PolicyManagerAgentAliasId=\\"%s\\" VetDocAgentId=\\"%s\\" VetDocAgentAliasId=\\"%s\\" BookingManagerAgentId=\\"%s\\" BookingManagerAgentAliasId=\\"%s\\" ChatHistoryTableName=\\"%s\\" LogLevel=\\"%s\\""' \
+        "$ENVIRONMENT" "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID" "$BOOKING_AGENT_ID" "$BOOKING_ALIAS_ID" "$CHAT_TABLE" "$LOG_LEVEL")
     
     # Create temporary file and replace the line
     while IFS= read -r line; do
@@ -248,6 +256,30 @@ main() {
     fi
     
     echo ""
+    
+    # Find Booking Manager agent
+    echo -e "${BLUE}Step 4: Select Booking Manager Agent${NC}"
+    BOOKING_AGENT_ID=$(echo "$AGENTS" | jq -r '.[] | select(.[0] | contains("booking") or contains("Booking")) | .[1]' | head -n 1)
+    
+    if [ -z "$BOOKING_AGENT_ID" ]; then
+        echo "Enter Booking Manager Agent ID (or press Enter to skip):"
+        read -r BOOKING_AGENT_ID
+    else
+        BOOKING_AGENT_NAME=$(echo "$AGENTS" | jq -r ".[] | select(.[1] == \"$BOOKING_AGENT_ID\") | .[0]")
+        echo -e "Auto-detected: ${GREEN}$BOOKING_AGENT_NAME${NC} ($BOOKING_AGENT_ID)"
+        echo "Press Enter to confirm or enter a different Agent ID:"
+        read -r USER_INPUT
+        if [ -n "$USER_INPUT" ]; then
+            BOOKING_AGENT_ID="$USER_INPUT"
+        fi
+    fi
+    
+    BOOKING_ALIAS_ID=""
+    if [ -n "$BOOKING_AGENT_ID" ]; then
+        BOOKING_ALIAS_ID=$(get_agent_aliases "$BOOKING_AGENT_ID" "Booking Manager")
+    fi
+    
+    echo ""
     echo -e "${BLUE}═══════════════════════════════════════════${NC}"
     echo -e "${GREEN}Configuration Summary:${NC}"
     echo -e "${BLUE}═══════════════════════════════════════════${NC}"
@@ -257,6 +289,8 @@ main() {
     echo "Policy Manager Alias ID:          $POLICY_ALIAS_ID"
     echo "VetDoc Agent ID:                  $VETDOC_AGENT_ID"
     echo "VetDoc Alias ID:                  $VETDOC_ALIAS_ID"
+    echo "Booking Manager Agent ID:         $BOOKING_AGENT_ID"
+    echo "Booking Manager Alias ID:         $BOOKING_ALIAS_ID"
     echo -e "${BLUE}═══════════════════════════════════════════${NC}"
     echo ""
     
@@ -264,8 +298,8 @@ main() {
     read -r CONFIRM
     
     if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-        update_env_json "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID"
-        update_samconfig "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID"
+        update_env_json "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID" "$BOOKING_AGENT_ID" "$BOOKING_ALIAS_ID"
+        update_samconfig "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID" "$BOOKING_AGENT_ID" "$BOOKING_ALIAS_ID"
         echo ""
         echo -e "${GREEN}✓ Configuration updated successfully!${NC}"
     else

@@ -1,9 +1,0 @@
-{
-  "httpMethod": "POST",
-  "path": "/publish",
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": "{\"eventType\":\"ClaimSubmitted\",\"subject\":\"New claim submitted\",\"data\":{\"claimId\":\"CLM-2025-000123\",\"policyId\":\"PETS-INS-2025-000123\",\"petId\":\"7f4f0c1a-6f3a-4497-9d6a-9f9d1a3a1e22\",\"amount\":3500,\"incidentDate\":\"2025-10-05\",\"submittedBy\":\"dmytro@example.com\",\"timestamp\":\"2025-10-06T12:00:00Z\"}}"
-}
-
