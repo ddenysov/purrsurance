@@ -1,4 +1,4 @@
-.PHONY: help build deploy delete validate logs clean status deploy-full update-instruction get-agent-id
+.PHONY: help build deploy delete validate logs clean status deploy-full update-instruction get-agent-id setup-action-group
 
 # Default target
 help:
@@ -7,6 +7,7 @@ help:
 	@echo "  make deploy             - Deploy to AWS (reads instruction from instruction.txt)"
 	@echo "  make deploy-full        - Same as deploy (build and deploy)"
 	@echo "  make update-instruction - Update agent instruction only (fast, no full deploy)"
+	@echo "  make setup-action-group - Setup action group for RecommendDoctorVisit tool"
 	@echo "  make get-agent-id       - Get agent ID from CloudFormation stack"
 	@echo "  make delete             - Delete CloudFormation stack"
 	@echo "  make validate           - Validate SAM template"
@@ -97,5 +98,10 @@ update-instruction:
 		--agent-id "$$AGENT_ID" \
 		--output text > /dev/null; \
 	echo "✅ Instruction updated successfully!"
+
+# Setup action group for RecommendDoctorVisit tool
+setup-action-group:
+	@echo "🔧 Setting up action group for RecommendDoctorVisit..."
+	@./setup-action-group.sh
 
 

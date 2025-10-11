@@ -17,7 +17,7 @@ This agent uses AWS Bedrock with Claude 3.5 Haiku for conversational AI capabili
 
 - **Foundation Model**: Claude 3.5 Haiku (fast responses, good for diagnostic conversations)
 - **Session Management**: 900 seconds (15 minutes) idle timeout
-- **No Action Groups**: This agent doesn't need external tools - it relies on conversation and medical knowledge
+- **Action Groups**: Uses the `RecommendDoctorVisit` tool to record and publish visit recommendations
 
 ## Project Structure
 

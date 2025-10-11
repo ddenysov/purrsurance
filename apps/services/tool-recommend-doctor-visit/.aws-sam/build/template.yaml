@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'tool-recommend-doctor-visit
+
+  Lambda function that recommends doctor visit and publishes events for Bedrock Agent
+
+  '
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    Architectures:
+    - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+    - prod
+    Description: Environment name
+  EventPublisherStackName:
+    Type: String
+    Description: Name of the Event Publisher CloudFormation stack to get Events Table
+      name
+  EventPublisherUrl:
+    Type: String
+    Description: URL of the Event Publisher API endpoint for sending doctor visit
+      recommendation events
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+    - error
+    - warn
+    - info
+    - debug
+    Description: Logging level
+Resources:
+  DoctorVisitEventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName:
+        Fn::Sub: ${AWS::StackName}-doctor-visit-events
+      DisplayName: Doctor Visit Recommendation Events Topic
+      Tags:
+      - Key: Environment
+        Value:
+          Ref: Environment
+      - Key: Service
+        Value: tool-recommend-doctor-visit
+  DoctorVisitEventsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: lambda
+      TopicArn:
+        Ref: DoctorVisitEventsTopic
+      Endpoint:
+        Fn::ImportValue:
+          Fn::Sub: ${EventPublisherStackName}-FunctionArn
+  DoctorVisitEventsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: ${EventPublisherStackName}-FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn:
+        Ref: DoctorVisitEventsTopic
+  RecommendDoctorVisitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: RecommendDoctorVisitFunction
+      Handler: app.lambdaHandler
+      Description: Recommends doctor visit and publishes events for Bedrock Agent
+        (Function Response Format)
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            Ref: Environment
+          EVENTS_TOPIC_ARN:
+            Ref: DoctorVisitEventsTopic
+          EVENT_PUBLISHER_URL:
+            Ref: EventPublisherUrl
+          LOG_LEVEL:
+            Ref: LogLevel
+          NODE_ENV: production
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      Policies:
+      - SNSPublishMessagePolicy:
+          TopicName:
+            Fn::GetAtt:
+            - DoctorVisitEventsTopic
+            - TopicName
+    Metadata:
+      SamResourceId: RecommendDoctorVisitFunction
+Outputs:
+  RecommendDoctorVisitFunction:
+    Description: Recommend Doctor Visit Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - RecommendDoctorVisitFunction
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-FunctionArn
+  RecommendDoctorVisitFunctionIamRole:
+    Description: Implicit IAM Role created for Recommend Doctor Visit function
+    Value:
+      Fn::GetAtt:
+      - RecommendDoctorVisitFunctionRole
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-FunctionRoleArn
+  DoctorVisitEventsTopicArn:
+    Description: SNS Topic ARN for doctor visit recommendation events
+    Value:
+      Ref: DoctorVisitEventsTopic
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-DoctorVisitEventsTopicArn
+  DoctorVisitEventsTopicName:
+    Description: SNS Topic Name for doctor visit recommendation events
+    Value:
+      Fn::GetAtt:
+      - DoctorVisitEventsTopic
+      - TopicName
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-DoctorVisitEventsTopicName

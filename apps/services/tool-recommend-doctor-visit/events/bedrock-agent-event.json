@@ -1,0 +1,36 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "PetInsuranceAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "I think my cat needs to see a vet",
+  "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
+  "actionGroup": "DoctorVisitActionGroup",
+  "function": "recommendDoctorVisit",
+  "parameters": [
+    {
+      "name": "reason",
+      "type": "string",
+      "value": "Pet showing unusual symptoms"
+    },
+    {
+      "name": "urgency",
+      "type": "string",
+      "value": "normal"
+    },
+    {
+      "name": "symptoms",
+      "type": "string",
+      "value": "Coughing, lethargy"
+    }
+  ]
+}
+
