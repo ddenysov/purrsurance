@@ -13,6 +13,11 @@ Parameters:
     AllowedValues:
     - prod
     Description: Environment name
+  ToolPolicyDetailsStackName:
+    Type: String
+    Default: purrsurance-tool-policy-details
+    Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction
+      ARN
   BookingManagerAgentName:
     Type: String
     Default: AgentBookingManager
@@ -31,17 +36,30 @@ Parameters:
       pets.
 
 
+      MANDATORY FIRST STEP: Always start by using GetPolicyDetails tool to retrieve
+      owner and pet information. Get policy ID from session attributes or ask user
+      for it. Use this information throughout the conversation - NEVER ask for information
+      already available in GetPolicyDetails (owner name, pet name, breed, age, medical
+      history, address).
+
+
       Help users by:
 
-      1. Gathering appointment details (pet information, reason for visit, preferred
-      date and time, location)
+      1. Using GetPolicyDetails to get complete owner and pet information, then addressing
+      owner by name
 
-      2. Using the FindVetClinic tool to find suitable veterinary clinics when needed
-      (based on location, specialty, and urgency)
+      2. Gathering only missing appointment details (reason for visit, preferred date
+      and time)
 
-      3. Confirming all appointment details before finalizing the booking
+      3. Using the FindVetClinic tool to find suitable veterinary clinics (use owner''s
+      address from GetPolicyDetails as default location)
 
-      4. Providing next steps and preparation requirements for the visit
+      4. Leveraging medical history from GetPolicyDetails to provide informed recommendations
+
+      5. Confirming all appointment details before finalizing the booking
+
+      6. Providing next steps and preparation requirements based on pet''s medical
+      history
 
 
       For emergency situations (severe symptoms like difficulty breathing, severe
@@ -49,8 +67,8 @@ Parameters:
       find emergency care options and recommend immediate veterinary attention.
 
 
-      Always be friendly, empathetic, professional, and prioritize the pet''s safety
-      above all else.
+      Always be friendly, empathetic, professional, personalized, and prioritize the
+      pet''s safety above all else.
 
       '
     Description: System instruction/prompt for AgentBookingManager (default instruction,
@@ -103,6 +121,16 @@ Resources:
             - lambda:InvokeFunction
             Resource:
             - Fn::Sub: arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+      - PolicyName: InvokePolicyDetailsFunction
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource:
+            - Fn::ImportValue:
+                Fn::Sub: ${ToolPolicyDetailsStackName}-FunctionArn
       Tags:
       - Key: Environment
         Value:
@@ -134,6 +162,18 @@ Resources:
         Service: AgentBookingManager
         ManagedBy: SAM
         Purpose: AppointmentScheduling
+  PolicyDetailsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: ${ToolPolicyDetailsStackName}-FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - BookingManagerAgent
+        - AgentArn
   BookingManagerAgentAlias:
     Type: AWS::Bedrock::AgentAlias
     Properties:

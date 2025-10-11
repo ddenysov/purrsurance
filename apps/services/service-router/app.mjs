@@ -138,11 +138,12 @@ async function classifyUserIntention(message, chatHistory, requestId, logger) {
  * @param {string} sessionId - Session ID for Bedrock Agent
  * @param {string} globalSessionId - Global session ID for chat history
  * @param {Object} sessionContext - Session context from chat history
+ * @param {string} policyId - Policy ID from request
  * @param {string} requestId - Request ID for logging
  * @param {Object} logger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-async function routeToAgent(classification, message, sessionId, globalSessionId, sessionContext, requestId, logger) {
+async function routeToAgent(classification, message, sessionId, globalSessionId, sessionContext, policyId, requestId, logger) {
   logger.info('Routing request to agent', {
     requestId,
     classification,
@@ -185,6 +186,7 @@ async function routeToAgent(classification, message, sessionId, globalSessionId,
     requestId, 
     classification,
     agentId: agentConfig.agentId,
+    policyId,
   });
   
   return await invokeSpecificAgent(
@@ -194,6 +196,7 @@ async function routeToAgent(classification, message, sessionId, globalSessionId,
     sessionId,
     globalSessionId,
     sessionContext,
+    policyId,
     agentConfig.name,
     logger
   );
@@ -228,7 +231,8 @@ export const lambdaHandler = async (event, context) => {
       message,
       sessionId, 
       globalSessionId,
-      chatHistory 
+      chatHistory,
+      policyId
     } = body;
     
     // Validate input
@@ -308,6 +312,7 @@ export const lambdaHandler = async (event, context) => {
       sessionId,
       globalSessionId,
       sessionContext,
+      policyId,
       requestId,
       requestLogger
     );
