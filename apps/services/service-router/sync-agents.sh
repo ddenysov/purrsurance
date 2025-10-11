@@ -68,22 +68,27 @@ get_agent_aliases() {
     # Output informational messages to stderr so they don't get captured
     echo -e "${YELLOW}Fetching aliases for $AGENT_NAME...${NC}" >&2
     
-    ALIASES=$(aws bedrock-agent list-agent-aliases --agent-id "$AGENT_ID" --query 'agentAliasSummaries[?agentAliasStatus==`PREPARED`] | sort_by(@, &updatedAt) | reverse(@)' --output json)
+    ALIASES=$(aws bedrock-agent list-agent-aliases --agent-id "$AGENT_ID" --query 'agentAliasSummaries[?agentAliasStatus==`PREPARED`]' --output json)
     
     if [ "$(echo "$ALIASES" | jq length)" -eq 0 ]; then
         echo -e "${RED}  No aliases found for this agent${NC}" >&2
         return 1
     fi
     
-    echo -e "${GREEN}  Available Aliases (sorted by latest):${NC}" >&2
-    echo "$ALIASES" | jq -r '.[] | "  - \(.agentAliasName): \(.agentAliasId) [updated: \(.updatedAt)]"' >&2
+    # Sort by agent version (numeric) in descending order, filtering out DRAFT versions
+    # DRAFT versions are moved to the end
+    SORTED_ALIASES=$(echo "$ALIASES" | jq '[.[] | select(.routingConfiguration[0].agentVersion != "DRAFT")] | sort_by(.routingConfiguration[0].agentVersion | tonumber) | reverse')
+    
+    echo -e "${GREEN}  Available Aliases (sorted by agent version):${NC}" >&2
+    echo "$SORTED_ALIASES" | jq -r '.[] | "  - \(.agentAliasName): \(.agentAliasId) [version: \(.routingConfiguration[0].agentVersion), updated: \(.updatedAt)]"' >&2
     echo "" >&2
     
-    # Get the latest (first in reversed sorted list) PREPARED alias
-    ALIAS_ID=$(echo "$ALIASES" | jq -r '.[0].agentAliasId')
-    ALIAS_NAME=$(echo "$ALIASES" | jq -r '.[0].agentAliasName')
+    # Get the alias with the highest version number
+    ALIAS_ID=$(echo "$SORTED_ALIASES" | jq -r '.[0].agentAliasId')
+    ALIAS_NAME=$(echo "$SORTED_ALIASES" | jq -r '.[0].agentAliasName')
+    ALIAS_VERSION=$(echo "$SORTED_ALIASES" | jq -r '.[0].routingConfiguration[0].agentVersion')
     
-    echo -e "${GREEN}  Selected latest alias: ${ALIAS_NAME} (${ALIAS_ID})${NC}" >&2
+    echo -e "${GREEN}  Selected alias with highest version: ${ALIAS_NAME} (${ALIAS_ID}) - Version ${ALIAS_VERSION}${NC}" >&2
     echo "" >&2
     
     echo "$ALIAS_ID"
