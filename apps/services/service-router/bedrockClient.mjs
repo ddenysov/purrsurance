@@ -7,13 +7,13 @@ import {
   BedrockAgentRuntimeClient,
   InvokeAgentCommand,
 } from '@aws-sdk/client-bedrock-agent-runtime';
-import { config } from './config.mjs';
-import { logger } from './logger.mjs';
+import {config} from './config.mjs';
+import {logger} from './logger.mjs';
 
 /**
  * Initialize Bedrock Agent Runtime Client
  */
-function createBedrockClient() {
+function createBedrockClient () {
   // For local development, you might want to use localstack or mock
   const clientConfig = {
     region: config.bedrock.region,
@@ -32,7 +32,7 @@ let bedrockClient = null;
 /**
  * Get or create Bedrock client instance (singleton)
  */
-function getBedrockClient() {
+function getBedrockClient () {
   if (!bedrockClient) {
     bedrockClient = createBedrockClient();
   }
@@ -45,7 +45,7 @@ function getBedrockClient() {
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Mock response
  */
-async function getMockResponse(inputText, requestLogger = logger) {
+async function getMockResponse (inputText, requestLogger = logger) {
   requestLogger.info('Using mock Bedrock Agent response');
 
   // Simulate API delay
@@ -65,11 +65,12 @@ async function getMockResponse(inputText, requestLogger = logger) {
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {string} globalSessionId - Optional global session ID for SSE event routing
+ * @param {Object} sessionContext - Optional session context from chat history
  * @param {string} agentName - Optional agent name for logging
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, agentName = 'Bedrock Agent', requestLogger = logger) {
+export async function invokeSpecificAgent (agentId, agentAliasId, inputText, sessionId = null, globalSessionId = null, sessionContext = null, agentName = 'Bedrock Agent', requestLogger = logger) {
   try {
     // Use mock for local development if configured
     //if (config.bedrock.useMock) {
@@ -82,6 +83,8 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
       inputLength: inputText.length,
       hasSessionId: !!sessionId,
       hasGlobalSessionId: !!globalSessionId,
+      hasSessionContext: !!sessionContext,
+      sessionContext: sessionContext,
     });
 
     const client = getBedrockClient();
@@ -97,15 +100,23 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
 
     // Add session attributes if globalSessionId is provided
     // This allows Lambda functions called by Bedrock Agent to access the sessionId
-    if (globalSessionId) {
+    if (globalSessionId || sessionContext) {
       commandParams.sessionState = {
-        sessionAttributes: {
-          sessionId: globalSessionId,
-        },
+        sessionAttributes: {},
       };
+
+      if (globalSessionId) {
+        commandParams.sessionState.sessionAttributes.sessionId = globalSessionId;
+      }
     }
 
-    requestLogger.debug('Bedrock Agent command parameters', commandParams);
+    requestLogger.debug('Bedrock Agent command parameters', {
+      agentId: commandParams.agentId,
+      agentAliasId: commandParams.agentAliasId,
+      sessionId: commandParams.sessionId,
+      inputTextLength: commandParams.inputText.length,
+      enableTrace: commandParams.enableTrace,
+    });
 
     const command = new InvokeAgentCommand(commandParams);
     const response = await client.send(command);
@@ -143,16 +154,18 @@ export async function invokeSpecificAgent(agentId, agentAliasId, inputText, sess
  * @param {string} inputText - User input text
  * @param {string} sessionId - Optional session ID for conversation continuity
  * @param {string} globalSessionId - Optional global session ID for SSE event routing
+ * @param {Object} sessionContext - Optional session context from chat history
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response
  */
-export async function invokeBedrockAgent(inputText, sessionId = null, globalSessionId = null, requestLogger = logger) {
+export async function invokeBedrockAgent (inputText, sessionId = null, globalSessionId = null, sessionContext = null, requestLogger = logger) {
   return invokeSpecificAgent(
     config.bedrock.agentId,
     config.bedrock.agentAliasId,
     inputText,
     sessionId,
     globalSessionId,
+    sessionContext,
     'Bedrock Agent',
     requestLogger
   );
@@ -163,7 +176,7 @@ export async function invokeBedrockAgent(inputText, sessionId = null, globalSess
  * @param {Array<{content: string, sender: string}>} chatHistory - Chat history
  * @returns {string} Formatted chat history string
  */
-function formatChatHistory(chatHistory) {
+function formatChatHistory (chatHistory) {
   if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) {
     return '';
   }
@@ -184,7 +197,7 @@ function formatChatHistory(chatHistory) {
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<Object>} Agent response with classification
  */
-export async function invokeIntentionClassifier(inputText, chatHistory = null, sessionId = null, requestLogger = logger) {
+export async function invokeIntentionClassifier (inputText, chatHistory = null, sessionId = null, requestLogger = logger) {
   // If chat history is provided, format it and prepend to input
   let formattedInput = inputText;
   if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
@@ -203,6 +216,7 @@ export async function invokeIntentionClassifier(inputText, chatHistory = null, s
     formattedInput,
     sessionId,
     null,
+    null,
     'Intention Classifier Agent',
     requestLogger
   );
@@ -215,7 +229,7 @@ export async function invokeIntentionClassifier(inputText, chatHistory = null, s
  * @param {Object} requestLogger - Logger instance
  * @returns {Promise<string>} Processed completion text
  */
-async function processResponseStream(response, requestLogger = logger) {
+async function processResponseStream (response, requestLogger = logger) {
   const chunks = [];
 
   try {
@@ -249,15 +263,15 @@ async function processResponseStream(response, requestLogger = logger) {
  * Useful for health checks and debugging
  * @returns {Promise<boolean>} True if connection successful
  */
-export async function testBedrockConnection() {
+export async function testBedrockConnection () {
   try {
     logger.info('Testing Bedrock Agent connection');
 
-    const result = await invokeBedrockAgent('Hello, this is a connection test');
+    const result = await invokeBedrockAgent('Hello, this is a connection test', null, null, null);
 
     return result && result.completion && result.completion.length > 0;
   } catch (error) {
-    logger.error('Bedrock connection test failed', { error: error.message });
+    logger.error('Bedrock connection test failed', {error: error.message});
     return false;
   }
 }
