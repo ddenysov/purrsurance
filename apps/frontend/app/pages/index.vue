@@ -48,7 +48,7 @@ import type { SSEEvent } from '~/composables/useEventBus'
 
 // Use composables
 const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile, unlockPetDetails } = usePetProfile()
-const { messages, isTyping, error, sendMessage } = useChat()
+const { messages, isTyping, error, sendMessage, addMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
 const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType } = useEventBus()
 const { sessionId } = useSession()
@@ -112,6 +112,45 @@ const handleSendMessage = (message: string) => {
 const handleSaveProfile = (petData: typeof pet.value) => {
   updatePetProfile(petData)
   closeModal()
+}
+
+// Handle RecommendDoctorVisit event
+const handleRecommendDoctorVisit = (event: SSEEvent) => {
+  console.log('[DoctorVisit] Processing RecommendDoctorVisit event:', event)
+  
+  try {
+    // Extract event data
+    const eventWithPayload = event as any
+    const eventData = eventWithPayload.payload?.data || eventWithPayload.data || {}
+    
+    // Create a confirmation message for doctor visit
+    const message = eventData.message || 
+      'Based on the symptoms described, it would be advisable to schedule a visit to the veterinarian. Would you like to book an appointment?'
+    
+    addMessage({
+      content: message,
+      sender: 'assistant',
+      type: 'confirmation',
+      metadata: {
+        confirmationOptions: {
+          yesLabel: 'Yes, book appointment',
+          noLabel: 'Not now',
+          yesEvent: 'doctor_visit:confirmed',
+          noEvent: 'doctor_visit:declined',
+          eventPayload: {
+            source: 'recommend_doctor_visit',
+            timestamp: event.timestamp,
+            eventId: event.id,
+            ...eventData
+          }
+        }
+      }
+    })
+    
+    console.log('[DoctorVisit] Added confirmation message to chat')
+  } catch (error) {
+    console.error('[DoctorVisit] Error processing RecommendDoctorVisit event:', error)
+  }
 }
 
 // Validate and populate pet profile from policy_updated event
@@ -335,6 +374,32 @@ onMounted(() => {
       latestPolicyEvent.value = event
       // Process and validate policy_updated event
       handlePolicyUpdated(event)
+    })
+
+    onEvent('ReccomendDoctorVisit', (event) => {
+      console.log('[EventBus] ReccomendDoctorVisit event received:', event)
+      // Show confirmation dialog for doctor visit
+      handleRecommendDoctorVisit(event)
+    })
+
+    // Listen to user responses to doctor visit confirmation
+    onEvent('doctor_visit:confirmed', (event) => {
+      console.log('[EventBus] User confirmed doctor visit:', event)
+      // TODO: Implement booking flow or notify backend
+      // For now, just send a message to the chat
+      addMessage({
+        content: 'Great! I\'ll help you find available appointments with veterinarians in your area.',
+        sender: 'assistant'
+      })
+    })
+
+    onEvent('doctor_visit:declined', (event) => {
+      console.log('[EventBus] User declined doctor visit:', event)
+      // Send acknowledgment message
+      addMessage({
+        content: 'Understood. If symptoms worsen or you change your mind, feel free to ask for help booking an appointment.',
+        sender: 'assistant'
+      })
     })
 
     // Listen to all events for debugging
