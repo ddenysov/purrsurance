@@ -73,10 +73,26 @@ sync-agents:
 	@echo "Syncing agent IDs from AWS Bedrock..."
 	./sync-agents.sh
 
-# List all AWS Bedrock agents (quick view)
+# List all AWS Bedrock agents with aliases (quick view)
 list-agents:
-	@echo "Listing AWS Bedrock agents..."
-	@aws bedrock-agent list-agents --query 'agentSummaries[*].[agentName,agentId,agentStatus]' --output table
+	@echo "Listing AWS Bedrock agents with latest aliases..."
+	@echo ""
+	@echo "Agent Name                          | Agent ID                   | Status   | Alias Name        | Alias ID"
+	@echo "─────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
+	@aws bedrock-agent list-agents --query 'agentSummaries[*].[agentId,agentName,agentStatus]' --output json | \
+	jq -r '.[] | @tsv' | while IFS=$$'\t' read -r agent_id agent_name agent_status; do \
+		aliases=$$(aws bedrock-agent list-agent-aliases --agent-id "$$agent_id" \
+			--query 'agentAliasSummaries[?agentAliasStatus==`PREPARED`] | sort_by(@, &updatedAt) | reverse(@)' \
+			--output json 2>/dev/null || echo "[]"); \
+		if [ "$$(echo "$$aliases" | jq length)" -gt 0 ]; then \
+			alias_name=$$(echo "$$aliases" | jq -r '.[0].agentAliasName'); \
+			alias_id=$$(echo "$$aliases" | jq -r '.[0].agentAliasId'); \
+			printf "%-35s | %-26s | %-8s | %-17s | %s\n" "$$agent_name" "$$agent_id" "$$agent_status" "$$alias_name" "$$alias_id"; \
+		else \
+			printf "%-35s | %-26s | %-8s | %-17s | %s\n" "$$agent_name" "$$agent_id" "$$agent_status" "N/A" "N/A"; \
+		fi; \
+	done
+	@echo ""
 
 # Get deployed API endpoint URL
 get-urls:
