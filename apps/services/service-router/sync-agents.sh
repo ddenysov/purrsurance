@@ -68,24 +68,23 @@ get_agent_aliases() {
     # Output informational messages to stderr so they don't get captured
     echo -e "${YELLOW}Fetching aliases for $AGENT_NAME...${NC}" >&2
     
-    ALIASES=$(aws bedrock-agent list-agent-aliases --agent-id "$AGENT_ID" --query 'agentAliasSummaries[*].[agentAliasName,agentAliasId,agentAliasStatus]' --output json)
+    ALIASES=$(aws bedrock-agent list-agent-aliases --agent-id "$AGENT_ID" --query 'agentAliasSummaries[?agentAliasStatus==`PREPARED`] | sort_by(@, &updatedAt) | reverse(@)' --output json)
     
     if [ "$(echo "$ALIASES" | jq length)" -eq 0 ]; then
         echo -e "${RED}  No aliases found for this agent${NC}" >&2
         return 1
     fi
     
-    echo -e "${GREEN}  Available Aliases:${NC}" >&2
-    echo "$ALIASES" | jq -r '.[] | "  - \(.[0]): \(.[1]) [\(.[2])]"' >&2
+    echo -e "${GREEN}  Available Aliases (sorted by latest):${NC}" >&2
+    echo "$ALIASES" | jq -r '.[] | "  - \(.agentAliasName): \(.agentAliasId) [updated: \(.updatedAt)]"' >&2
     echo "" >&2
     
-    # Try to find a prod alias first (prefer production aliases)
-    ALIAS_ID=$(echo "$ALIASES" | jq -r '.[] | select(.[2] == "PREPARED" and (.[0] | contains("prod"))) | .[1]' | head -n 1)
+    # Get the latest (first in reversed sorted list) PREPARED alias
+    ALIAS_ID=$(echo "$ALIASES" | jq -r '.[0].agentAliasId')
+    ALIAS_NAME=$(echo "$ALIASES" | jq -r '.[0].agentAliasName')
     
-    # If no prod alias found, get the first PREPARED alias
-    if [ -z "$ALIAS_ID" ]; then
-        ALIAS_ID=$(echo "$ALIASES" | jq -r '.[] | select(.[2] == "PREPARED") | .[1]' | head -n 1)
-    fi
+    echo -e "${GREEN}  Selected latest alias: ${ALIAS_NAME} (${ALIAS_ID})${NC}" >&2
+    echo "" >&2
     
     echo "$ALIAS_ID"
 }
@@ -96,6 +95,8 @@ update_env_json() {
     local INTENTION_ALIAS_ID=$2
     local POLICY_AGENT_ID=$3
     local POLICY_ALIAS_ID=$4
+    local VETDOC_AGENT_ID=$5
+    local VETDOC_ALIAS_ID=$6
     
     echo -e "${YELLOW}Updating $ENV_FILE...${NC}"
     
@@ -109,10 +110,14 @@ update_env_json() {
        --arg ialias "$INTENTION_ALIAS_ID" \
        --arg paid "$POLICY_AGENT_ID" \
        --arg palias "$POLICY_ALIAS_ID" \
+       --arg vaid "$VETDOC_AGENT_ID" \
+       --arg valias "$VETDOC_ALIAS_ID" \
        '.ServiceRouterFunction.INTENTION_CLASSIFIER_AGENT_ID = $iaid |
         .ServiceRouterFunction.INTENTION_CLASSIFIER_AGENT_ALIAS_ID = $ialias |
         .ServiceRouterFunction.POLICY_MANAGER_AGENT_ID = $paid |
         .ServiceRouterFunction.POLICY_MANAGER_AGENT_ALIAS_ID = $palias |
+        .ServiceRouterFunction.VETDOC_AGENT_ID = $vaid |
+        .ServiceRouterFunction.VETDOC_AGENT_ALIAS_ID = $valias |
         .ServiceRouterFunction.BEDROCK_AGENT_ID = $iaid |
         .ServiceRouterFunction.BEDROCK_AGENT_ALIAS_ID = $ialias' \
        "$ENV_FILE" > "$ENV_FILE.tmp" && mv "$ENV_FILE.tmp" "$ENV_FILE"
@@ -126,6 +131,8 @@ update_samconfig() {
     local INTENTION_ALIAS_ID=$2
     local POLICY_AGENT_ID=$3
     local POLICY_ALIAS_ID=$4
+    local VETDOC_AGENT_ID=$5
+    local VETDOC_ALIAS_ID=$6
     
     echo -e "${YELLOW}Updating $SAMCONFIG_FILE...${NC}"
     
@@ -148,8 +155,8 @@ update_samconfig() {
     LOG_LEVEL=${LOG_LEVEL:-info}
     
     # Build new parameter_overrides line using printf to avoid newline issues
-    local NEW_LINE=$(printf 'parameter_overrides = "Environment=\\"%s\\" IntentionClassifierAgentId=\\"%s\\" IntentionClassifierAgentAliasId=\\"%s\\" PolicyManagerAgentId=\\"%s\\" PolicyManagerAgentAliasId=\\"%s\\" ChatHistoryTableName=\\"%s\\" LogLevel=\\"%s\\""' \
-        "$ENVIRONMENT" "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$CHAT_TABLE" "$LOG_LEVEL")
+    local NEW_LINE=$(printf 'parameter_overrides = "Environment=\\"%s\\" IntentionClassifierAgentId=\\"%s\\" IntentionClassifierAgentAliasId=\\"%s\\" PolicyManagerAgentId=\\"%s\\" PolicyManagerAgentAliasId=\\"%s\\" VetDocAgentId=\\"%s\\" VetDocAgentAliasId=\\"%s\\" ChatHistoryTableName=\\"%s\\" LogLevel=\\"%s\\""' \
+        "$ENVIRONMENT" "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID" "$CHAT_TABLE" "$LOG_LEVEL")
     
     # Create temporary file and replace the line
     while IFS= read -r line; do
@@ -217,6 +224,30 @@ main() {
     fi
     
     echo ""
+    
+    # Find VetDoc agent
+    echo -e "${BLUE}Step 3: Select VetDoc Agent${NC}"
+    VETDOC_AGENT_ID=$(echo "$AGENTS" | jq -r '.[] | select(.[0] | contains("vet") or contains("Vet") or contains("doctor") or contains("Doctor")) | .[1]' | head -n 1)
+    
+    if [ -z "$VETDOC_AGENT_ID" ]; then
+        echo "Enter VetDoc Agent ID (or press Enter to skip):"
+        read -r VETDOC_AGENT_ID
+    else
+        VETDOC_AGENT_NAME=$(echo "$AGENTS" | jq -r ".[] | select(.[1] == \"$VETDOC_AGENT_ID\") | .[0]")
+        echo -e "Auto-detected: ${GREEN}$VETDOC_AGENT_NAME${NC} ($VETDOC_AGENT_ID)"
+        echo "Press Enter to confirm or enter a different Agent ID:"
+        read -r USER_INPUT
+        if [ -n "$USER_INPUT" ]; then
+            VETDOC_AGENT_ID="$USER_INPUT"
+        fi
+    fi
+    
+    VETDOC_ALIAS_ID=""
+    if [ -n "$VETDOC_AGENT_ID" ]; then
+        VETDOC_ALIAS_ID=$(get_agent_aliases "$VETDOC_AGENT_ID" "VetDoc")
+    fi
+    
+    echo ""
     echo -e "${BLUE}═══════════════════════════════════════════${NC}"
     echo -e "${GREEN}Configuration Summary:${NC}"
     echo -e "${BLUE}═══════════════════════════════════════════${NC}"
@@ -224,6 +255,8 @@ main() {
     echo "Intention Classifier Alias ID:    $INTENTION_ALIAS_ID"
     echo "Policy Manager Agent ID:          $POLICY_AGENT_ID"
     echo "Policy Manager Alias ID:          $POLICY_ALIAS_ID"
+    echo "VetDoc Agent ID:                  $VETDOC_AGENT_ID"
+    echo "VetDoc Alias ID:                  $VETDOC_ALIAS_ID"
     echo -e "${BLUE}═══════════════════════════════════════════${NC}"
     echo ""
     
@@ -231,8 +264,8 @@ main() {
     read -r CONFIRM
     
     if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-        update_env_json "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID"
-        update_samconfig "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID"
+        update_env_json "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID"
+        update_samconfig "$INTENTION_AGENT_ID" "$INTENTION_ALIAS_ID" "$POLICY_AGENT_ID" "$POLICY_ALIAS_ID" "$VETDOC_AGENT_ID" "$VETDOC_ALIAS_ID"
         echo ""
         echo -e "${GREEN}✓ Configuration updated successfully!${NC}"
     else
