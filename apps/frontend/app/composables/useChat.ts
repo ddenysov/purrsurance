@@ -66,7 +66,20 @@ export const useChat = () => {
     // Clear any previous errors
     error.value = null
 
-    // Add user message
+    // Prepare chat history including the current message
+    // We send only content and sender to reduce payload size
+    const chatHistory = messages.value.map(msg => ({
+      content: msg.content,
+      sender: msg.sender
+    }))
+    
+    // Add current user message to the history that will be sent
+    chatHistory.push({
+      content: text.trim(),
+      sender: 'user'
+    })
+
+    // Add user message to UI
     addMessage({
       content: text.trim(),
       sender: 'user'
@@ -103,12 +116,15 @@ export const useChat = () => {
         console.log('[Chat] Sending message with policyId:', policyId)
       }
       
-      // Send message to backend with sessionIds and policyId
+      console.log('[Chat] Sending message with chat history:', chatHistory.length, 'messages')
+      
+      // Send message to backend with sessionIds, policyId, and chat history
       const response = await sendChatMessage(
         text.trim(),
         session.value.sessionId,
         globalSessionId.value,
-        policyId
+        policyId,
+        chatHistory
       )
       
       // Update Bedrock session ID for conversation continuity

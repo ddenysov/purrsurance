@@ -23,6 +23,7 @@ function getChatApiConfig() {
  * @param bedrockSessionId - Optional Bedrock Agent session ID for conversation continuity
  * @param globalSessionId - Global session ID for SSE event routing
  * @param policyId - Optional policy ID from pet profile
+ * @param chatHistory - Optional chat history (array of messages)
  * @returns Backend response with AI reply
  * @throws Error if request fails
  */
@@ -30,11 +31,18 @@ export async function sendChatMessage(
   message: string,
   bedrockSessionId: string | null = null,
   globalSessionId: string | null = null,
-  policyId: string | null = null
+  policyId: string | null = null,
+  chatHistory: Array<{ content: string; sender: 'user' | 'assistant' }> = []
 ): Promise<BackendChatResponse> {
   try {
     // Prepare request payload
-    const payload: { message: string; sessionId?: string; globalSessionId?: string; policyId?: string } = {
+    const payload: { 
+      message: string; 
+      sessionId?: string; 
+      globalSessionId?: string; 
+      policyId?: string;
+      chatHistory?: Array<{ content: string; sender: 'user' | 'assistant' }>
+    } = {
       message: message.trim(),
     }
     
@@ -53,11 +61,17 @@ export async function sendChatMessage(
       payload.policyId = policyId
     }
     
+    // Include chat history if available
+    if (chatHistory && chatHistory.length > 0) {
+      payload.chatHistory = chatHistory
+    }
+    
     console.log('Sending chat message:', {
       messageLength: message.length,
       hasBedrockSessionId: !!bedrockSessionId,
       hasGlobalSessionId: !!globalSessionId,
       hasPolicyId: !!policyId,
+      historyLength: chatHistory.length,
     })
     
     // Get chat API configuration
@@ -131,7 +145,7 @@ export async function sendChatMessage(
  */
 export async function testBackendConnection(): Promise<boolean> {
   try {
-    await sendChatMessage('Hello', null, null, null)
+    await sendChatMessage('Hello', null, null, null, [])
     return true
   } catch (error) {
     console.error('Backend connection test failed:', error)
