@@ -97,7 +97,42 @@ update-instruction:
 	aws bedrock-agent prepare-agent \
 		--agent-id "$$AGENT_ID" \
 		--output text > /dev/null; \
-	echo "✅ Instruction updated successfully!"
+	echo "✅ Instruction updated successfully!"; \
+	echo "⏳ Waiting for agent to be ready..."; \
+	MAX_WAIT=60; \
+	COUNTER=0; \
+	while [ $$COUNTER -lt $$MAX_WAIT ]; do \
+		AGENT_STATUS=$$(aws bedrock-agent get-agent \
+			--agent-id "$$AGENT_ID" \
+			--query 'agent.agentStatus' \
+			--output text); \
+		if [ "$$AGENT_STATUS" = "PREPARED" ] || [ "$$AGENT_STATUS" = "NOT_PREPARED" ]; then \
+			break; \
+		fi; \
+		echo "  Agent status: $$AGENT_STATUS (waiting...)"; \
+		sleep 2; \
+		COUNTER=$$((COUNTER + 2)); \
+	done; \
+	if [ $$COUNTER -ge $$MAX_WAIT ]; then \
+		echo "⚠️  Warning: Agent preparation timeout. Alias not created."; \
+		exit 1; \
+	fi; \
+	echo "🔗 Creating new agent alias..."; \
+	TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
+	ALIAS_ID=$$(aws bedrock-agent create-agent-alias \
+		--agent-id "$$AGENT_ID" \
+		--agent-alias-name "alias-$$TIMESTAMP" \
+		--query 'agentAlias.agentAliasId' \
+		--output text); \
+	if [ -z "$$ALIAS_ID" ]; then \
+		echo "❌ Error: Failed to create alias"; \
+		exit 1; \
+	fi; \
+	echo "✅ New alias created successfully!"; \
+	echo ""; \
+	echo "📋 Alias ID: $$ALIAS_ID"; \
+	echo "📋 Alias Name: alias-$$TIMESTAMP"; \
+	echo ""
 
 # Setup action group for RecommendDoctorVisit tool
 setup-action-group:
