@@ -8,6 +8,7 @@
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
 import {SNSClient, PublishCommand} from "@aws-sdk/client-sns";
+import { createAgentResponse, extractSessionId, extractParameters } from "./vendor/agent-tools/index.mjs";
 
 const snsClient = new SNSClient({});
 const topicArn = process.env.EVENTS_TOPIC_ARN;
@@ -125,20 +126,17 @@ export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
 
-  // Extract sessionId from event (prioritize globalSessionId from sessionAttributes)
-  const sessionId = event.sessionState?.sessionAttributes?.sessionId || 
-                    event.sessionAttributes?.sessionId || 
-                    event.sessionId || 
-                    'unknown-session';
+  // Extract sessionId from event using agent-tools
+  const sessionId = extractSessionId(event);
   
   console.log('Extracted sessionId:', sessionId);
   console.log('Bedrock sessionId (internal):', event.sessionId);
 
-  // Extract parameters from the event
-  const parameters = event.parameters || [];
-  const location = parameters.find(p => p.name === 'location')?.value || '';
-  const specialty = parameters.find(p => p.name === 'specialty')?.value || 'any';
-  const urgency = parameters.find(p => p.name === 'urgency')?.value || 'normal';
+  // Extract parameters from the event using agent-tools
+  const params = extractParameters(event);
+  const location = params.location || '';
+  const specialty = params.specialty || 'any';
+  const urgency = params.urgency || 'normal';
 
   // Search for vet clinics
   const clinics = searchVetClinics(location, specialty, urgency);
@@ -161,19 +159,7 @@ export const lambdaHandler = async (event, context) => {
   // Send event to Event Publisher (non-blocking)
   // await sendEventToPublisher(sessionId, responseBodyContent, 'FindVetClinic');
   
-  return {
-    'messageVersion': '1.0',
-    'response': {
-      'actionGroup': 'VetClinicFinderActionGroup',
-      'function': 'FindVetClinic',
-      'functionResponse': {
-        'responseBody': {
-          'TEXT': {
-            'body': JSON.stringify(responseBodyContent, null, 2),
-          },
-        },
-      }
-    }
-  };
+  // Create response using agent-tools
+  return createAgentResponse(event, responseBodyContent);
 };
 

@@ -1,0 +1,29 @@
+{
+  "name": "@purrsurance/agent-tools",
+  "version": "1.0.0",
+  "description": "Shared utilities for AWS Bedrock Agent tools",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./response": "./dist/response.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "keywords": [
+    "bedrock",
+    "agent",
+    "aws",
+    "tools"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.19.8"
+  }
+}
+
