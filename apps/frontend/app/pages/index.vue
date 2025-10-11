@@ -50,11 +50,12 @@ import type { SSEEvent } from '~/composables/useEventBus'
 const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile, unlockPetDetails } = usePetProfile()
 const { messages, isTyping, error, sendMessage, addMessage } = useChat()
 const { isOpen: isModalOpen, openModal, closeModal } = useModal()
-const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType } = useEventBus()
+const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType, publishToListeners } = useEventBus()
 const { sessionId } = useSession()
 
-// Use pet profile store
+// Use stores
 const petProfileStore = usePetProfileStore()
+const eventQueueStore = useEventQueueStore()
 
 // Reactive state for displaying events
 const latestClaimEvent = ref<SSEEvent | null>(null)
@@ -335,6 +336,16 @@ let eventSource: EventSource | null = null
 
 onMounted(() => {
   try {
+    // Setup event queue integration with event bus
+    eventQueueStore.setPublishCallback((event) => {
+      publishToListeners(event.type, event)
+    })
+    
+    // Sync isTyping state with event queue
+    watch(isTyping, (newValue) => {
+      eventQueueStore.setAgentThinking(newValue)
+    }, { immediate: true })
+    
     // Append sessionId to SSE URL
     const sseUrl = `${sseBaseUrl}?sessionId=${sessionId.value}`
     console.log('[SSE] Connecting to:', sseBaseUrl)
@@ -353,8 +364,9 @@ onMounted(() => {
         // Parse the event data
         const eventData = JSON.parse(event.data)
         
-        // Emit to Vue event bus
-        emitEvent(eventData.type, eventData)
+        // Add event to queue instead of direct emit
+        // Queue will handle publishing based on agent thinking status
+        eventQueueStore.enqueueEvent(eventData)
       } catch (error) {
         console.error('[SSE] Failed to parse event data:', error)
         console.log('[SSE] Raw event data:', event.data)

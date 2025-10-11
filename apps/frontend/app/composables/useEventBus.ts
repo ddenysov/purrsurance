@@ -15,8 +15,8 @@ const listeners = reactive<Record<string, Function[]>>({})
 
 // Event bus composable
 export const useEventBus = () => {
-  // Emit an event
-  const emit = (eventType: string, event: SSEEvent) => {
+  // Internal method to publish event to listeners (used by both emit and queue)
+  const publishToListeners = (eventType: string, event: SSEEvent) => {
     // Add to events history
     events.value.unshift(event)
     
@@ -47,7 +47,12 @@ export const useEventBus = () => {
       })
     }
     
-    console.log(`[EventBus] Emitted event: ${eventType}`, event)
+    console.log(`[EventBus] Published event: ${eventType}`, event)
+  }
+  
+  // Emit an event (legacy method - now uses queue)
+  const emit = (eventType: string, event: SSEEvent) => {
+    publishToListeners(eventType, event)
   }
   
   // Listen to specific event type
@@ -102,6 +107,7 @@ export const useEventBus = () => {
   return {
     events: readonly(events),
     emit,
+    publishToListeners, // Exposed for event queue integration
     on,
     onAll,
     off,
