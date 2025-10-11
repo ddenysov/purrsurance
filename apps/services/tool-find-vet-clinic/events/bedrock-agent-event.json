@@ -1,0 +1,36 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "PetInsuranceAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Can you help me find a vet clinic near me?",
+  "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
+  "actionGroup": "VetClinicActionGroup",
+  "function": "findVetClinic",
+  "parameters": [
+    {
+      "name": "location",
+      "type": "string",
+      "value": "New York"
+    },
+    {
+      "name": "specialty",
+      "type": "string",
+      "value": "Emergency"
+    },
+    {
+      "name": "urgency",
+      "type": "string",
+      "value": "urgent"
+    }
+  ]
+}
+

@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  tool-find-vet-clinic
+  
+  Lambda function that finds vet clinics and publishes events for Bedrock Agent
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+  
+  EventPublisherStackName:
+    Type: String
+    Description: Name of the Event Publisher CloudFormation stack to get Events Table name
+  
+  EventPublisherUrl:
+    Type: String
+    Description: URL of the Event Publisher API endpoint for sending vet clinic search events
+  
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - warn
+      - info
+      - debug
+    Description: Logging level
+
+Resources:
+  # SNS Topic for vet clinic search events
+  VetClinicEventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-vet-clinic-events'
+      DisplayName: Vet Clinic Search Events Topic
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Service
+          Value: tool-find-vet-clinic
+
+  # Subscribe Event Publisher to this topic
+  VetClinicEventsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: lambda
+      TopicArn: !Ref VetClinicEventsTopic
+      Endpoint: !ImportValue
+        Fn::Sub: '${EventPublisherStackName}-FunctionArn'
+
+  # Permission for SNS to invoke Event Publisher Lambda
+  VetClinicEventsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !ImportValue
+        Fn::Sub: '${EventPublisherStackName}-FunctionArn'
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref VetClinicEventsTopic
+
+  # Lambda Function for finding vet clinics
+  FindVetClinicFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: app.lambdaHandler
+      Description: Finds vet clinics and publishes events for Bedrock Agent (Function Response Format)
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          EVENTS_TOPIC_ARN: !Ref VetClinicEventsTopic
+          EVENT_PUBLISHER_URL: !Ref EventPublisherUrl
+          LOG_LEVEL: !Ref LogLevel
+          NODE_ENV: production
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt VetClinicEventsTopic.TopicName
+
+  # Permission for Bedrock Agent to invoke the Lambda function
+  BedrockInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref FindVetClinicFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+
+Outputs:
+  FindVetClinicFunction:
+    Description: Find Vet Clinic Lambda Function ARN
+    Value: !GetAtt FindVetClinicFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionArn'
+  
+  FindVetClinicFunctionIamRole:
+    Description: Implicit IAM Role created for Find Vet Clinic function
+    Value: !GetAtt FindVetClinicFunctionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionRoleArn'
+  
+  VetClinicEventsTopicArn:
+    Description: SNS Topic ARN for vet clinic search events
+    Value: !Ref VetClinicEventsTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-VetClinicEventsTopicArn'
+  
+  VetClinicEventsTopicName:
+    Description: SNS Topic Name for vet clinic search events
+    Value: !GetAtt VetClinicEventsTopic.TopicName
+    Export:
+      Name: !Sub '${AWS::StackName}-VetClinicEventsTopicName'
+
