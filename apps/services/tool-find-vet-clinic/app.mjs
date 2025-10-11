@@ -159,12 +159,12 @@ export const lambdaHandler = async (event, context) => {
   };
 
   // Send event to Event Publisher (non-blocking)
-  await sendEventToPublisher(sessionId, responseBodyContent, 'FindVetClinic');
+  // await sendEventToPublisher(sessionId, responseBodyContent, 'FindVetClinic');
   
   return {
     'messageVersion': '1.0',
     'response': {
-      'actionGroup': 'VetClinicActionGroup',
+      'actionGroup': 'VetClinicFinderActionGroup',
       'function': 'FindVetClinic',
       'functionResponse': {
         'responseBody': {
