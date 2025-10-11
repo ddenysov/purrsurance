@@ -92,6 +92,16 @@ Resources:
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt PolicyEventsTopic.TopicName
 
+  # Permission for Bedrock Agent to invoke the Lambda function
+  BedrockInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetPolicyDetailsFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+
 Outputs:
   GetPolicyDetailsFunction:
     Description: Get Policy Details Lambda Function ARN

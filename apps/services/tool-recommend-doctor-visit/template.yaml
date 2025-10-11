@@ -92,6 +92,16 @@ Resources:
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt DoctorVisitEventsTopic.TopicName
 
+  # Permission for Bedrock Agent to invoke the Lambda function
+  BedrockInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref RecommendDoctorVisitFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
+
 Outputs:
   RecommendDoctorVisitFunction:
     Description: Recommend Doctor Visit Lambda Function ARN

@@ -97,6 +97,17 @@ Resources:
             - TopicName
     Metadata:
       SamResourceId: RecommendDoctorVisitFunction
+  BedrockInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: RecommendDoctorVisitFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount:
+        Ref: AWS::AccountId
+      SourceArn:
+        Fn::Sub: arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*
 Outputs:
   RecommendDoctorVisitFunction:
     Description: Recommend Doctor Visit Lambda Function ARN
