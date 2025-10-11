@@ -7,9 +7,16 @@
  * @param {Object} event - The event payload from the Bedrock Agent.
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
-import { createAgentResponse, extractSessionId, extractParameters, sendEventToPublisher } from "./vendor/agent-tools/index.mjs";
+import { createAgentResponse, extractSessionId, extractParameters, sendEventToPublisher, createChatHistoryService } from "./vendor/agent-tools/index.mjs";
 
 const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
+const chatHistoryTableName = process.env.CHAT_HISTORY_TABLE_NAME || 'ChatHistory';
+
+// Initialize Chat History Service
+const chatHistory = createChatHistoryService({
+  tableName: chatHistoryTableName,
+  logger: console
+});
 
 export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
@@ -176,6 +183,35 @@ export const lambdaHandler = async (event, context) => {
     }
   };
 
+  // Save policy details to session context
+  try {
+    // Initialize session context if it doesn't exist
+    await chatHistory.initializeSessionContext(sessionId);
+    
+    // Get current context
+    const currentContext = await chatHistory.getSessionContext(sessionId);
+    
+    // Update context with policy details
+    const updatedContext = {
+      ...currentContext.context,
+      policyDetails: responseBodyContent,
+      policyDetailsUpdatedAt: Date.now()
+    };
+    
+    await chatHistory.updateSessionContext(sessionId, updatedContext);
+    
+    console.log('Policy details saved to session context:', {
+      sessionId,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    console.error('Failed to save policy details to context:', {
+      sessionId,
+      error: error.message,
+      stack: error.stack
+    });
+    // Continue execution even if context save fails
+  }
 
   // Send event to Event Publisher (non-blocking)
   await sendEventToPublisher(eventPublisherUrl, sessionId, responseBodyContent, 'PolicyDetailsRetrieved');

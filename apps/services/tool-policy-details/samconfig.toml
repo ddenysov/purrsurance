@@ -17,7 +17,8 @@ parameter_overrides = [
     "Environment=prod",
     "LogLevel=info",
     "EventPublisherStackName=purrsurance-event-publisher",
-    "EventPublisherUrl=https://d7j4hmm8nj.execute-api.us-east-1.amazonaws.com/Prod/publish"
+    "EventPublisherUrl=https://d7j4hmm8nj.execute-api.us-east-1.amazonaws.com/Prod/publish",
+    "ChatHistoryTableName=purrsurance-service-router-ChatHistory"
 ]
 
 [default.package.parameters]

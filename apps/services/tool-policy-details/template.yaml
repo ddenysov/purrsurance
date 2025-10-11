@@ -30,6 +30,10 @@ Parameters:
     Type: String
     Description: URL of the Event Publisher API endpoint for sending policy events
   
+  ChatHistoryTableName:
+    Type: String
+    Description: Name of the DynamoDB Chat History table
+  
   LogLevel:
     Type: String
     Default: info
@@ -85,12 +89,15 @@ Resources:
           ENVIRONMENT: !Ref Environment
           EVENTS_TOPIC_ARN: !Ref PolicyEventsTopic
           EVENT_PUBLISHER_URL: !Ref EventPublisherUrl
+          CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTableName
           LOG_LEVEL: !Ref LogLevel
           NODE_ENV: production
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
       Policies:
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt PolicyEventsTopic.TopicName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatHistoryTableName
 
   # Permission for Bedrock Agent to invoke the Lambda function
   BedrockInvokePermission:
