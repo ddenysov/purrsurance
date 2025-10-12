@@ -1,0 +1,2 @@
+- shorten policy details
+- save to context from agents

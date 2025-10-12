@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Deploy script for AgentVetDoctor
-# This script deploys the CloudFormation stack with default instruction,
-# then updates the instruction from instruction.txt via AWS CLI
+# This script reads the instruction from instruction.txt and passes it as a parameter
 
 set -e
 
