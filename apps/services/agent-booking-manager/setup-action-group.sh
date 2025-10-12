@@ -8,6 +8,7 @@ set -e
 STACK_NAME="purrsurance-agent-booking-manager"
 VET_CLINIC_TOOL_STACK="purrsurance-tool-find-vet-clinic"
 POLICY_DETAILS_TOOL_STACK="purrsurance-tool-policy-details"
+CONTEXT_SAVE_TOOL_STACK="purrsurance-tool-context-save"
 REGION="us-east-1"
 
 echo "Setting up Action Groups for AgentBookingManager..."
@@ -59,6 +60,22 @@ if [ -z "$POLICY_DETAILS_LAMBDA_ARN" ]; then
 fi
 
 echo "GetPolicyDetails Lambda ARN: $POLICY_DETAILS_LAMBDA_ARN"
+echo ""
+
+# Get Lambda Function ARN for SaveContext
+echo "Fetching SaveContext Lambda Function ARN..."
+CONTEXT_SAVE_LAMBDA_ARN=$(aws cloudformation describe-stacks \
+  --stack-name $CONTEXT_SAVE_TOOL_STACK \
+  --region $REGION \
+  --query 'Stacks[0].Outputs[?OutputKey==`SaveContextFunction`].OutputValue' \
+  --output text)
+
+if [ -z "$CONTEXT_SAVE_LAMBDA_ARN" ]; then
+  echo "Error: Could not retrieve SaveContext Lambda ARN from tool stack outputs"
+  exit 1
+fi
+
+echo "SaveContext Lambda ARN: $CONTEXT_SAVE_LAMBDA_ARN"
 echo ""
 
 # ========================================
@@ -226,6 +243,99 @@ else
 fi
 
 echo ""
+
+# ========================================
+# Action Group 3: ContextActionGroup
+# ========================================
+echo "Setting up ContextActionGroup..."
+
+# Check if ContextActionGroup already exists
+EXISTING_CONTEXT_AG=$(aws bedrock-agent list-agent-action-groups \
+  --agent-id $AGENT_ID \
+  --agent-version DRAFT \
+  --region $REGION \
+  --query 'actionGroupSummaries[?actionGroupName==`ContextActionGroup`].actionGroupId' \
+  --output text 2>/dev/null || echo "")
+
+if [ -n "$EXISTING_CONTEXT_AG" ]; then
+  echo "ContextActionGroup already exists with ID: $EXISTING_CONTEXT_AG"
+  echo "Updating existing action group..."
+  
+  aws bedrock-agent update-agent-action-group \
+    --agent-id $AGENT_ID \
+    --agent-version DRAFT \
+    --action-group-id $EXISTING_CONTEXT_AG \
+    --action-group-name ContextActionGroup \
+    --action-group-executor "lambda=$CONTEXT_SAVE_LAMBDA_ARN" \
+    --function-schema '{
+      "functions": [
+        {
+          "name": "SaveContext",
+          "description": "Saves contextual information (appointment details, booking preferences, user requests, etc.) to the session context for later retrieval. Use this whenever you need to remember important information about the conversation, booking details, or any other relevant data that should persist across the session.",
+          "parameters": {
+            "contextKey": {
+              "description": "The category or type of information being saved. Common values: appointment_details, booking_preferences, clinic_preferences, scheduling_notes, special_requests, follow_up_needed. This helps organize information for later retrieval.",
+              "type": "string",
+              "required": true
+            },
+            "data": {
+              "description": "The actual information to save. Can be a string or a JSON object containing structured data. For example: appointment details, user preferences, or a complex object with multiple fields.",
+              "type": "string",
+              "required": true
+            },
+            "description": {
+              "description": "Optional human-readable description of what is being saved. This helps understand the context when reviewing saved information later.",
+              "type": "string",
+              "required": false
+            }
+          }
+        }
+      ]
+    }' \
+    --action-group-state ENABLED \
+    --region $REGION
+  
+  echo "✓ ContextActionGroup updated successfully!"
+else
+  echo "Creating new ContextActionGroup..."
+  
+  aws bedrock-agent create-agent-action-group \
+    --agent-id $AGENT_ID \
+    --agent-version DRAFT \
+    --action-group-name ContextActionGroup \
+    --action-group-executor "lambda=$CONTEXT_SAVE_LAMBDA_ARN" \
+    --function-schema '{
+      "functions": [
+        {
+          "name": "SaveContext",
+          "description": "Saves contextual information (appointment details, booking preferences, user requests, etc.) to the session context for later retrieval. Use this whenever you need to remember important information about the conversation, booking details, or any other relevant data that should persist across the session.",
+          "parameters": {
+            "contextKey": {
+              "description": "The category or type of information being saved. Common values: appointment_details, booking_preferences, clinic_preferences, scheduling_notes, special_requests, follow_up_needed. This helps organize information for later retrieval.",
+              "type": "string",
+              "required": true
+            },
+            "data": {
+              "description": "The actual information to save. Can be a string or a JSON object containing structured data. For example: appointment details, user preferences, or a complex object with multiple fields.",
+              "type": "string",
+              "required": true
+            },
+            "description": {
+              "description": "Optional human-readable description of what is being saved. This helps understand the context when reviewing saved information later.",
+              "type": "string",
+              "required": false
+            }
+          }
+        }
+      ]
+    }' \
+    --action-group-state ENABLED \
+    --region $REGION
+  
+  echo "✓ ContextActionGroup created successfully!"
+fi
+
+echo ""
 echo "Preparing agent..."
 aws bedrock-agent prepare-agent \
   --agent-id $AGENT_ID \
@@ -241,12 +351,15 @@ echo "  1. VetClinicFinderActionGroup"
 echo "     - Function: FindVetClinic"
 echo "  2. PolicyDetailsActionGroup"
 echo "     - Function: GetPolicyDetails"
+echo "  3. ContextActionGroup"
+echo "     - Function: SaveContext"
 echo ""
 echo "Status: Ready"
 echo ""
 echo "The AgentBookingManager can now:"
 echo "  - Find vet clinics and help users book appointments"
 echo "  - Retrieve policy details for insurance verification"
+echo "  - Save contextual information (appointment details, preferences, etc.)"
 echo ""
 echo "You can test the agent in the AWS Console or via AWS CLI."
 
