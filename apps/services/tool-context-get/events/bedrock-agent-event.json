@@ -1,0 +1,26 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "PetInsuranceAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Get diagnosis information from context",
+  "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
+  "actionGroup": "ContextActions",
+  "function": "getContext",
+  "parameters": [
+    {
+      "name": "contextKey",
+      "type": "string",
+      "value": "diagnosis"
+    }
+  ]
+}
+
