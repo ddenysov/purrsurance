@@ -1,0 +1,36 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "PetInsuranceAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Save diagnosis: acute gastritis with symptoms of vomiting",
+  "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
+  "actionGroup": "ContextActions",
+  "function": "saveContext",
+  "parameters": [
+    {
+      "name": "contextKey",
+      "type": "string",
+      "value": "diagnosis"
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "value": "{\"diagnosis\": \"Acute gastritis\", \"severity\": \"moderate\", \"symptoms\": [\"vomiting\", \"loss of appetite\", \"abdominal pain\"]}"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "value": "Initial diagnosis based on symptoms presented by owner"
+    }
+  ]
+}
+

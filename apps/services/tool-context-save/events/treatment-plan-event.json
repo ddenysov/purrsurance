@@ -1,0 +1,36 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "VetDoctorAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Save treatment plan for gastritis",
+  "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
+  "actionGroup": "ContextActions",
+  "function": "saveContext",
+  "parameters": [
+    {
+      "name": "contextKey",
+      "type": "string",
+      "value": "treatment_plan"
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "value": "{\"diagnosis\": \"Acute gastritis\", \"medications\": [{\"name\": \"Metronidazole\", \"dosage\": \"250mg\", \"frequency\": \"twice daily\", \"duration\": \"7 days\"}, {\"name\": \"Probiotics\", \"dosage\": \"1 capsule\", \"frequency\": \"once daily\", \"duration\": \"14 days\"}], \"dietaryRestrictions\": \"Bland diet (boiled chicken and rice) for 5 days\", \"followUp\": \"Check-up in 7 days\", \"warnings\": [\"Monitor for worsening symptoms\", \"Contact vet immediately if vomiting blood\"]}"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "value": "Treatment plan prescribed after diagnosis confirmation"
+    }
+  ]
+}
+

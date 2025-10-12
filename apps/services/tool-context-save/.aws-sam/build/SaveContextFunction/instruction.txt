@@ -1,0 +1,100 @@
+Tool: SaveContext
+=================
+
+PURPOSE:
+This tool allows agents to save contextual information to the session context for later retrieval.
+Use this tool whenever important information needs to be remembered across the conversation.
+
+WHEN TO USE:
+- After diagnosing a condition (save diagnosis)
+- When owner reports symptoms (save symptoms)  
+- When recording complaints (save complaints)
+- After prescribing treatment (save treatment_plan)
+- When noting allergies (save allergies)
+- For any other important information that needs to persist
+
+PARAMETERS:
+-----------
+
+contextKey (required):
+  The category or type of information being saved.
+  Common values:
+    - "diagnosis" - Medical diagnosis
+    - "symptoms" - Observed symptoms
+    - "complaints" - Owner complaints
+    - "treatment_plan" - Prescribed treatment
+    - "medication" - Medication information
+    - "allergies" - Known allergies
+    - "notes" - General notes
+    - "recommendations" - Medical recommendations
+  
+data (required):
+  The actual information to save.
+  Can be a string or JSON object with structured data.
+  Examples:
+    - Simple string: "Acute gastritis"
+    - JSON object: {"diagnosis": "Acute gastritis", "severity": "moderate"}
+  
+description (optional):
+  Human-readable description of what is being saved.
+  Example: "Initial diagnosis based on symptoms"
+
+EXAMPLES:
+---------
+
+Example 1: Save Diagnosis
+contextKey: "diagnosis"
+data: {"diagnosis": "Acute gastritis", "severity": "moderate", "confidence": "high"}
+description: "Confirmed diagnosis after examination"
+
+Example 2: Save Symptoms
+contextKey: "symptoms"
+data: {"symptoms": ["vomiting", "lethargy", "loss_of_appetite"], "duration": "2 days"}
+description: "Symptoms reported by owner"
+
+Example 3: Save Treatment Plan
+contextKey: "treatment_plan"
+data: {"medications": [{"name": "Metronidazole", "dosage": "250mg", "frequency": "twice daily"}], "diet": "bland diet"}
+description: "Treatment plan for gastritis"
+
+INTEGRATION:
+------------
+
+This tool can be attached to any Bedrock Agent that needs to save contextual information.
+
+To attach to an agent:
+1. Deploy this tool: `make deploy`
+2. Run setup script: `./setup-action-group.sh <AGENT_ID>`
+3. The agent will now have access to SaveContext function
+
+STORAGE:
+--------
+
+All data is saved to DynamoDB ChatHistory table under the session's context.
+Data structure:
+{
+  "contextData": {
+    "diagnosis": [
+      {
+        "data": {...},
+        "description": "...",
+        "savedAt": timestamp,
+        "savedAtISO": "2025-10-12T10:30:00Z"
+      }
+    ],
+    "symptoms": [...],
+    "complaints": [...]
+  }
+}
+
+Multiple entries can be saved under the same contextKey - they are stored as an array.
+
+NOTES:
+------
+
+- Data persists for the entire session
+- Multiple saves to same contextKey append to array (history is preserved)
+- Timestamps are automatically added to each entry
+- Failed saves return error messages but don't crash the agent
+- Events are published to Event Publisher for audit trail
+

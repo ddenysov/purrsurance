@@ -1,0 +1,36 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "VetDoctorAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Save symptoms: vomiting, lethargy, loss of appetite",
+  "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
+  "actionGroup": "ContextActions",
+  "function": "saveContext",
+  "parameters": [
+    {
+      "name": "contextKey",
+      "type": "string",
+      "value": "symptoms"
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "value": "{\"observedSymptoms\": [\"vomiting\", \"lethargy\", \"loss_of_appetite\"], \"duration\": \"2 days\", \"severity\": \"moderate\", \"frequency\": \"3-4 times per day\"}"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "value": "Symptoms reported by pet owner during initial consultation"
+    }
+  ]
+}
+

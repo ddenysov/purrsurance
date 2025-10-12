@@ -1,0 +1,36 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "VetDoctorAgent",
+    "id": "OLHUNALEOH",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Save owner complaints about pet behavior",
+  "sessionId": "test-session-123",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-456"
+    }
+  },
+  "actionGroup": "ContextActions",
+  "function": "saveContext",
+  "parameters": [
+    {
+      "name": "contextKey",
+      "type": "string",
+      "value": "complaints"
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "value": "{\"mainConcern\": \"Pet is not eating and seems lethargic\", \"additionalConcerns\": [\"Drinking less water\", \"Hiding more than usual\", \"Not playing with toys\"], \"startedWhen\": \"2 days ago\", \"ownerWorryLevel\": \"high\"}"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "value": "Initial complaints from pet owner at the start of consultation"
+    }
+  ]
+}
+
