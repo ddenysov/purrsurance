@@ -2,7 +2,7 @@ Tool: GetContext
 ================
 
 PURPOSE:
-This tool allows agents to retrieve contextual information from the session context that was previously saved.
+This tool allows agents to retrieve all contextual information from the session context that was previously saved.
 Use this tool to access diagnosis, symptoms, complaints, treatment plans, and other important information.
 
 WHEN TO USE:
@@ -16,56 +16,21 @@ WHEN TO USE:
 PARAMETERS:
 -----------
 
-contextKey (optional):
-  The category or type of information to retrieve.
-  If specified, returns only data for this specific key.
-  Common values:
-    - "diagnosis" - Medical diagnosis
-    - "symptoms" - Observed symptoms
-    - "complaints" - Owner complaints
-    - "treatment_plan" - Prescribed treatment
-    - "medication" - Medication information
-    - "allergies" - Known allergies
-    - "notes" - General notes
-    - "recommendations" - Medical recommendations
-  
-includeAll (optional):
-  Set to "true" to retrieve all context data regardless of contextKey.
-  Returns complete context with all saved information.
-  Values: "true" or "false" (default: false)
+sessionId (required):
+  The session identifier that was provided at the start of the conversation.
+  This is the same sessionId you received in your session attributes.
+  Always pass this parameter to retrieve context for the correct session.
 
 BEHAVIOR:
 ---------
 
-1. If no parameters provided:
-   Returns list of available context keys
-
-2. If contextKey specified:
-   Returns all data saved under that key (array of entries with timestamps)
-
-3. If includeAll="true":
-   Returns all context data from all keys
+Always returns all context data from the specified session.
+Returns complete context with all saved information including all keys and their data.
 
 RESPONSE FORMAT:
 ----------------
 
-Success Response:
-{
-  "success": true,
-  "message": "Context retrieved successfully for key: diagnosis",
-  "contextKey": "diagnosis",
-  "contextData": [
-    {
-      "data": {...},
-      "description": "...",
-      "savedAt": timestamp,
-      "savedAtISO": "2025-10-12T10:30:00Z"
-    }
-  ],
-  "entryCount": 1
-}
-
-All Context Response:
+Success Response (with data):
 {
   "success": true,
   "message": "All context retrieved successfully",
@@ -81,30 +46,20 @@ All Context Response:
 No Data Response:
 {
   "success": false,
-  "message": "No context found for key: allergies",
-  "contextKey": "allergies",
-  "contextData": null,
-  "availableKeys": ["diagnosis", "symptoms", "complaints"]
+  "message": "No context found for this session",
+  "contextData": null
 }
 
 EXAMPLES:
 ---------
 
-Example 1: Get Diagnosis
-contextKey: "diagnosis"
-→ Returns all diagnosis entries saved during session
-
-Example 2: Get All Context
-includeAll: "true"
+Example 1: Get All Context
+sessionId: "session-12345"
 → Returns complete context with all keys and their data
 
-Example 3: List Available Keys
-(no parameters)
-→ Returns list of available context keys
-
-Example 4: Get Symptoms
-contextKey: "symptoms"
-→ Returns all symptom entries
+Example 2: First Time Access
+sessionId: "session-new"
+→ Returns message that no context found (if nothing was saved yet)
 
 INTEGRATION:
 ------------
@@ -124,14 +79,16 @@ This tool works in conjunction with SaveContext tool:
 2. GetContext retrieves stored information when needed
 3. Both tools use the same storage (DynamoDB ChatHistory table)
 4. Both should be attached to the same agent for full functionality
+5. Both tools require sessionId parameter
 
 NOTES:
 ------
 
-- Returns data from current session only
+- Returns all data from specified session
 - Data includes timestamps from when it was saved
 - Multiple entries under same key are returned as array
-- If key doesn't exist, returns available keys as hint
+- Always returns complete context (all keys and their data)
 - Read-only operation (doesn't modify context)
 - Events are published to Event Publisher for audit trail
+- sessionId parameter is mandatory
 

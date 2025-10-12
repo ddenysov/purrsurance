@@ -71,17 +71,12 @@ if [ -n "$EXISTING_AG" ]; then
       "functions": [
         {
           "name": "GetContext",
-          "description": "Retrieves contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. You can get specific information by key, all context at once, or list available keys.",
+          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
           "parameters": {
-            "contextKey": {
-              "description": "Optional. The category or type of information to retrieve. Common values: diagnosis, symptoms, complaints, treatment_plan, medication, allergies, notes, recommendations. If not specified, returns list of available keys.",
+            "sessionId": {
+              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
               "type": "string",
-              "required": false
-            },
-            "includeAll": {
-              "description": "Optional. Set to true to retrieve all context data regardless of contextKey. Returns complete context with all saved information. Use this when you need full session history.",
-              "type": "string",
-              "required": false
+              "required": true
             }
           }
         }
@@ -103,17 +98,12 @@ else
       "functions": [
         {
           "name": "GetContext",
-          "description": "Retrieves contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. You can get specific information by key, all context at once, or list available keys.",
+          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
           "parameters": {
-            "contextKey": {
-              "description": "Optional. The category or type of information to retrieve. Common values: diagnosis, symptoms, complaints, treatment_plan, medication, allergies, notes, recommendations. If not specified, returns list of available keys.",
+            "sessionId": {
+              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
               "type": "string",
-              "required": false
-            },
-            "includeAll": {
-              "description": "Optional. Set to true to retrieve all context data regardless of contextKey. Returns complete context with all saved information. Use this when you need full session history.",
-              "type": "string",
-              "required": false
+              "required": true
             }
           }
         }
@@ -139,11 +129,10 @@ echo "Action Group: ContextActionGroup"
 echo "Function: GetContext"
 echo "Status: Ready"
 echo ""
-echo "The agent can now retrieve contextual information from the session context."
-echo "Usage examples:"
-echo "  - Get specific context: contextKey='diagnosis'"
-echo "  - Get all context: includeAll='true'"
-echo "  - List available keys: (no parameters)"
+echo "The agent can now retrieve all contextual information from the session context."
+echo "Usage:"
+echo "  - sessionId: (required) The session identifier from session attributes"
+echo "  - Returns: All context data for the specified session"
 echo ""
 echo "For full functionality, make sure SaveContext tool is also attached to this agent."
 echo ""

@@ -309,17 +309,12 @@ if [ -n "$EXISTING_CONTEXT_AG" ]; then
         },
         {
           "name": "GetContext",
-          "description": "Retrieves contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. You can get specific information by key, all context at once, or list available keys.",
+          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
           "parameters": {
-            "contextKey": {
-              "description": "Optional. The category or type of information to retrieve. Common values: diagnosis, symptoms, complaints, treatment_plan, medication, allergies, notes, recommendations, assessment, urgency_level. If not specified, returns list of available keys.",
+            "sessionId": {
+              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
               "type": "string",
-              "required": false
-            },
-            "includeAll": {
-              "description": "Optional. Set to true to retrieve all context data regardless of contextKey. Returns complete context with all saved information. Use this when you need full session history.",
-              "type": "string",
-              "required": false
+              "required": true
             }
           }
         }
@@ -362,17 +357,12 @@ else
         },
         {
           "name": "GetContext",
-          "description": "Retrieves contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. You can get specific information by key, all context at once, or list available keys.",
+          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
           "parameters": {
-            "contextKey": {
-              "description": "Optional. The category or type of information to retrieve. Common values: diagnosis, symptoms, complaints, treatment_plan, medication, allergies, notes, recommendations, assessment, urgency_level. If not specified, returns list of available keys.",
+            "sessionId": {
+              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
               "type": "string",
-              "required": false
-            },
-            "includeAll": {
-              "description": "Optional. Set to true to retrieve all context data regardless of contextKey. Returns complete context with all saved information. Use this when you need full session history.",
-              "type": "string",
-              "required": false
+              "required": true
             }
           }
         }

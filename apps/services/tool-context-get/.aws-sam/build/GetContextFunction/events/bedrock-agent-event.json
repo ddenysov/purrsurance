@@ -6,7 +6,7 @@
     "alias": "TSTALIASID",
     "version": "DRAFT"
   },
-  "inputText": "Get diagnosis information from context",
+  "inputText": "Get all context information",
   "sessionId": "test-session-123",
   "sessionState": {
     "sessionAttributes": {
@@ -17,9 +17,9 @@
   "function": "getContext",
   "parameters": [
     {
-      "name": "contextKey",
+      "name": "sessionId",
       "type": "string",
-      "value": "diagnosis"
+      "value": "global-session-456"
     }
   ]
 }

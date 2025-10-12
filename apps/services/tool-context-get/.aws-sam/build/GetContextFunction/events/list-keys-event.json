@@ -6,7 +6,7 @@
     "alias": "TSTALIASID",
     "version": "DRAFT"
   },
-  "inputText": "List available context keys",
+  "inputText": "Get all context information",
   "sessionId": "test-session-123",
   "sessionState": {
     "sessionAttributes": {
@@ -15,6 +15,12 @@
   },
   "actionGroup": "ContextActions",
   "function": "getContext",
-  "parameters": []
+  "parameters": [
+    {
+      "name": "sessionId",
+      "type": "string",
+      "value": "global-session-456"
+    }
+  ]
 }
 

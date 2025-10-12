@@ -23,8 +23,13 @@ export const lambdaHandler = async (event, context) => {
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
 
   // Extract sessionId from parameters (required parameter from agent)
-  const params = extractParameters(event, ['sessionId']);
-  const sessionId = params.sessionId;
+  const sessionId = event.sessionState?.sessionAttributes?.sessionId || 
+                    event.sessionAttributes?.sessionId || 
+                    event.sessionId || 
+                    'unknown-session';
+  
+  console.log('Extracted sessionId:', sessionId);
+  console.log('Bedrock sessionId (internal):', event.sessionId);
   
   if (!sessionId) {
     console.error('Missing required parameter: sessionId');

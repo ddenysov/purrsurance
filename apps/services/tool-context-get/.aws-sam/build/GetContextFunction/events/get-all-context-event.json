@@ -10,16 +10,16 @@
   "sessionId": "test-session-123",
   "sessionState": {
     "sessionAttributes": {
-      "sessionId": "global-session-456"
+      "sessionId": "d5a06c3b-cbb9-483d-abed-ff9c59bd4c64"
     }
   },
   "actionGroup": "ContextActions",
   "function": "getContext",
   "parameters": [
     {
-      "name": "includeAll",
+      "name": "sessionId",
       "type": "string",
-      "value": "true"
+      "value": "d5a06c3b-cbb9-483d-abed-ff9c59bd4c64"
     }
   ]
 }

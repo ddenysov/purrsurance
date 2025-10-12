@@ -15,71 +15,31 @@ This tool allows Bedrock Agents to retrieve previously saved contextual informat
 
 ## Features
 
-- **Flexible Retrieval**: Get specific context by key, all context at once, or list available keys
+- **Complete Retrieval**: Always returns all context data from the session
 - **Timestamp Tracking**: All retrieved data includes timestamps from when it was saved
 - **Session Isolation**: Each session has its own isolated context
-- **Error Handling**: Graceful handling of missing data with helpful hints
+- **Error Handling**: Graceful handling of missing data
 - **Event Publishing**: Publishes events to Event Publisher for audit trail
 
 ## Parameters
 
-### contextKey (optional)
+### sessionId (required)
 - **Type**: string
-- **Description**: The category or type of information to retrieve
-- **Common values**: diagnosis, symptoms, complaints, treatment_plan, medication, allergies, notes, recommendations
-- **Behavior**: If specified, returns only data for this key
-
-### includeAll (optional)
-- **Type**: string ("true" or "false")
-- **Description**: Set to "true" to retrieve all context data
-- **Behavior**: Returns complete context with all keys and their data
-
-### No Parameters
-- **Behavior**: Returns list of available context keys
+- **Description**: The session identifier that was provided at the start of the conversation
+- **Behavior**: Uses this ID to retrieve all context data for the specified session
+- **Note**: This is the same sessionId from session attributes that the agent receives
 
 ## Usage Examples
-
-### Get Specific Context
-```json
-{
-  "contextKey": "diagnosis"
-}
-```
-Returns all diagnosis entries saved during the session.
 
 ### Get All Context
 ```json
 {
-  "includeAll": "true"
+  "sessionId": "d5a06c3b-cbb9-483d-abed-ff9c59bd4c64"
 }
 ```
-Returns complete context with all keys and their data.
-
-### List Available Keys
-```json
-{}
-```
-Returns list of available context keys.
+Returns complete context with all keys and their data for the specified session.
 
 ## Response Format
-
-### Success - Specific Key
-```json
-{
-  "success": true,
-  "message": "Context retrieved successfully for key: diagnosis",
-  "contextKey": "diagnosis",
-  "contextData": [
-    {
-      "data": {"diagnosis": "Acute gastritis", "severity": "moderate"},
-      "description": "Initial diagnosis",
-      "savedAt": 1697123456789,
-      "savedAtISO": "2025-10-12T10:30:56.789Z"
-    }
-  ],
-  "entryCount": 1
-}
-```
 
 ### Success - All Context
 ```json
@@ -96,14 +56,21 @@ Returns list of available context keys.
 }
 ```
 
-### Key Not Found
+### No Context Found
 ```json
 {
   "success": false,
-  "message": "No context found for key: allergies",
-  "contextKey": "allergies",
-  "contextData": null,
-  "availableKeys": ["diagnosis", "symptoms", "complaints"]
+  "message": "No context found for this session",
+  "contextData": null
+}
+```
+
+### Missing SessionId
+```json
+{
+  "success": false,
+  "message": "Missing required parameter: sessionId",
+  "error": "sessionId is required"
 }
 ```
 
@@ -155,7 +122,8 @@ This tool works in conjunction with the `tool-context-save` service:
 1. **SaveContext** stores information during conversation
 2. **GetContext** retrieves stored information when needed
 3. Both tools use the same storage (DynamoDB ChatHistory table)
-4. Both should be attached to the same agent for full functionality
+4. Both tools require sessionId parameter
+5. Both should be attached to the same agent for full functionality
 
 ## Architecture
 
