@@ -22,19 +22,16 @@ export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
 
-  // Extract sessionId from event (prioritize globalSessionId from sessionAttributes)
-  const sessionId = event.sessionState?.sessionAttributes?.sessionId || 
-                    event.sessionAttributes?.sessionId || 
-                    event.sessionId || 
-                    'unknown-session';
+  // Extract sessionId using utility function
+  const sessionId = extractSessionId(event);
   
   console.log('Extracted sessionId:', sessionId);
   console.log('Bedrock sessionId (internal):', event.sessionId);
 
-  // Extract parameters from the event
-  const parameters = event.parameters || [];
-  const contextKey = parameters.find(p => p.name === 'contextKey')?.value;
-  const includeAll = parameters.find(p => p.name === 'includeAll')?.value === 'true';
+  // Extract parameters using utility function
+  const params = extractParameters(event, ['contextKey', 'includeAll']);
+  const contextKey = params.contextKey;
+  const includeAll = params.includeAll === 'true';
 
   let responseBodyContent = {
     success: false,
@@ -148,19 +145,7 @@ export const lambdaHandler = async (event, context) => {
     // Continue execution even if event publishing fails
   }
 
-  return {
-    'messageVersion': '1.0',
-    'response': {
-      'actionGroup': 'ContextActionGroup',
-      'function': 'GetContext',
-      'functionResponse': {
-        'responseBody': {
-          'TEXT': {
-            'body': JSON.stringify(responseBodyContent, null, 2),
-          },
-        },
-      }
-    }
-  };
+  // Return response using utility function
+  return createAgentResponse('GetContext', responseBodyContent, 'ContextActionGroup');
 };
 

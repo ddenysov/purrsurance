@@ -22,23 +22,29 @@ export const lambdaHandler = async (event, context) => {
   // Log the incoming event for debugging
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
 
-  // Extract sessionId using utility function
-  const sessionId = extractSessionId(event);
+  // Extract sessionId from parameters (required parameter from agent)
+  const params = extractParameters(event, ['sessionId']);
+  const sessionId = params.sessionId;
   
-  console.log('Extracted sessionId:', sessionId);
+  if (!sessionId) {
+    console.error('Missing required parameter: sessionId');
+    const errorResponse = {
+      success: false,
+      message: 'Missing required parameter: sessionId',
+      error: 'sessionId is required'
+    };
+    return createAgentResponse('GetContext', errorResponse, 'ContextActionGroup');
+  }
+  
+  console.log('Using sessionId from parameters:', sessionId);
   console.log('Bedrock sessionId (internal):', event.sessionId);
-
-  // Extract parameters using utility function
-  const params = extractParameters(event, ['contextKey', 'includeAll']);
-  const contextKey = params.contextKey;
-  const includeAll = params.includeAll === 'true';
 
   let responseBodyContent = {
     success: false,
     message: 'Failed to retrieve context'
   };
 
-  // Retrieve data from session context
+  // Retrieve all data from session context
   try {
     // Get current context
     const currentContext = await chatHistory.getSessionContext(sessionId);
@@ -54,74 +60,24 @@ export const lambdaHandler = async (event, context) => {
     } else {
       const contextData = currentContext.context.contextData || {};
       
-      // If includeAll is true, return all context
-      if (includeAll) {
-        responseBodyContent = {
-          success: true,
-          message: 'All context retrieved successfully',
-          contextData: contextData,
-          contextKeys: Object.keys(contextData),
-          lastUpdate: currentContext.context.lastContextUpdate
-        };
-        
-        console.log('All context retrieved:', {
-          sessionId,
-          keys: Object.keys(contextData),
-          lastUpdate: currentContext.context.lastContextUpdate
-        });
-      } 
-      // If contextKey is specified, return only that key
-      else if (contextKey) {
-        if (contextData[contextKey]) {
-          responseBodyContent = {
-            success: true,
-            message: `Context retrieved successfully for key: ${contextKey}`,
-            contextKey: contextKey,
-            contextData: contextData[contextKey],
-            entryCount: Array.isArray(contextData[contextKey]) ? contextData[contextKey].length : 1
-          };
-          
-          console.log('Context retrieved:', {
-            sessionId,
-            contextKey,
-            entryCount: Array.isArray(contextData[contextKey]) ? contextData[contextKey].length : 1
-          });
-        } else {
-          responseBodyContent = {
-            success: false,
-            message: `No context found for key: ${contextKey}`,
-            contextKey: contextKey,
-            contextData: null,
-            availableKeys: Object.keys(contextData)
-          };
-          
-          console.log('Context key not found:', {
-            sessionId,
-            contextKey,
-            availableKeys: Object.keys(contextData)
-          });
-        }
-      } 
-      // If no parameters specified, return list of available keys
-      else {
-        responseBodyContent = {
-          success: true,
-          message: 'Context keys available',
-          availableKeys: Object.keys(contextData),
-          lastUpdate: currentContext.context.lastContextUpdate,
-          hint: 'Specify contextKey parameter to get specific data, or set includeAll=true to get all context'
-        };
-        
-        console.log('Available context keys listed:', {
-          sessionId,
-          keys: Object.keys(contextData)
-        });
-      }
+      // Always return all context data
+      responseBodyContent = {
+        success: true,
+        message: 'All context retrieved successfully',
+        contextData: contextData,
+        contextKeys: Object.keys(contextData),
+        lastUpdate: currentContext.context.lastContextUpdate
+      };
+      
+      console.log('All context retrieved:', {
+        sessionId,
+        keys: Object.keys(contextData),
+        lastUpdate: currentContext.context.lastContextUpdate
+      });
     }
   } catch (error) {
     console.error('Failed to retrieve context:', {
       sessionId,
-      contextKey,
       error: error.message,
       stack: error.stack
     });
@@ -136,8 +92,6 @@ export const lambdaHandler = async (event, context) => {
   // Send event to Event Publisher (non-blocking)
   try {
     await sendEventToPublisher(eventPublisherUrl, sessionId, {
-      contextKey,
-      includeAll,
       success: responseBodyContent.success
     }, 'ContextRetrieved');
   } catch (error) {
