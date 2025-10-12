@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Deploy script for AgentVetDoctor
-# This script reads the instruction from instruction.txt and passes it as a parameter
+# This script deploys the CloudFormation stack with default instruction,
+# then updates the instruction from instruction.txt via AWS CLI
 
 set -e
 
@@ -25,37 +26,15 @@ echo "📝 Instruction file loaded (${INSTRUCTION_LENGTH} characters)"
 echo ""
 
 echo "📦 Deploying to AWS..."
+echo "ℹ️  Note: Using default instruction from template.yaml for initial deployment."
+echo "ℹ️  Custom instruction from instruction.txt will be applied immediately after."
+echo ""
 
-# We need to escape the instruction content for passing as parameter
-# Use printf to escape special characters and pass through base64 if too complex
-# For simplicity, we'll save to a temp file and read during sam deploy
-
-# Create a temporary override file
-TEMP_OVERRIDE=$(mktemp)
-cat > "$TEMP_OVERRIDE" << 'HEREDOC'
-Environment=prod
-HEREDOC
-
-# Append instruction parameter (properly escaped)
-echo -n "VetDoctorAgentInstruction=" >> "$TEMP_OVERRIDE"
-# Use awk to escape newlines and special characters
-awk '{printf "%s\\n", $0}' instruction.txt | sed 's/\\n$//' >> "$TEMP_OVERRIDE"
-
-# Deploy using parameter overrides from file
+# Deploy with default instruction (simpler, more reliable)
 sam deploy \
   --no-confirm-changeset \
-  --parameter-overrides file://"$TEMP_OVERRIDE" 2>/dev/null || {
-    echo "⚠️  File-based parameter override failed, trying inline method..."
-    # Fallback: try inline (this may fail for very long instructions)
-    sam deploy \
-      --no-confirm-changeset \
-      --parameter-overrides \
-        Environment=prod \
-        VetDoctorAgentInstruction="$INSTRUCTION_CONTENT"
-  }
-
-# Clean up
-rm -f "$TEMP_OVERRIDE"
+  --parameter-overrides \
+    Environment=prod
 
 echo ""
 echo "✅ CloudFormation deployment complete!"
