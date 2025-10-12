@@ -9,6 +9,7 @@ STACK_NAME="purrsurance-agent-vet-doctor"
 TOOL_STACK_NAME="purrsurance-tool-recommend-doctor-visit"
 POLICY_DETAILS_TOOL_STACK="purrsurance-tool-policy-details"
 CONTEXT_SAVE_TOOL_STACK="purrsurance-tool-context-save"
+CONTEXT_GET_TOOL_STACK="purrsurance-tool-context-get"
 REGION="us-east-1"
 
 echo "Setting up Action Groups for AgentVetDoctor..."
@@ -76,6 +77,22 @@ if [ -z "$CONTEXT_SAVE_LAMBDA_ARN" ]; then
 fi
 
 echo "SaveContext Lambda ARN: $CONTEXT_SAVE_LAMBDA_ARN"
+echo ""
+
+# Get Lambda Function ARN for GetContext
+echo "Fetching GetContext Lambda Function ARN..."
+CONTEXT_GET_LAMBDA_ARN=$(aws cloudformation describe-stacks \
+  --stack-name $CONTEXT_GET_TOOL_STACK \
+  --region $REGION \
+  --query 'Stacks[0].Outputs[?OutputKey==`GetContextFunction`].OutputValue' \
+  --output text)
+
+if [ -z "$CONTEXT_GET_LAMBDA_ARN" ]; then
+  echo "Error: Could not retrieve GetContext Lambda ARN from tool stack outputs"
+  exit 1
+fi
+
+echo "GetContext Lambda ARN: $CONTEXT_GET_LAMBDA_ARN"
 echo ""
 
 # ========================================
@@ -289,6 +306,22 @@ if [ -n "$EXISTING_CONTEXT_AG" ]; then
               "required": false
             }
           }
+        },
+        {
+          "name": "GetContext",
+          "description": "Retrieves contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. You can get specific information by key, all context at once, or list available keys.",
+          "parameters": {
+            "contextKey": {
+              "description": "Optional. The category or type of information to retrieve. Common values: diagnosis, symptoms, complaints, treatment_plan, medication, allergies, notes, recommendations, assessment, urgency_level. If not specified, returns list of available keys.",
+              "type": "string",
+              "required": false
+            },
+            "includeAll": {
+              "description": "Optional. Set to true to retrieve all context data regardless of contextKey. Returns complete context with all saved information. Use this when you need full session history.",
+              "type": "string",
+              "required": false
+            }
+          }
         }
       ]
     }' \
@@ -326,6 +359,22 @@ else
               "required": false
             }
           }
+        },
+        {
+          "name": "GetContext",
+          "description": "Retrieves contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. You can get specific information by key, all context at once, or list available keys.",
+          "parameters": {
+            "contextKey": {
+              "description": "Optional. The category or type of information to retrieve. Common values: diagnosis, symptoms, complaints, treatment_plan, medication, allergies, notes, recommendations, assessment, urgency_level. If not specified, returns list of available keys.",
+              "type": "string",
+              "required": false
+            },
+            "includeAll": {
+              "description": "Optional. Set to true to retrieve all context data regardless of contextKey. Returns complete context with all saved information. Use this when you need full session history.",
+              "type": "string",
+              "required": false
+            }
+          }
         }
       ]
     }' \
@@ -353,6 +402,7 @@ echo "  2. PolicyDetailsActionGroup"
 echo "     - Function: GetPolicyDetails"
 echo "  3. ContextActionGroup"
 echo "     - Function: SaveContext"
+echo "     - Function: GetContext"
 echo ""
 echo "Status: Ready"
 echo ""
@@ -360,6 +410,7 @@ echo "The AgentVetDoctor can now:"
 echo "  - Recommend doctor visits and publish events to the Event Publisher"
 echo "  - Retrieve policy details for insurance verification"
 echo "  - Save diagnostic and medical information to context for other agents"
+echo "  - Retrieve contextual information from the session"
 echo ""
 echo "You can test the agent in the AWS Console or via AWS CLI."
 
