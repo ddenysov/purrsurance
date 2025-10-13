@@ -1,0 +1,19 @@
+{
+  "name": "purrsurance-data",
+  "version": "1.0.0",
+  "description": "Database migrations and seeds for Purrsurance project",
+  "type": "module",
+  "scripts": {
+    "migrate": "node migrate.mjs up",
+    "migrate:down": "node migrate.mjs down",
+    "seed": "node seed.mjs",
+    "test": "node test-connection.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.490.0",
+    "@aws-sdk/lib-dynamodb": "^3.490.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
+
