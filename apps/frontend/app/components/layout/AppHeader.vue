@@ -19,17 +19,28 @@
           </div>
         </div>
 
-        <!-- Badges (Desktop only) -->
-        <div class="hidden md:flex items-center space-x-3">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-mint-100 text-mint-800">
-            Clean UI
-          </span>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            Light Theme
-          </span>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800">
-            Pet Friendly
-          </span>
+        <!-- Navigation and Badges (Desktop only) -->
+        <div class="hidden md:flex items-center space-x-4">
+          <!-- Admin Link -->
+          <NuxtLink 
+            to="/admin" 
+            class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-brand-500 text-white hover:bg-brand-600 transition-colors duration-150 shadow-sm hover:shadow-md"
+          >
+            DEMO Admin
+          </NuxtLink>
+          
+          <!-- Badges -->
+          <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-mint-100 text-mint-800">
+              Clean UI
+            </span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+              Light Theme
+            </span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800">
+              Pet Friendly
+            </span>
+          </div>
         </div>
       </div>
     </div>
