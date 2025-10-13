@@ -142,16 +142,6 @@ Resources:
                 Resource:
                   - Fn::ImportValue:
                       !Sub '${ToolContextSaveStackName}-FunctionArn'
-#        - PolicyName: InvokeFindVetClinicFunction
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action:
-#                  - lambda:InvokeFunction
-#                Resource:
-#                  - Fn::ImportValue:
-#                      !Sub '${ToolFindVetClinicStackName}-FunctionArn'
       Tags:
         - Key: Environment
           Value: !Ref Environment

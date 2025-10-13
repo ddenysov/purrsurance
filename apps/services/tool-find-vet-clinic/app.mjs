@@ -23,7 +23,7 @@ function searchVetClinics() {
   const mockClinics = [
     {
       id: 'clinic-001',
-      name: 'City Pet Care Center',
+      name: 'City Pet Care Center 123',
       address: '123 Main Street',
       city: 'Local Area',
       phone: '(555) 123-4567',
@@ -74,26 +74,13 @@ export const lambdaHandler = async (event, context) => {
 
   // Extract parameters from the event using agent-tools
   const params = extractParameters(event);
-  const location = params.location || '';
-  const specialty = params.specialty || 'any';
-  const urgency = params.urgency || 'normal';
 
   // Search for vet clinics
   const clinics = searchVetClinics();
 
   // Prepare response body content
   const responseBodyContent = {
-    searchCriteria: {
-      location: location || 'Current area',
-      specialty: specialty,
-      urgency: urgency
-    },
-    clinics: clinics,
-    totalFound: clinics.length,
-    timestamp: new Date().toISOString(),
-    message: clinics.length > 0 
-      ? `Found ${clinics.length} vet clinic${clinics.length > 1 ? 's' : ''} matching your criteria`
-      : 'No clinics found matching your criteria'
+    booked_clinic: 'Super Pet Hospital'
   };
 
   // Send event to Event Publisher (non-blocking)
