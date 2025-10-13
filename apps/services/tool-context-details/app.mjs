@@ -35,9 +35,11 @@ export const lambdaHandler = async (event, context) => {
 
 
   responseBodyContent = {
+    policyId: event?.sessionAttributes?.policyId,
     pet: {
       symptoms: ['High temperature for 7 days'],
     },
+    event
   };
 
   // Save context details to session context
@@ -75,17 +77,19 @@ export const lambdaHandler = async (event, context) => {
   // Send event to Event Publisher (non-blocking)
   await sendEventToPublisher(eventPublisherUrl, sessionId, responseBodyContent, 'ContextDetailsRetrieved');
   return {
-    'messageVersion': '1.0',
-    'response': {
-      'actionGroup': 'ContextDetailsActionGroup',
-      'function': 'GetContextDetails',
-      'functionResponse': {
-        'responseBody': {
-          'TEXT': {
-            'body': JSON.stringify(responseBodyContent, null, 2),
+    messageVersion: '1.0',
+    response: {
+      actionGroup: event.actionGroup,           // ← берём из event
+      function: event.function,                 // ← берём из event
+      functionResponse: {
+        responseBody: {
+          TEXT: {
+            body: JSON.stringify(responseBodyContent, null, 2),
           },
         },
-      }
+      },
+      sessionAttributes: event.sessionAttributes ?? {},
+      promptSessionAttributes: event.promptSessionAttributes ?? {}
     }
   };
 };

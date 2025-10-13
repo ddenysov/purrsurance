@@ -8,6 +8,7 @@ set -e
 STACK_NAME="purrsurance-agent-booking-manager"
 VET_CLINIC_TOOL_STACK="purrsurance-tool-find-vet-clinic"
 POLICY_DETAILS_TOOL_STACK="purrsurance-tool-policy-details"
+CONTEXT_DETAILS_TOOL_STACK="purrsurance-tool-context-details"
 CONTEXT_SAVE_TOOL_STACK="purrsurance-tool-context-save"
 CONTEXT_GET_TOOL_STACK="purrsurance-tool-context-get"
 REGION="us-east-1"
@@ -94,6 +95,23 @@ fi
 
 echo "GetContext Lambda ARN: $CONTEXT_GET_LAMBDA_ARN"
 echo ""
+
+# Get Lambda Function ARN for GetContextDetails
+echo "Fetching GetContextDetails Lambda Function ARN..."
+CONTEXT_DETAILS_LAMBDA_ARN=$(aws cloudformation describe-stacks \
+  --stack-name $CONTEXT_DETAILS_TOOL_STACK \
+  --region $REGION \
+  --query 'Stacks[0].Outputs[?OutputKey==`GetContextDetailsFunction`].OutputValue' \
+  --output text)
+
+if [ -z "$CONTEXT_DETAILS_LAMBDA_ARN" ]; then
+  echo "Error: Could not retrieve GetContextDetails Lambda ARN from tool stack outputs"
+  exit 1
+fi
+
+echo "GetContextDetails Lambda ARN: $CONTEXT_DETAILS_LAMBDA_ARN"
+echo ""
+
 
 # ========================================
 # Action Group 1: VetClinicFinderActionGroup
@@ -260,35 +278,6 @@ else
 fi
 
 echo ""
-
-# ========================================
-# Clean up: Remove old ContextActionGroup if it exists
-# ========================================
-echo "Checking for old ContextActionGroup..."
-
-EXISTING_OLD_CONTEXT_AG=$(aws bedrock-agent list-agent-action-groups \
-  --agent-id $AGENT_ID \
-  --agent-version DRAFT \
-  --region $REGION \
-  --query 'actionGroupSummaries[?actionGroupName==`ContextActionGroup`].actionGroupId' \
-  --output text 2>/dev/null || echo "")
-
-if [ -n "$EXISTING_OLD_CONTEXT_AG" ]; then
-  echo "Found old ContextActionGroup with ID: $EXISTING_OLD_CONTEXT_AG"
-  echo "Deleting old ContextActionGroup (will be replaced with separate Save and Get action groups)..."
-  
-  aws bedrock-agent delete-agent-action-group \
-    --agent-id $AGENT_ID \
-    --agent-version DRAFT \
-    --action-group-id $EXISTING_OLD_CONTEXT_AG \
-    --region $REGION \
-    --skip-resource-in-use-check
-  
-  echo "✓ Old ContextActionGroup deleted successfully!"
-else
-  echo "No old ContextActionGroup found, skipping cleanup."
-fi
-
 echo ""
 
 # ========================================
@@ -382,67 +371,80 @@ else
   echo "✓ ContextSaveActionGroup created successfully!"
 fi
 
-echo ""
-
 # ========================================
-# Action Group 4: ContextGetActionGroup
+# Action Group 4: PolicyDetailsActionGroup
 # ========================================
-echo "Setting up ContextGetActionGroup..."
+echo "Setting up ContextDetailsActionGroup..."
 
-# Check if ContextGetActionGroup already exists
-EXISTING_CONTEXT_GET_AG=$(aws bedrock-agent list-agent-action-groups \
+# Check if ContextDetailsActionGroup already exists
+EXISTING_CONTEXT_AG=$(aws bedrock-agent list-agent-action-groups \
   --agent-id $AGENT_ID \
   --agent-version DRAFT \
   --region $REGION \
-  --query 'actionGroupSummaries[?actionGroupName==`ContextGetActionGroup`].actionGroupId' \
+  --query 'actionGroupSummaries[?actionGroupName==`ContextDetailsActionGroup`].actionGroupId' \
   --output text 2>/dev/null || echo "")
 
-if [ -n "$EXISTING_CONTEXT_GET_AG" ]; then
-  echo "ContextGetActionGroup already exists with ID: $EXISTING_CONTEXT_GET_AG"
+if [ -n "$EXISTING_CONTEXT_AG" ]; then
+  echo "ContextDetailsActionGroup already exists with ID: $EXISTING_CONTEXT_AG"
   echo "Updating existing action group..."
-  
+
   aws bedrock-agent update-agent-action-group \
     --agent-id $AGENT_ID \
     --agent-version DRAFT \
-    --action-group-id $EXISTING_CONTEXT_GET_AG \
-    --action-group-name ContextGetActionGroup \
-    --action-group-executor "lambda=$CONTEXT_GET_LAMBDA_ARN" \
+    --action-group-id $EXISTING_CONTEXT_AG \
+    --action-group-name ContextDetailsActionGroup \
+    --action-group-executor "lambda=$CONTEXT_DETAILS_LAMBDA_ARN" \
     --function-schema '{
       "functions": [
         {
-          "name": "GetContext",
-          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
-          "parameters": {}
+          "name": "GetContextDetails",
+          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
+          "parameters": {
+            "policyId": {
+              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
+              "type": "string",
+              "required": true
+            }
+          }
         }
       ]
     }' \
     --action-group-state ENABLED \
     --region $REGION
-  
-  echo "✓ ContextGetActionGroup updated successfully!"
+
+  echo "✓ ContextDetailsActionGroup updated successfully!"
 else
-  echo "Creating new ContextGetActionGroup..."
-  
+  echo "Creating new ContextDetailsActionGroup..."
+
   aws bedrock-agent create-agent-action-group \
     --agent-id $AGENT_ID \
     --agent-version DRAFT \
-    --action-group-name ContextGetActionGroup \
-    --action-group-executor "lambda=$CONTEXT_GET_LAMBDA_ARN" \
+    --action-group-name ContextDetailsActionGroup \
+    --action-group-executor "lambda=$CONTEXT_DETAILS_LAMBDA_ARN" \
     --function-schema '{
       "functions": [
         {
-          "name": "GetContext",
-          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
-          "parameters": {}
+          "name": "GetContextDetails",
+          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
+          "parameters": {
+            "policyId": {
+              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
+              "type": "string",
+              "required": true
+            }
+          }
         }
       ]
     }' \
     --action-group-state ENABLED \
     --region $REGION
-  
-  echo "✓ ContextGetActionGroup created successfully!"
+
+  echo "✓ ContextDetailsActionGroup created successfully!"
 fi
 
+
+
+echo ""
 echo ""
 echo "Preparing agent..."
 aws bedrock-agent prepare-agent \
@@ -461,8 +463,6 @@ echo "  2. PolicyDetailsActionGroup"
 echo "     - Function: GetPolicyDetails"
 echo "  3. ContextSaveActionGroup"
 echo "     - Function: SaveContext"
-echo "  4. ContextGetActionGroup"
-echo "     - Function: GetContext"
 echo ""
 echo "Status: Ready"
 echo ""

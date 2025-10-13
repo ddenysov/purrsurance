@@ -1,0 +1,37 @@
+{
+  "type": "ContextDetailsRetrieved",
+  "id": "local-1760349886733",
+  "timestamp": 1760349886733,
+  "payload": {
+    "event": {
+      "agent": {
+        "name": "AgentBookingManager",
+        "alias": "8DTMKQEBOD",
+        "id": "T5WI761W2W",
+        "version": "6"
+      },
+      "promptSessionAttributes": {},
+      "function": "GetContextDetails",
+      "inputText": "System: User PolicyId: POL-2025-123456\n\n  User input: Please book a vet clinic",
+      "messageVersion": "1.0",
+      "sessionId": "session-1760349465837-xf6cj1",
+      "actionGroup": "ContextDetailsActionGroup",
+      "sessionAttributes": {
+        "policyId": "POL-2025-123456",
+        "sessionId": "43d41129-168e-4040-bee4-88a15748a7e7"
+      },
+      "parameters": [
+        {
+          "name": "policyId",
+          "type": "string",
+          "value": "POL-2025-123456"
+        }
+      ]
+    },
+    "pet": {
+      "symptoms": [
+        "High temperature for 7 days"
+      ]
+    }
+  }
+}
