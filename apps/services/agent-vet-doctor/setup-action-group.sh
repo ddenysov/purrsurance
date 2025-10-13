@@ -9,7 +9,6 @@ STACK_NAME="purrsurance-agent-vet-doctor"
 TOOL_STACK_NAME="purrsurance-tool-recommend-doctor-visit"
 POLICY_DETAILS_TOOL_STACK="purrsurance-tool-policy-details"
 CONTEXT_SAVE_TOOL_STACK="purrsurance-tool-context-save"
-CONTEXT_GET_TOOL_STACK="purrsurance-tool-context-get"
 CONTEXT_DETAILS_TOOL_STACK="purrsurance-tool-context-details"
 REGION="us-east-1"
 
@@ -95,22 +94,6 @@ if [ -z "$CONTEXT_SAVE_LAMBDA_ARN" ]; then
 fi
 
 echo "SaveContext Lambda ARN: $CONTEXT_SAVE_LAMBDA_ARN"
-echo ""
-
-# Get Lambda Function ARN for GetContext
-echo "Fetching GetContext Lambda Function ARN..."
-CONTEXT_GET_LAMBDA_ARN=$(aws cloudformation describe-stacks \
-  --stack-name $CONTEXT_GET_TOOL_STACK \
-  --region $REGION \
-  --query 'Stacks[0].Outputs[?OutputKey==`GetContextFunction`].OutputValue' \
-  --output text)
-
-if [ -z "$CONTEXT_GET_LAMBDA_ARN" ]; then
-  echo "Error: Could not retrieve GetContext Lambda ARN from tool stack outputs"
-  exit 1
-fi
-
-echo "GetContext Lambda ARN: $CONTEXT_GET_LAMBDA_ARN"
 echo ""
 
 # ========================================
@@ -233,14 +216,8 @@ if [ -n "$EXISTING_CONTEXT_AG" ]; then
       "functions": [
         {
           "name": "GetContextDetails",
-          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
-          "parameters": {
-            "policyId": {
-              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
-              "type": "string",
-              "required": true
-            }
-          }
+          "description": "Retrieves complete session context including pet information, owner information, insurance policy details, medical history, and any previously saved medical context (diagnosis, symptoms, assessment, urgency level, etc.). Always use this at the start of consultation.",
+          "parameters": {}
         }
       ]
     }' \
@@ -260,14 +237,8 @@ else
       "functions": [
         {
           "name": "GetContextDetails",
-          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
-          "parameters": {
-            "policyId": {
-              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
-              "type": "string",
-              "required": true
-            }
-          }
+          "description": "Retrieves complete session context including pet information, owner information, insurance policy details, medical history, and any previously saved medical context (diagnosis, symptoms, assessment, urgency level, etc.). Always use this at the start of consultation.",
+          "parameters": {}
         }
       ]
     }' \
@@ -397,17 +368,6 @@ if [ -n "$EXISTING_CONTEXT_AG" ]; then
               "required": false
             }
           }
-        },
-        {
-          "name": "GetContext",
-          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
-          "parameters": {
-            "sessionId": {
-              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
-              "type": "string",
-              "required": true
-            }
-          }
         }
       ]
     }' \
@@ -445,17 +405,6 @@ else
               "required": false
             }
           }
-        },
-        {
-          "name": "GetContext",
-          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
-          "parameters": {
-            "sessionId": {
-              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
-              "type": "string",
-              "required": true
-            }
-          }
         }
       ]
     }' \
@@ -483,7 +432,8 @@ echo "  2. PolicyDetailsActionGroup"
 echo "     - Function: GetPolicyDetails"
 echo "  3. ContextActionGroup"
 echo "     - Function: SaveContext"
-echo "     - Function: GetContext"
+echo "  4. ContextDetailsActionGroup"
+echo "     - Function: GetContextDetails"
 echo ""
 echo "Status: Ready"
 echo ""
@@ -491,7 +441,7 @@ echo "The AgentVetDoctor can now:"
 echo "  - Recommend doctor visits and publish events to the Event Publisher"
 echo "  - Retrieve policy details for insurance verification"
 echo "  - Save diagnostic and medical information to context for other agents"
-echo "  - Retrieve contextual information from the session"
+echo "  - Retrieve complete session context including medical history"
 echo ""
 echo "You can test the agent in the AWS Console or via AWS CLI."
 

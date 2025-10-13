@@ -12,3 +12,4 @@
 - make admin view for bookings
 - 4 buttons real functionality
 - add RAG knowledge base, s3 vector store
+- hint about agent in chat
