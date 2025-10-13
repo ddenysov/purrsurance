@@ -1,0 +1,3 @@
+- randomly fails
+-- potential solutions
+--- fix prompt, try without attributes
