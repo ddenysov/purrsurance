@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 overflow-y-auto p-4 space-y-2">
+  <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-2">
     <!-- Error banner -->
     <div 
       v-if="error"
@@ -45,5 +45,31 @@ interface Props {
   error?: string | null
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const messagesContainer = ref<HTMLElement | null>(null)
+
+// Function to scroll to bottom
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+  })
+}
+
+// Watch for new messages
+watch(() => props.messages.length, () => {
+  scrollToBottom()
+})
+
+// Watch for typing indicator
+watch(() => props.isTyping, () => {
+  scrollToBottom()
+})
+
+// Initial scroll on mount
+onMounted(() => {
+  scrollToBottom()
+})
 </script>
