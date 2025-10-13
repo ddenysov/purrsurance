@@ -162,17 +162,19 @@ export const lambdaHandler = async (event, context) => {
   }
 
   return {
-    'messageVersion': '1.0',
-    'response': {
-      'actionGroup': 'ContextActionGroup',
-      'function': 'SaveContext',
-      'functionResponse': {
-        'responseBody': {
-          'TEXT': {
-            'body': JSON.stringify(responseBodyContent, null, 2),
+    messageVersion: '1.0',
+    response: {
+      actionGroup: event.actionGroup,           // ← берём из event
+      function: event.function,                 // ← берём из event
+      functionResponse: {
+        responseBody: {
+          TEXT: {
+            body: JSON.stringify(responseBodyContent, null, 2),
           },
         },
-      }
+      },
+      sessionAttributes: event.sessionAttributes ?? {},
+      promptSessionAttributes: event.promptSessionAttributes ?? {}
     }
   };
 };

@@ -116,7 +116,7 @@ export async function invokeSpecificAgent (agentId, agentAliasId, inputText, ses
         requestLogger.info('Adding policyId to session attributes', {
           policyId: policyId,
         });
-        commandParams.inputText = `System: User PolicyId: ${policyId}\n\n  User input: ${commandParams.inputText}`;
+        commandParams.inputText = `${commandParams.inputText}`;
       }
     }
 

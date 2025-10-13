@@ -217,18 +217,21 @@ export const lambdaHandler = async (event, context) => {
 
   // Send event to Event Publisher (non-blocking)
   await sendEventToPublisher(eventPublisherUrl, sessionId, responseBodyContent, 'PolicyDetailsRetrieved');
+
   return {
-    'messageVersion': '1.0',
-    'response': {
-      'actionGroup': 'PolicyDetailsActionGroup',
-      'function': 'GetPolicyDetails',
-      'functionResponse': {
-        'responseBody': {
-          'TEXT': {
-            'body': JSON.stringify(responseBodyContent, null, 2),
+    messageVersion: '1.0',
+    response: {
+      actionGroup: event.actionGroup,           // ← берём из event
+      function: event.function,                 // ← берём из event
+      functionResponse: {
+        responseBody: {
+          TEXT: {
+            body: JSON.stringify(responseBodyContent, null, 2),
           },
         },
-      }
+      },
+      sessionAttributes: event.sessionAttributes ?? {},
+      promptSessionAttributes: event.promptSessionAttributes ?? {}
     }
   };
 };

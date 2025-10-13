@@ -53,19 +53,21 @@ export const lambdaHandler = async (event, context) => {
 
   // Send event to Event Publisher (non-blocking)
   await sendEventToPublisher(eventPublisherUrl, sessionId, responseBodyContent, 'ReccomendDoctorVisit');
-  
+
   return {
-    'messageVersion': '1.0',
-    'response': {
-      'actionGroup': 'DoctorVisitActionGroup',
-      'function': 'RecommendDoctorVisit',
-      'functionResponse': {
-        'responseBody': {
-          'TEXT': {
-            'body': JSON.stringify(responseBodyContent, null, 2),
+    messageVersion: '1.0',
+    response: {
+      actionGroup: event.actionGroup,           // ← берём из event
+      function: event.function,                 // ← берём из event
+      functionResponse: {
+        responseBody: {
+          TEXT: {
+            body: JSON.stringify(responseBodyContent, null, 2),
           },
         },
-      }
+      },
+      sessionAttributes: event.sessionAttributes ?? {},
+      promptSessionAttributes: event.promptSessionAttributes ?? {}
     }
   };
 };
