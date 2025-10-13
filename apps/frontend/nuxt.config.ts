@@ -16,11 +16,31 @@ export default defineNuxtConfig({
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
       apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
       // SSE Stream URL from purrsurance-sse-stream stack
-      sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3002/stream',
+      sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3001/stream',
       // Chat API URL from purrsurance-service-router stack
-      chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || 'http://localhost:3003/chat',
+      chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || 'http://localhost:3001/chat',
     }
   },
+
+vite: {
+    server: {
+        proxy: {
+            // Прокси для SSE stream
+            '/stream': {
+                target: 'https://ppfpuxcnyds5oa5zbwsbaevata0gybqg.lambda-url.us-east-1.on.aws/',
+                changeOrigin: true,
+                // Переписываем путь: запрос на /stream пойдет на / к target
+                rewrite: (path) => path.replace(/^\/stream/, ''),
+            },
+            // Прокси для Chat API
+            '/chat': {
+                target: 'https://f71j8tt6kc.execute-api.us-east-1.amazonaws.com/Prod',
+                changeOrigin: true,
+                // Здесь rewrite не нужен, т.к. запрос на /chat должен пойти на /chat к target
+            }
+        }
+    }
+},
   
   // Modules
   modules: [

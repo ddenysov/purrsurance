@@ -6,6 +6,9 @@ import { apiClient } from './apiClient'
  */
 function getChatApiConfig() {
   const config = useRuntimeConfig()
+
+  console.log(config);
+
   const chatApiUrl = config.public.chatApiUrl as string
   
   return {
