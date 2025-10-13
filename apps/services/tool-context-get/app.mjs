@@ -10,6 +10,7 @@
 import { createAgentResponse, extractSessionId, extractParameters, sendEventToPublisher, createChatHistoryService } from "./vendor/agent-tools/index.mjs";
 
 const chatHistoryTableName = process.env.CHAT_HISTORY_TABLE_NAME || 'ChatHistory';
+const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
 
 // Initialize Chat History Service
 const chatHistory = createChatHistoryService({
@@ -18,6 +19,8 @@ const chatHistory = createChatHistoryService({
 });
 
 export const lambdaHandler = async (event, context) => {
+  // Send log event
+
   // Log the incoming event for debugging
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
 
@@ -26,6 +29,15 @@ export const lambdaHandler = async (event, context) => {
                     event.sessionAttributes?.sessionId || 
                     event.sessionId || 
                     'unknown-session';
+
+  await sendEventToPublisher({
+    eventType: 'LogEvent',
+    message: 'HelloWorld'
+  });
+
+  await sendEventToPublisher(eventPublisherUrl, sessionId, {
+    message: 'ContextSaved HELLO WORLD',
+  }, 'ContextSaved');
 
   console.log('Extracted sessionId:', sessionId);
   console.log('Bedrock sessionId (internal):', event.sessionId);

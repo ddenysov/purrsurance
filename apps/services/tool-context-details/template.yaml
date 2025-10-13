@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   tool-context-details
   
-  Lambda function that retrieves contextual data (diagnosis, complaints, symptoms) from session context
+  Lambda function that returns context details for Bedrock Agent
 
 Globals:
   Function:
@@ -55,7 +55,7 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
         - Key: Service
-          Value: tool-context-get
+          Value: tool-context-details
 
   # Subscribe Event Publisher to this topic
   ContextEventsSubscription:
@@ -76,13 +76,13 @@ Resources:
       Principal: sns.amazonaws.com
       SourceArn: !Ref ContextEventsTopic
 
-  # Lambda Function for retrieving context
-  GetContextFunction:
+  # Lambda Function for getting context details
+  GetContextDetailsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./
       Handler: app.lambdaHandler
-      Description: Retrieves contextual data from session context for Bedrock Agent
+      Description: Returns context details for Bedrock Agent (Function Response Format)
       MemorySize: 256
       Environment:
         Variables:
@@ -96,29 +96,29 @@ Resources:
       Policies:
         - SNSPublishMessagePolicy:
             TopicName: !GetAtt ContextEventsTopic.TopicName
-        - DynamoDBReadPolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref ChatHistoryTableName
 
   # Permission for Bedrock Agent to invoke the Lambda function
   BedrockInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref GetContextFunction
+      FunctionName: !Ref GetContextDetailsFunction
       Action: lambda:InvokeFunction
       Principal: bedrock.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
       SourceArn: !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*'
 
 Outputs:
-  GetContextFunction:
-    Description: Get Context Lambda Function ARN
-    Value: !GetAtt GetContextFunction.Arn
+  GetContextDetailsFunction:
+    Description: Get Context Details Lambda Function ARN
+    Value: !GetAtt GetContextDetailsFunction.Arn
     Export:
       Name: !Sub '${AWS::StackName}-FunctionArn'
   
-  GetContextFunctionIamRole:
-    Description: Implicit IAM Role created for Get Context function
-    Value: !GetAtt GetContextFunctionRole.Arn
+  GetContextDetailsFunctionIamRole:
+    Description: Implicit IAM Role created for Get Context Details function
+    Value: !GetAtt GetContextDetailsFunctionRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-FunctionRoleArn'
   

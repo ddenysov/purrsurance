@@ -28,17 +28,6 @@
         </div>
       </div>
     </main>
-
-    <!-- Footer -->
-    <AppFooter />
-
-    <!-- Pet Profile Modal -->
-    <PetProfileModal
-      :is-open="isModalOpen"
-      :pet="pet"
-      @close="closeModal"
-      @save="handleSaveProfile"
-    />
   </div>
 </template>
 
