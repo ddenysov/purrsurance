@@ -1,15 +1,14 @@
 /**
- * GetContext Lambda Function for AWS Bedrock Agent (Function Response Format)
+ * SaveContext Lambda Function for AWS Bedrock Agent (Function Response Format)
  *
- * This function allows agents to retrieve contextual information (diagnosis, complaints, symptoms, etc.)
- * from the session context that was previously saved.
+ * This function allows agents to save contextual information (diagnosis, complaints, symptoms, etc.)
+ * to the session context for later retrieval and use.
  *
  * @param {Object} event - The event payload from the Bedrock Agent.
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
 import { createAgentResponse, extractSessionId, extractParameters, sendEventToPublisher, createChatHistoryService } from "./vendor/agent-tools/index.mjs";
 
-const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
 const chatHistoryTableName = process.env.CHAT_HISTORY_TABLE_NAME || 'ChatHistory';
 
 // Initialize Chat History Service
@@ -19,92 +18,97 @@ const chatHistory = createChatHistoryService({
 });
 
 export const lambdaHandler = async (event, context) => {
+  return {
+    messageVersion: "1.0",
+    response: {
+      actionGroup: 'ContextGetActionGroup',
+      function: 'GetContext',
+      functionResponse: {
+        responseBody: {
+          TEXT: {
+            body: '{}'
+          }
+        }
+      }
+    }
+  };
+
   // Log the incoming event for debugging
   console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
 
-  // Extract sessionId from parameters (required parameter from agent)
+  // Extract sessionId from event (prioritize globalSessionId from sessionAttributes)
   const sessionId = event.sessionState?.sessionAttributes?.sessionId || 
                     event.sessionAttributes?.sessionId || 
                     event.sessionId || 
                     'unknown-session';
-  
+
   console.log('Extracted sessionId:', sessionId);
   console.log('Bedrock sessionId (internal):', event.sessionId);
-  
-  if (!sessionId) {
-    console.error('Missing required parameter: sessionId');
-    const errorResponse = {
-      success: false,
-      message: 'Missing required parameter: sessionId',
-      error: 'sessionId is required'
-    };
-    return createAgentResponse('GetContext', errorResponse, 'ContextActionGroup');
-  }
-  
-  console.log('Using sessionId from parameters:', sessionId);
-  console.log('Bedrock sessionId (internal):', event.sessionId);
+
+  // Extract parameters from the event
+  const parameters = event.parameters || [];
+
+  // Validate required parameters
 
   let responseBodyContent = {
     success: false,
-    message: 'Failed to retrieve context'
+    message: 'Failed to save context'
   };
 
-  // Retrieve all data from session context
+  // Save data to session context
   try {
+    // Initialize session context if it doesn't exist
+    await chatHistory.initializeSessionContext(sessionId);
+    
     // Get current context
     const currentContext = await chatHistory.getSessionContext(sessionId);
-    
+
     if (!currentContext || !currentContext.context) {
       responseBodyContent = {
         success: false,
         message: 'No context found for this session',
         contextData: null
       };
-      
+
       console.log('No context found:', { sessionId });
     } else {
       const contextData = currentContext.context.contextData || {};
-      
+
       // Always return all context data
       responseBodyContent = {
         success: true,
         message: 'All context retrieved successfully',
         contextData: contextData,
-        contextKeys: Object.keys(contextData),
-        lastUpdate: currentContext.context.lastContextUpdate
       };
-      
-      console.log('All context retrieved:', {
-        sessionId,
-        keys: Object.keys(contextData),
-        lastUpdate: currentContext.context.lastContextUpdate
-      });
     }
+
   } catch (error) {
-    console.error('Failed to retrieve context:', {
+    console.error('Failed to save context:', {
       sessionId,
       error: error.message,
       stack: error.stack
     });
-    
+
     responseBodyContent = {
       success: false,
       error: error.message,
-      message: 'Failed to retrieve context from session storage'
+      message: 'Failed to save context to session storage'
     };
   }
 
-  // Send event to Event Publisher (non-blocking)
-  try {
-    await sendEventToPublisher(eventPublisherUrl, sessionId, {
-      success: responseBodyContent.success
-    }, 'ContextRetrieved');
-  } catch (error) {
-    console.error('Failed to send event to publisher:', error);
-    // Continue execution even if event publishing fails
-  }
-
-  // Return response using utility function
-  return createAgentResponse('GetContext', responseBodyContent, 'ContextActionGroup');
+  return {
+    messageVersion: "1.0",
+    response: {
+      actionGroup: event.actionGroup,
+      function: event.function,
+      functionResponse: {
+        responseBody: {
+          TEXT: {
+            body: '{}'
+          }
+        }
+      }
+    }
+  };
 };
 

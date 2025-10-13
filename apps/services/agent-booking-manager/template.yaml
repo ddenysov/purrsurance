@@ -19,6 +19,24 @@ Parameters:
     Default: purrsurance-tool-policy-details
     Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction ARN
 
+  # Reference to tool-context-get stack to get the function ARN
+  ToolContextGetStackName:
+    Type: String
+    Default: purrsurance-tool-context-get
+    Description: Name of the tool-context-get stack to get GetContextFunction ARN
+
+  # Reference to tool-context-save stack to get the function ARN
+  ToolContextSaveStackName:
+    Type: String
+    Default: purrsurance-tool-context-save
+    Description: Name of the tool-context-save stack to get SaveContextFunction ARN
+
+  # Reference to tool-find-vet-clinic stack to get the function ARN
+  ToolFindVetClinicStackName:
+    Type: String
+    Default: purrsurance-tool-find-vet-clinic
+    Description: Name of the tool-find-vet-clinic stack to get FindVetClinicFunction ARN
+
   # AgentBookingManager Configuration
   BookingManagerAgentName:
     Type: String
@@ -110,6 +128,36 @@ Resources:
                 Resource:
                   - Fn::ImportValue:
                       !Sub '${ToolPolicyDetailsStackName}-FunctionArn'
+        - PolicyName: InvokeContextGetFunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - Fn::ImportValue:
+                      !Sub '${ToolContextGetStackName}-FunctionArn'
+        - PolicyName: InvokeContextSaveFunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - Fn::ImportValue:
+                      !Sub '${ToolContextSaveStackName}-FunctionArn'
+        - PolicyName: InvokeFindVetClinicFunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - Fn::ImportValue:
+                      !Sub '${ToolFindVetClinicStackName}-FunctionArn'
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -153,6 +201,39 @@ Resources:
       FunctionName: 
         Fn::ImportValue:
           !Sub '${ToolPolicyDetailsStackName}-FunctionArn'
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt BookingManagerAgent.AgentArn
+
+  # Permission for Bedrock Agent to invoke the GetContext Lambda function
+  GetContextLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: 
+        Fn::ImportValue:
+          !Sub '${ToolContextGetStackName}-FunctionArn'
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt BookingManagerAgent.AgentArn
+
+  # Permission for Bedrock Agent to invoke the SaveContext Lambda function
+  SaveContextLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: 
+        Fn::ImportValue:
+          !Sub '${ToolContextSaveStackName}-FunctionArn'
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceArn: !GetAtt BookingManagerAgent.AgentArn
+
+  # Permission for Bedrock Agent to invoke the FindVetClinic Lambda function
+  FindVetClinicLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: 
+        Fn::ImportValue:
+          !Sub '${ToolFindVetClinicStackName}-FunctionArn'
       Action: lambda:InvokeFunction
       Principal: bedrock.amazonaws.com
       SourceArn: !GetAtt BookingManagerAgent.AgentArn

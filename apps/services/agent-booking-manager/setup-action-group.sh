@@ -262,27 +262,57 @@ fi
 echo ""
 
 # ========================================
-# Action Group 3: ContextActionGroup
+# Clean up: Remove old ContextActionGroup if it exists
 # ========================================
-echo "Setting up ContextActionGroup..."
+echo "Checking for old ContextActionGroup..."
 
-# Check if ContextActionGroup already exists
-EXISTING_CONTEXT_AG=$(aws bedrock-agent list-agent-action-groups \
+EXISTING_OLD_CONTEXT_AG=$(aws bedrock-agent list-agent-action-groups \
   --agent-id $AGENT_ID \
   --agent-version DRAFT \
   --region $REGION \
   --query 'actionGroupSummaries[?actionGroupName==`ContextActionGroup`].actionGroupId' \
   --output text 2>/dev/null || echo "")
 
-if [ -n "$EXISTING_CONTEXT_AG" ]; then
-  echo "ContextActionGroup already exists with ID: $EXISTING_CONTEXT_AG"
+if [ -n "$EXISTING_OLD_CONTEXT_AG" ]; then
+  echo "Found old ContextActionGroup with ID: $EXISTING_OLD_CONTEXT_AG"
+  echo "Deleting old ContextActionGroup (will be replaced with separate Save and Get action groups)..."
+  
+  aws bedrock-agent delete-agent-action-group \
+    --agent-id $AGENT_ID \
+    --agent-version DRAFT \
+    --action-group-id $EXISTING_OLD_CONTEXT_AG \
+    --region $REGION \
+    --skip-resource-in-use-check
+  
+  echo "✓ Old ContextActionGroup deleted successfully!"
+else
+  echo "No old ContextActionGroup found, skipping cleanup."
+fi
+
+echo ""
+
+# ========================================
+# Action Group 3: ContextSaveActionGroup
+# ========================================
+echo "Setting up ContextSaveActionGroup..."
+
+# Check if ContextSaveActionGroup already exists
+EXISTING_CONTEXT_SAVE_AG=$(aws bedrock-agent list-agent-action-groups \
+  --agent-id $AGENT_ID \
+  --agent-version DRAFT \
+  --region $REGION \
+  --query 'actionGroupSummaries[?actionGroupName==`ContextSaveActionGroup`].actionGroupId' \
+  --output text 2>/dev/null || echo "")
+
+if [ -n "$EXISTING_CONTEXT_SAVE_AG" ]; then
+  echo "ContextSaveActionGroup already exists with ID: $EXISTING_CONTEXT_SAVE_AG"
   echo "Updating existing action group..."
   
   aws bedrock-agent update-agent-action-group \
     --agent-id $AGENT_ID \
     --agent-version DRAFT \
-    --action-group-id $EXISTING_CONTEXT_AG \
-    --action-group-name ContextActionGroup \
+    --action-group-id $EXISTING_CONTEXT_SAVE_AG \
+    --action-group-name ContextSaveActionGroup \
     --action-group-executor "lambda=$CONTEXT_SAVE_LAMBDA_ARN" \
     --function-schema '{
       "functions": [
@@ -306,31 +336,20 @@ if [ -n "$EXISTING_CONTEXT_AG" ]; then
               "required": false
             }
           }
-        },
-        {
-          "name": "GetContext",
-          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
-          "parameters": {
-            "sessionId": {
-              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
-              "type": "string",
-              "required": true
-            }
-          }
         }
       ]
     }' \
     --action-group-state ENABLED \
     --region $REGION
   
-  echo "✓ ContextActionGroup updated successfully!"
+  echo "✓ ContextSaveActionGroup updated successfully!"
 else
-  echo "Creating new ContextActionGroup..."
+  echo "Creating new ContextSaveActionGroup..."
   
   aws bedrock-agent create-agent-action-group \
     --agent-id $AGENT_ID \
     --agent-version DRAFT \
-    --action-group-name ContextActionGroup \
+    --action-group-name ContextSaveActionGroup \
     --action-group-executor "lambda=$CONTEXT_SAVE_LAMBDA_ARN" \
     --function-schema '{
       "functions": [
@@ -354,24 +373,74 @@ else
               "required": false
             }
           }
-        },
-        {
-          "name": "GetContext",
-          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
-          "parameters": {
-            "sessionId": {
-              "description": "Required. The session identifier that was provided at the start of the conversation. This is the same sessionId from your session attributes. Use this to retrieve context for the correct session.",
-              "type": "string",
-              "required": true
-            }
-          }
         }
       ]
     }' \
     --action-group-state ENABLED \
     --region $REGION
   
-  echo "✓ ContextActionGroup created successfully!"
+  echo "✓ ContextSaveActionGroup created successfully!"
+fi
+
+echo ""
+
+# ========================================
+# Action Group 4: ContextGetActionGroup
+# ========================================
+echo "Setting up ContextGetActionGroup..."
+
+# Check if ContextGetActionGroup already exists
+EXISTING_CONTEXT_GET_AG=$(aws bedrock-agent list-agent-action-groups \
+  --agent-id $AGENT_ID \
+  --agent-version DRAFT \
+  --region $REGION \
+  --query 'actionGroupSummaries[?actionGroupName==`ContextGetActionGroup`].actionGroupId' \
+  --output text 2>/dev/null || echo "")
+
+if [ -n "$EXISTING_CONTEXT_GET_AG" ]; then
+  echo "ContextGetActionGroup already exists with ID: $EXISTING_CONTEXT_GET_AG"
+  echo "Updating existing action group..."
+  
+  aws bedrock-agent update-agent-action-group \
+    --agent-id $AGENT_ID \
+    --agent-version DRAFT \
+    --action-group-id $EXISTING_CONTEXT_GET_AG \
+    --action-group-name ContextGetActionGroup \
+    --action-group-executor "lambda=$CONTEXT_GET_LAMBDA_ARN" \
+    --function-schema '{
+      "functions": [
+        {
+          "name": "GetContext",
+          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
+          "parameters": {}
+        }
+      ]
+    }' \
+    --action-group-state ENABLED \
+    --region $REGION
+  
+  echo "✓ ContextGetActionGroup updated successfully!"
+else
+  echo "Creating new ContextGetActionGroup..."
+  
+  aws bedrock-agent create-agent-action-group \
+    --agent-id $AGENT_ID \
+    --agent-version DRAFT \
+    --action-group-name ContextGetActionGroup \
+    --action-group-executor "lambda=$CONTEXT_GET_LAMBDA_ARN" \
+    --function-schema '{
+      "functions": [
+        {
+          "name": "GetContext",
+          "description": "Retrieves all contextual information (diagnosis, complaints, symptoms, treatment plan, etc.) from the session context. Use this to access previously saved information about the conversation, medical findings, or any other relevant data. Always returns complete context with all saved information.",
+          "parameters": {}
+        }
+      ]
+    }' \
+    --action-group-state ENABLED \
+    --region $REGION
+  
+  echo "✓ ContextGetActionGroup created successfully!"
 fi
 
 echo ""
@@ -390,8 +459,9 @@ echo "  1. VetClinicFinderActionGroup"
 echo "     - Function: FindVetClinic"
 echo "  2. PolicyDetailsActionGroup"
 echo "     - Function: GetPolicyDetails"
-echo "  3. ContextActionGroup"
+echo "  3. ContextSaveActionGroup"
 echo "     - Function: SaveContext"
+echo "  4. ContextGetActionGroup"
 echo "     - Function: GetContext"
 echo ""
 echo "Status: Ready"
