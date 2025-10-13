@@ -10,3 +10,4 @@
 - gracefully process chat errors
 - make clinic booking tool
 - make admin view for bookings
+- 4 buttons real functionality

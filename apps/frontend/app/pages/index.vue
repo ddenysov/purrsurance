@@ -56,7 +56,7 @@ const quickActions = ref<QuickAction[]>([
     id: '1',
     label: 'Check Policy',
     color: '#10B981',
-    prompt: 'Tell me about my policy coverage'
+    prompt: 'Show my full information about my policy.'
   },
   {
     id: '2',
@@ -74,7 +74,7 @@ const quickActions = ref<QuickAction[]>([
     id: '4',
     label: 'Emergency',
     color: '#EF4444',
-    prompt: 'My cat is sick'
+    prompt: 'My pet needs urgent medical help right now. Please find me a clinic.'
   }
 ])
 
@@ -82,6 +82,21 @@ const quickActions = ref<QuickAction[]>([
 const handleQuickAction = (actionId: string) => {
   const action = quickActions.value.find(a => a.id === actionId)
   if (action) {
+    // Check if this is Check Policy action
+    if (actionId === '1') {
+      // Emit RequestPolicyDetails event to event bus
+      emitEvent('RequestPolicyDetails', {
+        id: generateEventId(),
+        timestamp: new Date().toISOString(),
+        type: 'RequestPolicyDetails',
+        data: {
+          source: 'check_policy_button',
+          sessionId: sessionId.value
+        }
+      })
+      console.log('[Policy] RequestPolicyDetails event emitted')
+    }
+    
     // Check if this is Emergency action
     if (actionId === '4') {
       // Emit RequestEmergency event to event bus
