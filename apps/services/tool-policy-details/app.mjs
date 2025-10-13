@@ -191,20 +191,61 @@ export const lambdaHandler = async (event, context) => {
     // Get current context
     const currentContext = await chatHistory.getSessionContext(sessionId);
     
-    // Update context with policy details
+    const timestamp = Date.now();
+    const timestampISO = new Date(timestamp).toISOString();
+    
+    // Get existing contextData or initialize
+    const contextData = currentContext.context?.contextData || {};
+    
+    // Save pet information
+    contextData.pet = [{
+      data: responseBodyContent.pet,
+      description: 'Pet information retrieved from policy details',
+      savedAt: timestamp,
+      savedAtISO: timestampISO
+    }];
+    
+    // Save owner information
+    contextData.owner = [{
+      data: responseBodyContent.owner,
+      description: 'Pet owner information retrieved from policy details',
+      savedAt: timestamp,
+      savedAtISO: timestampISO
+    }];
+    
+    // Save policy information
+    contextData.policy = [{
+      data: responseBodyContent.policy,
+      description: 'Insurance policy information',
+      savedAt: timestamp,
+      savedAtISO: timestampISO
+    }];
+    
+    // Save medical information
+    contextData.medical = [{
+      data: responseBodyContent.medical,
+      description: 'Pet medical history and records',
+      savedAt: timestamp,
+      savedAtISO: timestampISO
+    }];
+    
+    // Update context with structured data
     const updatedContext = {
       ...currentContext.context,
+      contextData: contextData,
       policyDetails: responseBodyContent,
       pet: responseBodyContent.pet,
       petOwner: responseBodyContent.owner,
-      policyDetailsUpdatedAt: Date.now()
+      lastContextUpdate: timestamp,
+      policyDetailsUpdatedAt: timestamp
     };
     
     await chatHistory.updateSessionContext(sessionId, updatedContext);
     
     console.log('Policy details saved to session context:', {
       sessionId,
-      timestamp: Date.now()
+      timestamp,
+      savedKeys: ['pet', 'owner', 'policy', 'medical']
     });
   } catch (error) {
     console.error('Failed to save policy details to context:', {
