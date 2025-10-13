@@ -15,7 +15,7 @@
             @action-click="handleQuickAction"
           />
         </div>
-        
+
         <!-- Right Column: Chat Container (1 column on mobile, 2 columns on desktop) -->
         <div class="lg:col-span-2">
           <ChatContainer
@@ -28,10 +28,10 @@
         </div>
       </div>
     </main>
-    
+
     <!-- Footer -->
     <AppFooter />
-    
+
     <!-- Pet Profile Modal -->
     <PetProfileModal
       :is-open="isModalOpen"
@@ -43,15 +43,15 @@
 </template>
 
 <script setup lang="ts">
-import type { QuickAction } from '~/types'
-import type { SSEEvent } from '~/composables/useEventBus'
+import type {QuickAction} from '~/types'
+import type {SSEEvent} from '~/composables/useEventBus'
 
 // Use composables
-const { pet, vaccinations, appointments, isPolicyVerified, updatePetProfile, unlockPetDetails } = usePetProfile()
-const { messages, isTyping, error, sendMessage, addMessage } = useChat()
-const { isOpen: isModalOpen, openModal, closeModal } = useModal()
-const { emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType, publishToListeners } = useEventBus()
-const { sessionId } = useSession()
+const {pet, vaccinations, appointments, isPolicyVerified, updatePetProfile, unlockPetDetails} = usePetProfile()
+const {messages, isTyping, error, sendMessage, addMessage} = useChat()
+const {isOpen: isModalOpen, openModal, closeModal} = useModal()
+const {emit: emitEvent, on: onEvent, events: eventHistory, getLatestEventByType, publishToListeners} = useEventBus()
+const {sessionId} = useSession()
 
 // Use stores
 const petProfileStore = usePetProfileStore()
@@ -118,16 +118,16 @@ const handleSaveProfile = (petData: typeof pet.value) => {
 // Handle RecommendDoctorVisit event
 const handleRecommendDoctorVisit = (event: SSEEvent) => {
   console.log('[DoctorVisit] Processing RecommendDoctorVisit event:', event)
-  
+
   try {
     // Extract event data
     const eventWithPayload = event as any
     const eventData = eventWithPayload.payload?.data || eventWithPayload.data || {}
-    
+
     // Create a confirmation message for doctor visit
-    const message = eventData.message || 
+    const message = eventData.message ||
       'Based on the symptoms described, it would be advisable to schedule a visit to the veterinarian. Would you like to book an appointment?'
-    
+
     addMessage({
       content: message,
       sender: 'assistant',
@@ -147,7 +147,7 @@ const handleRecommendDoctorVisit = (event: SSEEvent) => {
         }
       }
     })
-    
+
     console.log('[DoctorVisit] Added confirmation message to chat')
   } catch (error) {
     console.error('[DoctorVisit] Error processing RecommendDoctorVisit event:', error)
@@ -157,22 +157,22 @@ const handleRecommendDoctorVisit = (event: SSEEvent) => {
 // Validate and populate pet profile from policy_updated event
 const handlePolicyUpdated = (event: SSEEvent) => {
   console.log('[PetProfile] Processing policy_updated event:', event)
-  
+
   try {
     // Validate event structure
     if (!event || typeof event !== 'object') {
       console.error('[PetProfile] Invalid event structure:', event)
       return
     }
-    
+
     // Extract data from SSE event structure
     // SSE events have: { type, id, timestamp, payload }
     // policy_updated payload contains: { eventType, timestamp, data }
     let eventData = null
-    
+
     // Type guard to check for payload property
     const eventWithPayload = event as any
-    
+
     if (eventWithPayload.payload && typeof eventWithPayload.payload === 'object') {
       // Data is in payload.data (SSE structure)
       eventData = eventWithPayload.payload.data || eventWithPayload.payload
@@ -183,50 +183,50 @@ const handlePolicyUpdated = (event: SSEEvent) => {
       // Last fallback: use event itself
       eventData = event
     }
-    
+
     // Check if data exists
     if (!eventData || typeof eventData !== 'object') {
       console.error('[PetProfile] Missing or invalid event data:', eventData)
       return
     }
-    
+
     // Validate that we have at least some required fields
     if (!eventData.pet && !eventData.policy && !eventData.owner) {
       console.warn('[PetProfile] Event data is missing all primary fields:', eventData)
       return
     }
-    
+
     // Build validated profile data
     const profileData: any = {}
-    
+
     // Validate and add pet data
     if (eventData.pet && typeof eventData.pet === 'object') {
       profileData.pet = {
         id: eventData.pet.id || '',
         name: eventData.pet.name || '',
-        species: ['cat', 'dog', 'bird', 'rabbit', 'other'].includes(eventData.pet.species) 
-          ? eventData.pet.species 
+        species: ['cat', 'dog', 'bird', 'rabbit', 'other'].includes(eventData.pet.species)
+          ? eventData.pet.species
           : 'cat',
         breed: eventData.pet.breed || '',
         sex: ['male', 'female'].includes(eventData.pet.sex) ? eventData.pet.sex : 'female',
         dateOfBirth: eventData.pet.dateOfBirth || '',
         ageMonths: typeof eventData.pet.ageMonths === 'number' ? eventData.pet.ageMonths : 0,
         color: eventData.pet.color || '',
-        microchip: eventData.pet.microchip || { number: '', issuer: '', dateImplanted: '' },
-        identifiers: eventData.pet.identifiers || { licenseTag: '', passportNumber: '' },
+        microchip: eventData.pet.microchip || {number: '', issuer: '', dateImplanted: ''},
+        identifiers: eventData.pet.identifiers || {licenseTag: '', passportNumber: ''},
         photoUrl: eventData.pet.photoUrl || '',
-        weight: eventData.pet.weight || { currentKg: 0, lastUpdated: '', history: [] },
+        weight: eventData.pet.weight || {currentKg: 0, lastUpdated: '', history: []},
         spayedNeutered: Boolean(eventData.pet.spayedNeutered),
-        lifestyle: eventData.pet.lifestyle || { 
-          indoor: false, 
-          outdoor: false, 
-          activityLevel: 'moderate', 
-          diet: 'dry' 
+        lifestyle: eventData.pet.lifestyle || {
+          indoor: false,
+          outdoor: false,
+          activityLevel: 'moderate',
+          diet: 'dry'
         }
       }
       console.log('[PetProfile] Validated pet data:', profileData.pet)
     }
-    
+
     // Validate and add owner data
     if (eventData.owner && typeof eventData.owner === 'object') {
       profileData.owner = {
@@ -234,16 +234,16 @@ const handlePolicyUpdated = (event: SSEEvent) => {
         fullName: eventData.owner.fullName || '',
         phone: eventData.owner.phone || '',
         email: eventData.owner.email || '',
-        address: eventData.owner.address || { 
-          country: '', 
-          city: '', 
-          street: '', 
-          postalCode: '' 
+        address: eventData.owner.address || {
+          country: '',
+          city: '',
+          street: '',
+          postalCode: ''
         }
       }
       console.log('[PetProfile] Validated owner data:', profileData.owner)
     }
-    
+
     // Validate and add policy data
     if (eventData.policy && typeof eventData.policy === 'object') {
       profileData.policy = {
@@ -265,7 +265,7 @@ const handlePolicyUpdated = (event: SSEEvent) => {
       }
       console.log('[PetProfile] Validated policy data:', profileData.policy)
     }
-    
+
     // Validate and add medical data
     if (eventData.medical && typeof eventData.medical === 'object') {
       profileData.medical = {
@@ -275,26 +275,26 @@ const handlePolicyUpdated = (event: SSEEvent) => {
         medications: Array.isArray(eventData.medical.medications) ? eventData.medical.medications : [],
         lastCheckup: eventData.medical.lastCheckup || {
           date: '',
-          clinic: { id: '', name: '', phone: '' },
+          clinic: {id: '', name: '', phone: ''},
           notes: ''
         },
         procedures: Array.isArray(eventData.medical.procedures) ? eventData.medical.procedures : []
       }
       console.log('[PetProfile] Validated medical data:', profileData.medical)
     }
-    
+
     // Validate and add claims
     if (Array.isArray(eventData.claims)) {
       profileData.claims = eventData.claims
       console.log('[PetProfile] Added claims data:', profileData.claims)
     }
-    
+
     // Validate and add vet contacts
     if (Array.isArray(eventData.vetContacts)) {
       profileData.vetContacts = eventData.vetContacts
       console.log('[PetProfile] Added vet contacts:', profileData.vetContacts)
     }
-    
+
     // Validate and add audit data
     if (eventData.audit && typeof eventData.audit === 'object') {
       profileData.audit = {
@@ -305,19 +305,19 @@ const handlePolicyUpdated = (event: SSEEvent) => {
       }
       console.log('[PetProfile] Validated audit data:', profileData.audit)
     }
-    
+
     // Update the store if we have valid data
     if (Object.keys(profileData).length > 0) {
       petProfileStore.updatePetProfile(profileData)
       console.log('[PetProfile] Successfully updated pet profile store')
-      
+
       // Unlock pet details in the UI
       unlockPetDetails()
       console.log('[PetProfile] Unlocked pet details in UI')
     } else {
       console.warn('[PetProfile] No valid data to update')
     }
-    
+
   } catch (error) {
     console.error('[PetProfile] Error processing policy_updated event:', error)
   }
@@ -340,17 +340,17 @@ onMounted(() => {
     eventQueueStore.setPublishCallback((event) => {
       publishToListeners(event.type, event)
     })
-    
+
     // Sync isTyping state with event queue
     watch(isTyping, (newValue) => {
       eventQueueStore.setAgentThinking(newValue)
-    }, { immediate: true })
-    
+    }, {immediate: true})
+
     // Append sessionId to SSE URL
     const sseUrl = `${sseBaseUrl}?sessionId=${sessionId.value}`
     console.log('[SSE] Connecting to:', sseBaseUrl)
     console.log('[SSE] With session ID:', sessionId.value)
-    
+
     eventSource = new EventSource(sseUrl)
 
     eventSource.onopen = () => {
@@ -359,11 +359,11 @@ onMounted(() => {
 
     eventSource.onmessage = (event) => {
       console.log('[SSE] message', event.data)
-      
+
       try {
         // Parse the event data
         const eventData = JSON.parse(event.data)
-        
+
         // Add event to queue instead of direct emit
         // Queue will handle publishing based on agent thinking status
         eventQueueStore.enqueueEvent(eventData)
@@ -403,6 +403,7 @@ onMounted(() => {
         content: 'Great! I\'ll help you find available appointments with veterinarians in your area.',
         sender: 'assistant'
       })
+      sendMessage('Please book a vet clinic for me. Which clinics are available and for what time?', true);
     })
 
     onEvent('doctor_visit:declined', (event) => {

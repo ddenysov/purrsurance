@@ -62,7 +62,7 @@ export const useChat = () => {
   }
 
   // Send user message and get AI response from backend
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (text: string, isHidden: boolean = false) => {
     if (!text.trim()) return
 
     // Clear any previous errors
@@ -82,10 +82,13 @@ export const useChat = () => {
     })
 
     // Add user message to UI
-    addMessage({
-      content: text.trim(),
-      sender: 'user'
-    })
+    if (!isHidden) {
+        addMessage({
+            content: text.trim(),
+            sender: 'user'
+        })
+    }
+
     
     // Test command for confirmation message
     if (text.trim().toLowerCase() === 'test_form') {
