@@ -48,22 +48,6 @@ fi
 echo "FindVetClinic Lambda ARN: $VET_CLINIC_LAMBDA_ARN"
 echo ""
 
-# Get Lambda Function ARN for GetPolicyDetails
-echo "Fetching GetPolicyDetails Lambda Function ARN..."
-POLICY_DETAILS_LAMBDA_ARN=$(aws cloudformation describe-stacks \
-  --stack-name $POLICY_DETAILS_TOOL_STACK \
-  --region $REGION \
-  --query 'Stacks[0].Outputs[?OutputKey==`GetPolicyDetailsFunction`].OutputValue' \
-  --output text)
-
-if [ -z "$POLICY_DETAILS_LAMBDA_ARN" ]; then
-  echo "Error: Could not retrieve GetPolicyDetails Lambda ARN from tool stack outputs"
-  exit 1
-fi
-
-echo "GetPolicyDetails Lambda ARN: $POLICY_DETAILS_LAMBDA_ARN"
-echo ""
-
 # Get Lambda Function ARN for SaveContext
 echo "Fetching SaveContext Lambda Function ARN..."
 CONTEXT_SAVE_LAMBDA_ARN=$(aws cloudformation describe-stacks \
@@ -174,77 +158,6 @@ fi
 
 echo ""
 
-# ========================================
-# Action Group 2: PolicyDetailsActionGroup
-# ========================================
-echo "Setting up PolicyDetailsActionGroup..."
-
-# Check if PolicyDetailsActionGroup already exists
-EXISTING_POLICY_AG=$(aws bedrock-agent list-agent-action-groups \
-  --agent-id $AGENT_ID \
-  --agent-version DRAFT \
-  --region $REGION \
-  --query 'actionGroupSummaries[?actionGroupName==`PolicyDetailsActionGroup`].actionGroupId' \
-  --output text 2>/dev/null || echo "")
-
-if [ -n "$EXISTING_POLICY_AG" ]; then
-  echo "PolicyDetailsActionGroup already exists with ID: $EXISTING_POLICY_AG"
-  echo "Updating existing action group..."
-  
-  aws bedrock-agent update-agent-action-group \
-    --agent-id $AGENT_ID \
-    --agent-version DRAFT \
-    --action-group-id $EXISTING_POLICY_AG \
-    --action-group-name PolicyDetailsActionGroup \
-    --action-group-executor "lambda=$POLICY_DETAILS_LAMBDA_ARN" \
-    --function-schema '{
-      "functions": [
-        {
-          "name": "GetPolicyDetails",
-          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
-          "parameters": {
-            "policyId": {
-              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
-              "type": "string",
-              "required": true
-            }
-          }
-        }
-      ]
-    }' \
-    --action-group-state ENABLED \
-    --region $REGION
-  
-  echo "✓ PolicyDetailsActionGroup updated successfully!"
-else
-  echo "Creating new PolicyDetailsActionGroup..."
-  
-  aws bedrock-agent create-agent-action-group \
-    --agent-id $AGENT_ID \
-    --agent-version DRAFT \
-    --action-group-name PolicyDetailsActionGroup \
-    --action-group-executor "lambda=$POLICY_DETAILS_LAMBDA_ARN" \
-    --function-schema '{
-      "functions": [
-        {
-          "name": "GetPolicyDetails",
-          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
-          "parameters": {
-            "policyId": {
-              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
-              "type": "string",
-              "required": true
-            }
-          }
-        }
-      ]
-    }' \
-    --action-group-state ENABLED \
-    --region $REGION
-  
-  echo "✓ PolicyDetailsActionGroup created successfully!"
-fi
-
 echo ""
 echo ""
 
@@ -340,7 +253,7 @@ else
 fi
 
 # ========================================
-# Action Group 4: PolicyDetailsActionGroup
+# Action Group 4: ContextDetailsActionGroup
 # ========================================
 echo "Setting up ContextDetailsActionGroup..."
 
@@ -427,7 +340,7 @@ echo ""
 echo "Action Groups configured:"
 echo "  1. VetClinicFinderActionGroup"
 echo "     - Function: FindVetClinic"
-echo "  2. PolicyDetailsActionGroup"
+echo "  2. ContextDetailsActionGroup"
 echo "     - Function: GetPolicyDetails"
 echo "  3. ContextSaveActionGroup"
 echo "     - Function: SaveContext"
