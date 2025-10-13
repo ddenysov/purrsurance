@@ -1,0 +1,38 @@
+{
+  "type": "ContextDetailsRetrieved",
+  "id": "local-1760381252724",
+  "timestamp": 1760381252734,
+  "payload": {
+    "policyId": "POL-2025-123456",
+    "event": {
+      "agent": {
+        "name": "AgentBookingManager",
+        "alias": "IFRNYJSDIV",
+        "id": "VGXIWAJ20V",
+        "version": "10"
+      },
+      "promptSessionAttributes": {},
+      "function": "GetContextDetails",
+      "inputText": "Please book a vet clinic for me. Which clinics are available and for what time?",
+      "messageVersion": "1.0",
+      "sessionId": "session-1760381038401-v88evs",
+      "actionGroup": "ContextDetailsActionGroup",
+      "sessionAttributes": {
+        "policyId": "POL-2025-123456",
+        "sessionId": "8edf523a-e88b-4283-a78b-32693ae97a8e"
+      },
+      "parameters": [
+        {
+          "name": "policyId",
+          "type": "string",
+          "value": "POL-2025-001234"
+        }
+      ]
+    },
+    "pet": {
+      "symptoms": [
+        "High temperature for 7 days"
+      ]
+    }
+  }
+}

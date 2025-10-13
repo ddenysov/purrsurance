@@ -49,18 +49,13 @@ export const lambdaHandler = async (event, context) => {
     
     // Get current context
     const currentContext = await chatHistory.getSessionContext(sessionId);
-    
-    // Update context with context details
-    const updatedContext = {
-      ...currentContext.context,
-      contextDetails: responseBodyContent,
-      pet: responseBodyContent.pet,
-      petOwner: responseBodyContent.owner,
-      contextDetailsUpdatedAt: Date.now()
+
+    responseBodyContent = {
+      policyId: event?.sessionAttributes?.policyId,
+      currentContext,
+      event
     };
-    
-    await chatHistory.updateSessionContext(sessionId, updatedContext);
-    
+
     console.log('Context details saved to session context:', {
       sessionId,
       timestamp: Date.now()
