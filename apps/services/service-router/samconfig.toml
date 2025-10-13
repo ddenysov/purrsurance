@@ -18,7 +18,7 @@ confirm_changeset = true
 resolve_s3 = true
 region = "us-east-1"
 s3_prefix = "service-router"
-parameter_overrides = "Environment=\"prod\" IntentionClassifierAgentId=\"VGAVD9PZO4\" IntentionClassifierAgentAliasId=\"LNNELYKASX\" PolicyManagerAgentId=\"JL0CVDZIGF\" PolicyManagerAgentAliasId=\"ZM3VSWJ7KZ\" VetDocAgentId=\"3JEU2CKJ85\" VetDocAgentAliasId=\"3DVQMEDIBK\" BookingManagerAgentId=\"VGXIWAJ20V\" BookingManagerAgentAliasId=\"KQZ303U83K\" ChatHistoryTableName=\"agent-operator-prod-ChatHistory\" LogLevel=\"info\""
+parameter_overrides = "Environment=\"prod\" IntentionClassifierAgentId=\"VGAVD9PZO4\" IntentionClassifierAgentAliasId=\"LNNELYKASX\" PolicyManagerAgentId=\"JL0CVDZIGF\" PolicyManagerAgentAliasId=\"2I6DCS44S6\" VetDocAgentId=\"3JEU2CKJ85\" VetDocAgentAliasId=\"3DVQMEDIBK\" BookingManagerAgentId=\"VGXIWAJ20V\" BookingManagerAgentAliasId=\"1VGIY6HRJL\" ChatHistoryTableName=\"agent-operator-prod-ChatHistory\" LogLevel=\"info\""
 
 [default.package.parameters]
 resolve_s3 = true
