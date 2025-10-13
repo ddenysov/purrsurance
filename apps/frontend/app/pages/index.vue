@@ -85,7 +85,7 @@ const quickActions = ref<QuickAction[]>([
     id: '4',
     label: 'Emergency',
     color: '#EF4444',
-    prompt: 'This is a pet emergency'
+    prompt: 'My cat is sick'
   }
 ])
 
@@ -93,10 +93,30 @@ const quickActions = ref<QuickAction[]>([
 const handleQuickAction = (actionId: string) => {
   const action = quickActions.value.find(a => a.id === actionId)
   if (action) {
+    // Check if this is Emergency action
+    if (actionId === '4') {
+      // Emit RequestEmergency event to event bus
+      emitEvent('RequestEmergency', {
+        id: generateEventId(),
+        timestamp: new Date().toISOString(),
+        type: 'RequestEmergency',
+        data: {
+          source: 'emergency_button',
+          sessionId: sessionId.value
+        }
+      })
+      console.log('[Emergency] RequestEmergency event emitted')
+    }
+    
     // For now, just send the prompt as a message
     // In a real app, you might want to populate the chat input instead
-    sendMessage(action.prompt)
+    sendMessage(action.prompt, true)
   }
+}
+
+// Helper function to generate event ID
+const generateEventId = (): string => {
+  return Date.now().toString() + Math.random().toString(36).substr(2, 9)
 }
 
 // Handle suggestion clicks
@@ -413,6 +433,12 @@ onMounted(() => {
         content: 'Understood. If symptoms worsen or you change your mind, feel free to ask for help booking an appointment.',
         sender: 'assistant'
       })
+    })
+
+    // Listen to RequestEmergency event
+    onEvent('RequestEmergency', (event) => {
+      console.log('[EventBus] RequestEmergency event received:', event)
+      // TODO: Implement emergency handling logic
     })
 
     // Listen to all events for debugging
