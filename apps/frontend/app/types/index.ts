@@ -30,6 +30,7 @@ export interface ChatMessage {
   timestamp: Date
   type?: 'text' | 'confirmation' | 'choice' | 'form'
   metadata?: MessageMetadata
+  visible?: boolean // If false, message won't be displayed in UI but will be in history
 }
 
 export interface MessageMetadata {

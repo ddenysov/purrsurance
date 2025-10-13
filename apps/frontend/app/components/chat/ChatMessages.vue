@@ -22,9 +22,9 @@
       </div>
     </div>
 
-    <!-- Messages -->
+    <!-- Messages (only visible ones) -->
     <ChatMessageComponent
-      v-for="message in messages"
+      v-for="message in visibleMessages"
       :key="message.id"
       :message="message"
     />
@@ -48,6 +48,11 @@ interface Props {
 const props = defineProps<Props>()
 
 const messagesContainer = ref<HTMLElement | null>(null)
+
+// Filter only visible messages (visible is true or undefined)
+const visibleMessages = computed(() => {
+  return props.messages.filter(message => message.visible !== false)
+})
 
 // Function to scroll to bottom
 const scrollToBottom = () => {

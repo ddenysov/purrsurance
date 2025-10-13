@@ -46,7 +46,9 @@ export const useChat = () => {
     const newMessage: ChatMessage = {
       ...message,
       id: generateMessageId(),
-      timestamp: new Date()
+      timestamp: new Date(),
+      // If visible is not specified, default to true
+      visible: message.visible !== undefined ? message.visible : true
     }
     messages.value.push(newMessage)
     session.value.lastMessageTimestamp = newMessage.timestamp

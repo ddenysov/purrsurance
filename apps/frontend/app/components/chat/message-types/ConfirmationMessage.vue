@@ -50,6 +50,7 @@
 import { ref, computed } from 'vue'
 import type { ChatMessage } from '~/types'
 import { useEventBus } from '~/composables/useEventBus'
+import { useChat } from '~/composables/useChat'
 
 interface Props {
   message: ChatMessage
@@ -58,6 +59,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const eventBus = useEventBus()
+const { addMessage } = useChat()
 const isAnswered = ref(false)
 const selectedChoice = ref<'yes' | 'no' | null>(null)
 
@@ -69,6 +71,17 @@ const handleChoice = (choice: 'yes' | 'no') => {
   const eventName = choice === 'yes' 
     ? confirmationOptions.value?.yesEvent 
     : confirmationOptions.value?.noEvent
+  
+  // Send invisible message with user choice
+  const choiceLabel = choice === 'yes' 
+    ? (confirmationOptions.value?.yesLabel || 'Yes')
+    : (confirmationOptions.value?.noLabel || 'No')
+  
+  addMessage({
+    content: choiceLabel,
+    sender: 'user',
+    visible: false // This message will not be displayed in UI
+  })
   
   if (eventName) {
     eventBus.emit(eventName, {
