@@ -25,19 +25,19 @@ function searchVetClinics() {
       id: 'clinic-001',
       name: 'City Pet Care Center',
       address: '123 Main Street',
-      city: location || 'Local Area',
+      city: 'Local Area',
       phone: '(555) 123-4567',
       rating: 4.8,
       distance: '2.3 km',
-      specialty: specialty || 'General Practice',
-      availability: urgency === 'urgent' ? 'Emergency services available 24/7' : 'Next available: Tomorrow 10:00 AM',
+      specialty: 'General Practice',
+      availability: 'Next available: Tomorrow 10:00 AM',
       acceptsInsurance: true
     },
     {
       id: 'clinic-002',
       name: 'Happy Paws Veterinary Hospital',
       address: '456 Oak Avenue',
-      city: location || 'Local Area',
+      city: 'Local Area',
       phone: '(555) 234-5678',
       rating: 4.9,
       distance: '3.7 km',
@@ -49,22 +49,15 @@ function searchVetClinics() {
       id: 'clinic-003',
       name: 'Pet Wellness Clinic',
       address: '789 Elm Street',
-      city: location || 'Local Area',
+      city: 'Local Area',
       phone: '(555) 345-6789',
       rating: 4.6,
       distance: '5.1 km',
-      specialty: specialty || 'Preventive Care',
-      availability: urgency === 'urgent' ? 'Walk-ins accepted' : 'Next available: 2 days',
+      specialty: 'Preventive Care',
+      availability: 'Next available: 2 days',
       acceptsInsurance: true
     }
   ];
-
-  // Filter by specialty if provided
-  if (specialty && specialty !== 'any') {
-    return mockClinics.filter(clinic => 
-      clinic.specialty.toLowerCase().includes(specialty.toLowerCase())
-    ).slice(0, 3);
-  }
 
   return mockClinics;
 }
