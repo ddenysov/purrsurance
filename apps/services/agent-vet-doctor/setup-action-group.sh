@@ -10,6 +10,7 @@ TOOL_STACK_NAME="purrsurance-tool-recommend-doctor-visit"
 POLICY_DETAILS_TOOL_STACK="purrsurance-tool-policy-details"
 CONTEXT_SAVE_TOOL_STACK="purrsurance-tool-context-save"
 CONTEXT_GET_TOOL_STACK="purrsurance-tool-context-get"
+CONTEXT_DETAILS_TOOL_STACK="purrsurance-tool-context-details"
 REGION="us-east-1"
 
 echo "Setting up Action Groups for AgentVetDoctor..."
@@ -46,6 +47,23 @@ fi
 
 echo "Lambda ARN: $LAMBDA_ARN"
 echo ""
+
+# Get Lambda Function ARN for GetContextDetails
+echo "Fetching GetContextDetails Lambda Function ARN..."
+CONTEXT_DETAILS_LAMBDA_ARN=$(aws cloudformation describe-stacks \
+  --stack-name $CONTEXT_DETAILS_TOOL_STACK \
+  --region $REGION \
+  --query 'Stacks[0].Outputs[?OutputKey==`GetContextDetailsFunction`].OutputValue' \
+  --output text)
+
+if [ -z "$CONTEXT_DETAILS_LAMBDA_ARN" ]; then
+  echo "Error: Could not retrieve GetContextDetails Lambda ARN from tool stack outputs"
+  exit 1
+fi
+
+echo "GetContextDetails Lambda ARN: $CONTEXT_DETAILS_LAMBDA_ARN"
+echo ""
+
 
 # Get Lambda Function ARN for GetPolicyDetails
 echo "Fetching GetPolicyDetails Lambda Function ARN..."
@@ -187,6 +205,79 @@ else
 fi
 
 echo ""
+
+# ========================================
+# Action Group 4: ContextDetailsActionGroup
+# ========================================
+echo "Setting up ContextDetailsActionGroup..."
+
+# Check if ContextDetailsActionGroup already exists
+EXISTING_CONTEXT_AG=$(aws bedrock-agent list-agent-action-groups \
+  --agent-id $AGENT_ID \
+  --agent-version DRAFT \
+  --region $REGION \
+  --query 'actionGroupSummaries[?actionGroupName==`ContextDetailsActionGroup`].actionGroupId' \
+  --output text 2>/dev/null || echo "")
+
+if [ -n "$EXISTING_CONTEXT_AG" ]; then
+  echo "ContextDetailsActionGroup already exists with ID: $EXISTING_CONTEXT_AG"
+  echo "Updating existing action group..."
+
+  aws bedrock-agent update-agent-action-group \
+    --agent-id $AGENT_ID \
+    --agent-version DRAFT \
+    --action-group-id $EXISTING_CONTEXT_AG \
+    --action-group-name ContextDetailsActionGroup \
+    --action-group-executor "lambda=$CONTEXT_DETAILS_LAMBDA_ARN" \
+    --function-schema '{
+      "functions": [
+        {
+          "name": "GetContextDetails",
+          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
+          "parameters": {
+            "policyId": {
+              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
+              "type": "string",
+              "required": true
+            }
+          }
+        }
+      ]
+    }' \
+    --action-group-state ENABLED \
+    --region $REGION
+
+  echo "✓ ContextDetailsActionGroup updated successfully!"
+else
+  echo "Creating new ContextDetailsActionGroup..."
+
+  aws bedrock-agent create-agent-action-group \
+    --agent-id $AGENT_ID \
+    --agent-version DRAFT \
+    --action-group-name ContextDetailsActionGroup \
+    --action-group-executor "lambda=$CONTEXT_DETAILS_LAMBDA_ARN" \
+    --function-schema '{
+      "functions": [
+        {
+          "name": "GetContextDetails",
+          "description": "Retrieves detailed information about an insurance policy including pet details, owner information, coverage, medical history, and claims",
+          "parameters": {
+            "policyId": {
+              "description": "The unique identifier for the insurance policy (e.g., POL-2025-001234)",
+              "type": "string",
+              "required": true
+            }
+          }
+        }
+      ]
+    }' \
+    --action-group-state ENABLED \
+    --region $REGION
+
+  echo "✓ ContextDetailsActionGroup created successfully!"
+fi
+
+
 
 # ========================================
 # Action Group 2: PolicyDetailsActionGroup
