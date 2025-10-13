@@ -31,12 +31,6 @@ Parameters:
     Default: purrsurance-tool-context-save
     Description: Name of the tool-context-save stack to get SaveContextFunction ARN
 
-  # Reference to tool-find-vet-clinic stack to get the function ARN
-  ToolFindVetClinicStackName:
-    Type: String
-    Default: purrsurance-tool-find-vet-clinic
-    Description: Name of the tool-find-vet-clinic stack to get FindVetClinicFunction ARN
-
   # AgentBookingManager Configuration
   BookingManagerAgentName:
     Type: String
@@ -148,16 +142,16 @@ Resources:
                 Resource:
                   - Fn::ImportValue:
                       !Sub '${ToolContextSaveStackName}-FunctionArn'
-        - PolicyName: InvokeFindVetClinicFunction
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - Fn::ImportValue:
-                      !Sub '${ToolFindVetClinicStackName}-FunctionArn'
+#        - PolicyName: InvokeFindVetClinicFunction
+#          PolicyDocument:
+#            Version: '2012-10-17'
+#            Statement:
+#              - Effect: Allow
+#                Action:
+#                  - lambda:InvokeFunction
+#                Resource:
+#                  - Fn::ImportValue:
+#                      !Sub '${ToolFindVetClinicStackName}-FunctionArn'
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -183,18 +177,6 @@ Resources:
         ManagedBy: SAM
         Purpose: AppointmentScheduling
 
-  # Note: Action Groups must be added via AWS CLI or Console after stack creation
-  # AWS::Bedrock::AgentActionGroup is not yet fully supported in CloudFormation
-  # Use the following AWS CLI command to add the GetPolicyDetails action group:
-  #
-  # aws bedrock-agent create-agent-action-group \
-  #   --agent-id <AGENT_ID> \
-  #   --agent-version DRAFT \
-  #   --action-group-name PolicyDetailsActionGroup \
-  #   --action-group-executor lambda=<LAMBDA_ARN> \
-  #   --function-schema '{"functions":[{"name":"GetPolicyDetails","description":"Retrieves detailed information about an insurance policy","parameters":{"policyId":{"description":"The unique identifier for the insurance policy","type":"string","required":true}}}]}'
-  #
-  # Permission for Bedrock Agent to invoke the GetPolicyDetails Lambda function
   PolicyDetailsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -223,17 +205,6 @@ Resources:
       FunctionName: 
         Fn::ImportValue:
           !Sub '${ToolContextSaveStackName}-FunctionArn'
-      Action: lambda:InvokeFunction
-      Principal: bedrock.amazonaws.com
-      SourceArn: !GetAtt BookingManagerAgent.AgentArn
-
-  # Permission for Bedrock Agent to invoke the FindVetClinic Lambda function
-  FindVetClinicLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: 
-        Fn::ImportValue:
-          !Sub '${ToolFindVetClinicStackName}-FunctionArn'
       Action: lambda:InvokeFunction
       Principal: bedrock.amazonaws.com
       SourceArn: !GetAtt BookingManagerAgent.AgentArn

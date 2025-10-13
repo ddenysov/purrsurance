@@ -18,7 +18,7 @@ const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
  * Mock function to search for vet clinics
  * In production, this would call a real API or database
  */
-function searchVetClinics(location, specialty, urgency) {
+function searchVetClinics() {
   // Mock data - in production this would be a real search
   const mockClinics = [
     {
@@ -86,7 +86,7 @@ export const lambdaHandler = async (event, context) => {
   const urgency = params.urgency || 'normal';
 
   // Search for vet clinics
-  const clinics = searchVetClinics(location, specialty, urgency);
+  const clinics = searchVetClinics();
 
   // Prepare response body content
   const responseBodyContent = {
