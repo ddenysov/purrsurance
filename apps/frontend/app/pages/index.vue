@@ -56,7 +56,7 @@ const quickActions = ref<QuickAction[]>([
     id: '1',
     label: 'Check Policy',
     color: '#10B981',
-    prompt: 'Show my full information about my policy.'
+    prompt: 'My policy id is POL-2025-123456'
   },
   {
     id: '2',

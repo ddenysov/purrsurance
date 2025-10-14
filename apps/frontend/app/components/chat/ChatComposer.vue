@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-const message = ref('')
+const message = ref('My policy id is POL-2025-123456')
 const textareaRef = ref<HTMLTextAreaElement>()
 
 const emit = defineEmits<{
