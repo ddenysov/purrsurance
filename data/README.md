@@ -7,12 +7,16 @@ This directory contains database migrations and seed data for the Purrsurance pr
 ```
 data/
 ├── migrations/          # Database schema migrations
-│   └── 001_create_policies_table.mjs
+│   ├── 001_create_policies_table.mjs
+│   └── 002_create_appointments_table.mjs
 ├── seeds/              # Database seed data
-│   └── 001_policies_seed.mjs
+│   ├── 001_policies_seed.mjs
+│   └── 002_appointments_seed.mjs
 ├── migrate.mjs         # Migration runner script
 ├── seed.mjs           # Seed runner script
 ├── package.json       # Dependencies
+├── SCHEMA.md          # Policies table schema
+├── APPOINTMENTS-SCHEMA.md  # Appointments table schema
 └── README.md          # This file
 ```
 
