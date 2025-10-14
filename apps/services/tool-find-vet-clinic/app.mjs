@@ -9,6 +9,7 @@
  */
 import {SNSClient, PublishCommand} from "@aws-sdk/client-sns";
 import { createAgentResponse, extractSessionId, extractParameters, sendEventToPublisher } from "./vendor/agent-tools/index.mjs";
+import { mockClinics } from "./clinics-data.mjs";
 
 const snsClient = new SNSClient({});
 const topicArn = process.env.EVENTS_TOPIC_ARN;
@@ -19,47 +20,10 @@ const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
  * In production, this would call a real API or database
  */
 function searchVetClinics() {
-  // Mock data - in production this would be a real search
-  const mockClinics = [
-    {
-      id: 'clinic-001',
-      name: 'City Pet Care Center 123',
-      address: '123 Main Street',
-      city: 'Local Area',
-      phone: '(555) 123-4567',
-      rating: 4.8,
-      distance: '2.3 km',
-      specialty: 'General Practice',
-      availability: 'Next available: Tomorrow 10:00 AM',
-      acceptsInsurance: true
-    },
-    {
-      id: 'clinic-002',
-      name: 'Happy Paws Veterinary Hospital',
-      address: '456 Oak Avenue',
-      city: 'Local Area',
-      phone: '(555) 234-5678',
-      rating: 4.9,
-      distance: '3.7 km',
-      specialty: 'Emergency & Critical Care',
-      availability: 'Open 24/7',
-      acceptsInsurance: true
-    },
-    {
-      id: 'clinic-003',
-      name: 'Pet Wellness Clinic',
-      address: '789 Elm Street',
-      city: 'Local Area',
-      phone: '(555) 345-6789',
-      rating: 4.6,
-      distance: '5.1 km',
-      specialty: 'Preventive Care',
-      availability: 'Next available: 2 days',
-      acceptsInsurance: true
-    }
-  ];
-
-  return mockClinics;
+  // Return random 1-3 clinics from mock data
+  const count = Math.floor(Math.random() * 3) + 1; // Random number from 1 to 3
+  const shuffled = [...mockClinics].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
 }
 
 export const lambdaHandler = async (event, context) => {
