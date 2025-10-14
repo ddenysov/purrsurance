@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'tool-book-vet-clinic
+
+  Lambda function that books veterinary appointments and publishes events for Bedrock
+  Agent
+
+  '
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    Architectures:
+    - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+    - prod
+    Description: Environment name
+  EventPublisherStackName:
+    Type: String
+    Description: Name of the Event Publisher CloudFormation stack to get Events Table
+      name
+  EventPublisherUrl:
+    Type: String
+    Description: URL of the Event Publisher API endpoint for sending appointment booking
+      events
+  ChatHistoryTableName:
+    Type: String
+    Description: Name of the DynamoDB Chat History table
+  VetAppointmentsTableName:
+    Type: String
+    Default: VetAppointments
+    Description: Name of the DynamoDB VetAppointments table
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+    - error
+    - warn
+    - info
+    - debug
+    Description: Logging level
+Resources:
+  AppointmentBookingEventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName:
+        Fn::Sub: ${AWS::StackName}-appointment-booking-events
+      DisplayName: Appointment Booking Events Topic
+      Tags:
+      - Key: Environment
+        Value:
+          Ref: Environment
+      - Key: Service
+        Value: tool-book-vet-clinic
+  AppointmentBookingEventsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: lambda
+      TopicArn:
+        Ref: AppointmentBookingEventsTopic
+      Endpoint:
+        Fn::ImportValue:
+          Fn::Sub: ${EventPublisherStackName}-FunctionArn
+  AppointmentBookingEventsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: ${EventPublisherStackName}-FunctionArn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn:
+        Ref: AppointmentBookingEventsTopic
+  BookVetClinicFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: BookVetClinicFunction
+      Handler: app.lambdaHandler
+      Description: Books veterinary appointments and publishes events for Bedrock
+        Agent (Function Response Format)
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            Ref: Environment
+          EVENTS_TOPIC_ARN:
+            Ref: AppointmentBookingEventsTopic
+          EVENT_PUBLISHER_URL:
+            Ref: EventPublisherUrl
+          CHAT_HISTORY_TABLE_NAME:
+            Ref: ChatHistoryTableName
+          VET_APPOINTMENTS_TABLE_NAME:
+            Ref: VetAppointmentsTableName
+          LOG_LEVEL:
+            Ref: LogLevel
+          NODE_ENV: production
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      Policies:
+      - SNSPublishMessagePolicy:
+          TopicName:
+            Fn::GetAtt:
+            - AppointmentBookingEventsTopic
+            - TopicName
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ChatHistoryTableName
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: VetAppointmentsTableName
+    Metadata:
+      SamResourceId: BookVetClinicFunction
+  BedrockInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: BookVetClinicFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount:
+        Ref: AWS::AccountId
+      SourceArn:
+        Fn::Sub: arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:agent/*
+Outputs:
+  BookVetClinicFunction:
+    Description: Book Vet Clinic Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - BookVetClinicFunction
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-FunctionArn
+  BookVetClinicFunctionIamRole:
+    Description: Implicit IAM Role created for Book Vet Clinic function
+    Value:
+      Fn::GetAtt:
+      - BookVetClinicFunctionRole
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-FunctionRoleArn
+  AppointmentBookingEventsTopicArn:
+    Description: SNS Topic ARN for appointment booking events
+    Value:
+      Ref: AppointmentBookingEventsTopic
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AppointmentBookingEventsTopicArn
+  AppointmentBookingEventsTopicName:
+    Description: SNS Topic Name for appointment booking events
+    Value:
+      Fn::GetAtt:
+      - AppointmentBookingEventsTopic
+      - TopicName
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-AppointmentBookingEventsTopicName

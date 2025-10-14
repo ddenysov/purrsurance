@@ -1,0 +1,71 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "BookingManagerAgent",
+    "id": "BOOKING001",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Book urgent appointment for Max who is vomiting and lethargic",
+  "sessionId": "test-session-urgent-001",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-urgent-001"
+    }
+  },
+  "actionGroup": "BookingActions",
+  "function": "bookVetClinic",
+  "parameters": [
+    {
+      "name": "policyId",
+      "type": "string",
+      "value": "POL-2025-234567"
+    },
+    {
+      "name": "pet",
+      "type": "string",
+      "value": "{\"id\":\"PET-2025-002\",\"name\":\"Max\",\"species\":\"dog\",\"breed\":\"Golden Retriever\",\"sex\":\"male\",\"dateOfBirth\":\"2019-06-10\",\"ageMonths\":76,\"weight\":{\"currentKg\":32.0},\"spayedNeutered\":true,\"conditions\":[\"hip dysplasia\"],\"vaccinations\":[{\"type\":\"DHPP\",\"date\":\"2024-06-10\",\"validUntil\":\"2025-06-10\"},{\"type\":\"Rabies\",\"date\":\"2024-06-10\",\"validUntil\":\"2027-06-10\"}]}"
+    },
+    {
+      "name": "owner",
+      "type": "string",
+      "value": "{\"id\":\"d7d2d6c0-4d2d-5e3f-b5g2-9d2g3e0b1b66\",\"fullName\":\"Michael Brown\",\"phone\":\"+380672345678\",\"email\":\"michael.brown@example.com\",\"address\":{\"country\":\"Ukraine\",\"city\":\"Lviv\",\"street\":\"Svobody Ave, 15\",\"postalCode\":\"79000\"}}"
+    },
+    {
+      "name": "clinic",
+      "type": "string",
+      "value": "{\"id\":\"CLINIC-OD-001\",\"name\":\"Odesa Emergency Vet\",\"address\":{\"street\":\"Preobrazhenska St, 12\",\"city\":\"Odesa\",\"postalCode\":\"65014\",\"country\":\"Ukraine\"},\"phone\":\"+380482456789\",\"email\":\"emergency@odesavet.ua\",\"specialty\":\"Emergency\",\"acceptsInsurance\":true}"
+    },
+    {
+      "name": "appointmentDate",
+      "type": "string",
+      "value": "2025-10-15T16:00:00.000Z"
+    },
+    {
+      "name": "appointmentType",
+      "type": "string",
+      "value": "urgent"
+    },
+    {
+      "name": "reason",
+      "type": "string",
+      "value": "Persistent vomiting and lethargy"
+    },
+    {
+      "name": "duration",
+      "type": "string",
+      "value": "60"
+    },
+    {
+      "name": "notes",
+      "type": "string",
+      "value": "Urgent care needed - pet showing signs of distress"
+    },
+    {
+      "name": "medicalContext",
+      "type": "string",
+      "value": "{\"diagnosis\":\"Possible gastroenteritis\",\"symptoms\":[\"vomiting\",\"lethargy\",\"loss of appetite\"],\"assessment\":\"Likely caused by dietary issue. Needs immediate attention.\",\"urgencyLevel\":\"urgent\",\"visitRecommendation\":\"Emergency vet for immediate care\",\"petCondition\":\"Showing signs of dehydration, needs immediate attention\"}"
+    }
+  ]
+}
+
