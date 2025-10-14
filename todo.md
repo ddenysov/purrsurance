@@ -13,3 +13,15 @@
 - 4 buttons real functionality
 - add RAG knowledge base, s3 vector store
 - hint about agent in chat
+
+
+
+
+
+
++ delete agetnt booking manager alias
++ delete booking manahger agent
+- delete save context tool
+- deploy save context tool
+- deploy booking manager
+- deploy book vet clinic

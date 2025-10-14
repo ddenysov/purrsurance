@@ -1,16 +1,24 @@
 /**
- * SaveContext Lambda Function for AWS Bedrock Agent (Function Response Format)
+ * BookVetClinic Lambda Function for AWS Bedrock Agent
  *
- * This function allows agents to save contextual information (diagnosis, complaints, symptoms, etc.)
- * to the session context for later retrieval and use.
+ * This function books veterinary appointments for pets.
+ * It receives booking details from the Booking Manager agent and creates
+ * an appointment record in the VetAppointments DynamoDB table.
  *
  * @param {Object} event - The event payload from the Bedrock Agent.
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
-import { createAgentResponse, extractSessionId, extractParameters, sendEventToPublisher, createChatHistoryService } from "./vendor/agent-tools/index.mjs";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { sendEventToPublisher, createChatHistoryService } from "./vendor/agent-tools/index.mjs";
 
 const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
 const chatHistoryTableName = process.env.CHAT_HISTORY_TABLE_NAME || 'ChatHistory';
+const vetAppointmentsTableName = process.env.VET_APPOINTMENTS_TABLE_NAME || 'VetAppointments';
+
+// Initialize DynamoDB clients
+const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 // Initialize Chat History Service
 const chatHistory = createChatHistoryService({
@@ -18,126 +26,212 @@ const chatHistory = createChatHistoryService({
   logger: console
 });
 
-export const lambdaHandler = async (event, context) => {
-  // Log the incoming event for debugging
-  console.log('Bedrock Agent Event (Function format):', JSON.stringify(event, null, 2));
+/**
+ * Generate unique appointment ID
+ * Format: APPT-YYYY-XXXXXX
+ */
+function generateAppointmentId() {
+  const year = new Date().getFullYear();
+  const random = Math.floor(Math.random() * 900000) + 100000; // 6-digit random number
+  return `APPT-${year}-${random}`;
+}
 
-  // Extract sessionId from event (prioritize globalSessionId from sessionAttributes)
+/**
+ * Lambda handler for booking vet clinic appointments
+ */
+export const lambdaHandler = async (event, context) => {
+  console.log('BookVetClinic Event:', JSON.stringify(event, null, 2));
+
+  // Extract sessionId
   const sessionId = event.sessionState?.sessionAttributes?.sessionId || 
                     event.sessionAttributes?.sessionId || 
                     event.sessionId || 
                     'unknown-session';
   
-  console.log('Extracted sessionId:', sessionId);
-  console.log('Bedrock sessionId (internal):', event.sessionId);
+  console.log('Session ID:', sessionId);
 
   // Extract parameters from the event
   const parameters = event.parameters || [];
-  const contextKey = parameters.find(p => p.name === 'contextKey')?.value || 'general';
-  const dataParam = parameters.find(p => p.name === 'data')?.value;
-  const description = parameters.find(p => p.name === 'description')?.value || '';
+  
+  // Helper function to get parameter value
+  const getParam = (name, required = false) => {
+    const param = parameters.find(p => p.name === name);
+    if (required && !param?.value) {
+      throw new Error(`Missing required parameter: ${name}`);
+    }
+    return param?.value;
+  };
 
-  // Validate required parameters
-  if (!dataParam) {
-    const errorResponse = {
-      success: false,
-      error: 'Missing required parameter: data',
-      message: 'The data parameter is required to save context'
-    };
+  // Parse JSON parameter
+  const parseJsonParam = (name, required = false) => {
+    const value = getParam(name, required);
+    if (!value) return null;
     
-    console.error('Missing required parameter:', { sessionId, contextKey });
-    
-    return {
-      'messageVersion': '1.0',
-      'response': {
-        'actionGroup': 'ContextActionGroup',
-        'function': 'SaveContext',
-        'functionResponse': {
-          'responseBody': {
-            'TEXT': {
-              'body': JSON.stringify(errorResponse, null, 2),
-            },
-          },
-        }
-      }
-    };
-  }
-
-  // Parse data if it's a JSON string
-  let parsedData;
-  try {
-    parsedData = typeof dataParam === 'string' ? JSON.parse(dataParam) : dataParam;
-  } catch (error) {
-    // If parsing fails, use the raw value
-    parsedData = dataParam;
-  }
+    try {
+      return typeof value === 'string' ? JSON.parse(value) : value;
+    } catch (error) {
+      console.error(`Failed to parse ${name}:`, error);
+      return value;
+    }
+  };
 
   let responseBodyContent = {
     success: false,
-    message: 'Failed to save context'
+    message: 'Failed to book appointment'
   };
 
-  // Save data to session context
   try {
-    // Initialize session context if it doesn't exist
-    await chatHistory.initializeSessionContext(sessionId);
+    // Extract required parameters
+    const policyId = getParam('policyId', true);
+    const petInfo = parseJsonParam('pet', true);
+    const ownerInfo = parseJsonParam('owner', true);
+    const clinicInfo = parseJsonParam('clinic', true);
+    const appointmentDate = getParam('appointmentDate', true);
+    const appointmentType = getParam('appointmentType', true);
+    const reason = getParam('reason', true);
     
-    // Get current context
-    const currentContext = await chatHistory.getSessionContext(sessionId);
-    
-    // Create a timestamped entry
-    const timestamp = Date.now();
-    const contextEntry = {
-      data: parsedData,
-      description: description,
-      savedAt: timestamp,
-      savedAtISO: new Date(timestamp).toISOString()
+    // Extract optional parameters
+    const duration = parseInt(getParam('duration') || '30');
+    const notes = getParam('notes') || '';
+    const preparationInstructions = getParam('preparationInstructions') || '';
+    const medicalContext = parseJsonParam('medicalContext');
+
+    // Generate appointment ID
+    const appointmentId = generateAppointmentId();
+    const now = new Date().toISOString();
+
+    // Generate confirmation number (clinic-specific format)
+    const clinicCode = clinicInfo.id?.split('-').slice(-1)[0] || 'VET';
+    const dateCode = appointmentDate.split('T')[0].replace(/-/g, '');
+    const randomCode = Math.floor(Math.random() * 900) + 100;
+    const confirmationNumber = `${clinicCode}-${dateCode}-${randomCode}`;
+
+    // Calculate arrival time (10 minutes before appointment)
+    const arrivalTime = new Date(new Date(appointmentDate).getTime() - 10 * 60000).toISOString();
+
+    // Construct the appointment object
+    const appointment = {
+      appointmentId,
+      policyId,
+      petId: petInfo.id || `PET-${Date.now()}`,
+      appointmentDate,
+      status: 'scheduled',
+      pet: {
+        id: petInfo.id || `PET-${Date.now()}`,
+        name: petInfo.name,
+        species: petInfo.species,
+        breed: petInfo.breed,
+        sex: petInfo.sex,
+        dateOfBirth: petInfo.dateOfBirth,
+        ageMonths: petInfo.ageMonths,
+        weight: petInfo.weight || {},
+        microchip: petInfo.microchip,
+        spayedNeutered: petInfo.spayedNeutered,
+        allergies: petInfo.allergies || [],
+        conditions: petInfo.conditions || [],
+        vaccinations: petInfo.vaccinations || []
+      },
+      owner: {
+        id: ownerInfo.id,
+        fullName: ownerInfo.fullName,
+        phone: ownerInfo.phone,
+        email: ownerInfo.email,
+        address: ownerInfo.address
+      },
+      clinic: {
+        id: clinicInfo.id,
+        name: clinicInfo.name,
+        address: clinicInfo.address,
+        phone: clinicInfo.phone,
+        email: clinicInfo.email,
+        specialty: clinicInfo.specialty,
+        acceptsInsurance: clinicInfo.acceptsInsurance !== false
+      },
+      appointment: {
+        type: appointmentType,
+        reason,
+        appointmentDate,
+        duration,
+        notes,
+        preparationInstructions,
+        confirmationNumber,
+        arrivalTime
+      },
+      sessionId,
+      createdAt: now,
+      updatedAt: now
     };
 
-    // Update context with the new data
-    // We'll organize data by contextKey (e.g., diagnosis, complaints, symptoms)
-    const contextData = currentContext.context?.contextData || {};
-    
-    // If the key already exists and has an array, append; otherwise create new
-    if (!contextData[contextKey]) {
-      contextData[contextKey] = [];
+    // Add medical context if provided
+    if (medicalContext) {
+      appointment.medicalContext = medicalContext;
     }
-    
-    // Ensure it's an array
-    if (!Array.isArray(contextData[contextKey])) {
-      contextData[contextKey] = [contextData[contextKey]];
-    }
-    
-    // Add new entry
-    contextData[contextKey].push(contextEntry);
 
-    const updatedContext = {
-      ...currentContext.context,
-      contextData: contextData,
-      lastContextUpdate: timestamp
-    };
-    
-    await chatHistory.updateSessionContext(sessionId, updatedContext);
-    
+    // Save appointment to DynamoDB
+    const putCommand = new PutCommand({
+      TableName: vetAppointmentsTableName,
+      Item: appointment
+    });
+
+    await docClient.send(putCommand);
+
+    console.log('Appointment created successfully:', {
+      appointmentId,
+      policyId,
+      petName: petInfo.name,
+      clinicName: clinicInfo.name,
+      appointmentDate
+    });
+
+    // Prepare success response
     responseBodyContent = {
       success: true,
-      message: `Context saved successfully under key: ${contextKey}`,
-      contextKey: contextKey,
-      description: description,
-      timestamp: timestamp,
-      savedAt: new Date(timestamp).toISOString()
+      message: 'Appointment booked successfully',
+      appointment: {
+        appointmentId,
+        confirmationNumber,
+        pet: {
+          name: petInfo.name,
+          species: petInfo.species,
+          breed: petInfo.breed
+        },
+        owner: {
+          name: ownerInfo.fullName,
+          phone: ownerInfo.phone,
+          email: ownerInfo.email
+        },
+        clinic: {
+          name: clinicInfo.name,
+          address: clinicInfo.address,
+          phone: clinicInfo.phone
+        },
+        appointmentDate,
+        arrivalTime,
+        type: appointmentType,
+        reason,
+        duration,
+        status: 'scheduled'
+      }
     };
-    
-    console.log('Context saved successfully:', {
-      sessionId,
-      contextKey,
-      description,
-      timestamp
-    });
+
+    // Send event to Event Publisher (non-blocking)
+    try {
+      await sendEventToPublisher(eventPublisherUrl, sessionId, {
+        appointmentId,
+        policyId,
+        petName: petInfo.name,
+        clinicName: clinicInfo.name,
+        appointmentDate,
+        confirmationNumber
+      }, 'AppointmentBooked');
+    } catch (error) {
+      console.error('Failed to send event to publisher:', error);
+      // Continue execution even if event publishing fails
+    }
+
   } catch (error) {
-    console.error('Failed to save context:', {
+    console.error('Failed to book appointment:', {
       sessionId,
-      contextKey,
       error: error.message,
       stack: error.stack
     });
@@ -145,27 +239,16 @@ export const lambdaHandler = async (event, context) => {
     responseBodyContent = {
       success: false,
       error: error.message,
-      message: 'Failed to save context to session storage'
+      message: `Failed to book appointment: ${error.message}`
     };
   }
 
-  // Send event to Event Publisher (non-blocking)
-  try {
-    await sendEventToPublisher(eventPublisherUrl, sessionId, {
-      contextKey,
-      description,
-      success: responseBodyContent.success
-    }, 'ContextSaved');
-  } catch (error) {
-    console.error('Failed to send event to publisher:', error);
-    // Continue execution even if event publishing fails
-  }
-
+  // Return response in Bedrock Agent format
   return {
     messageVersion: '1.0',
     response: {
-      actionGroup: event.actionGroup,           // ← берём из event
-      function: event.function,                 // ← берём из event
+      actionGroup: event.actionGroup,
+      function: event.function,
       functionResponse: {
         responseBody: {
           TEXT: {

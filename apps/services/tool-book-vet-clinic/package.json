@@ -1,7 +1,7 @@
 {
-  "name": "tool-context-save",
+  "name": "tool-book-vet-clinic",
   "version": "1.0.0",
-  "description": "SaveContext function for storing contextual information in session",
+  "description": "BookVetClinic function for booking veterinary appointments",
   "main": "app.mjs",
   "type": "module",
   "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",

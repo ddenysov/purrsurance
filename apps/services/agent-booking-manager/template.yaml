@@ -112,36 +112,6 @@ Resources:
                   - lambda:InvokeFunction
                 Resource:
                   - !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*'
-        - PolicyName: InvokePolicyDetailsFunction
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - Fn::ImportValue:
-                      !Sub '${ToolPolicyDetailsStackName}-FunctionArn'
-        - PolicyName: InvokeContextGetFunction
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - Fn::ImportValue:
-                      !Sub '${ToolContextGetStackName}-FunctionArn'
-        - PolicyName: InvokeContextSaveFunction
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - Fn::ImportValue:
-                      !Sub '${ToolContextSaveStackName}-FunctionArn'
       Tags:
         - Key: Environment
           Value: !Ref Environment
