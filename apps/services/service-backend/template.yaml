@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  service-backend
+  
+  REST API backend service for retrieving veterinary appointments
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+    Description: Environment name
+  
+  VetAppointmentsTableName:
+    Type: String
+    Default: VetAppointments
+    Description: Name of the DynamoDB VetAppointments table
+  
+  LogLevel:
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - warn
+      - info
+      - debug
+    Description: Logging level
+
+Resources:
+  # Lambda Function for getting vet appointments
+  BackendApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: app.handler
+      Description: Returns veterinary appointments data via REST API
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          VET_APPOINTMENTS_TABLE_NAME: !Ref VetAppointmentsTableName
+          LOG_LEVEL: !Ref LogLevel
+          NODE_ENV: production
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref VetAppointmentsTableName
+      Events:
+        GetAppointments:
+          Type: Api
+          Properties:
+            Path: /vet-appointments
+            Method: get
+            RestApiId: !Ref BackendApi
+        OptionsAppointments:
+          Type: Api
+          Properties:
+            Path: /vet-appointments
+            Method: options
+            RestApiId: !Ref BackendApi
+
+  # API Gateway
+  BackendApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'*'"
+        AllowMethods: "'GET,OPTIONS'"
+        MaxAge: "'86400'"
+
+Outputs:
+  BackendApiUrl:
+    Description: API Gateway endpoint URL for Backend Service
+    Value: !Sub "https://${BackendApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/vet-appointments"
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+  
+  BackendApiFunction:
+    Description: Backend API Lambda Function ARN
+    Value: !GetAtt BackendApiFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionArn'
+  
+  BackendApiFunctionIamRole:
+    Description: Implicit IAM Role created for Backend API function
+    Value: !GetAtt BackendApiFunctionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-FunctionRoleArn'
+  
+  BackendApiId:
+    Description: API Gateway ID
+    Value: !Ref BackendApi
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiId'
+

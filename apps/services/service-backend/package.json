@@ -1,0 +1,24 @@
+{
+  "name": "service-backend",
+  "version": "1.0.0",
+  "description": "REST API backend service for retrieving veterinary appointments",
+  "type": "module",
+  "main": "app.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lambda",
+    "api",
+    "dynamodb",
+    "veterinary",
+    "appointments"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.540.0",
+    "@aws-sdk/lib-dynamodb": "^3.540.0"
+  }
+}
+
