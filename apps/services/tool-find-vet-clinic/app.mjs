@@ -79,7 +79,9 @@ export const lambdaHandler = async (event, context) => {
   const clinics = searchVetClinics();
 
   // Prepare response body content
-  const responseBodyContent = 'Super vet clinic';
+  const responseBodyContent = {
+    clinics: searchVetClinics()
+  };
 
   // Send event to Event Publisher (non-blocking)
   await sendEventToPublisher(eventPublisherUrl, sessionId, responseBodyContent, 'FindVetClinic');
