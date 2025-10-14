@@ -40,7 +40,7 @@ vite: {
             },
             // Proxy for Backend API (vet appointments)
             '/api/vet-appointments': {
-                target: process.env.NUXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000',
+                target: 'https://zzchom9dta.execute-api.us-east-1.amazonaws.com/Prod',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, ''),
             }
