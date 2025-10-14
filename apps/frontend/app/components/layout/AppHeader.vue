@@ -1,50 +1,28 @@
 <template>
-  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+  <!-- Navigation Bar -->
+  <nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <!-- Logo and Title -->
-        <div class="flex items-center space-x-3">
-          <!-- Paw Logo -->
-          <div class="flex-shrink-0">
-            <PawIcon 
-              size="lg"
-              :shadow="true"
-            />
-          </div>
-          
-          <!-- Title and Subtitle -->
-          <div>
-            <h1 class="text-xl font-bold text-gray-900">Purrsurance</h1>
-            <p class="text-sm text-gray-500">AI Insurance Assistant</p>
-          </div>
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">🐾 Purrsurance</h1>
         </div>
-
-        <!-- Navigation and Badges (Desktop only) -->
-        <div class="hidden md:flex items-center space-x-4">
-          <!-- Admin Link -->
-          <NuxtLink 
-            to="/admin" 
+        <div class="flex items-center gap-4">
+          <NuxtLink
+            to="/appointments"
             class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-brand-500 text-white hover:bg-brand-600 transition-colors duration-150 shadow-sm hover:shadow-md"
           >
-            DEMO Admin
+            📅 Appointments
           </NuxtLink>
-          
-          <!-- Badges -->
-          <div class="flex items-center space-x-3">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-mint-100 text-mint-800">
-              Clean UI
-            </span>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              Light Theme
-            </span>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800">
-              Pet Friendly
-            </span>
-          </div>
+          <NuxtLink
+            to="/admin"
+            class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-mint-500 text-white hover:bg-mint-600 transition-colors duration-150 shadow-sm hover:shadow-md"
+          >
+            🔧 Admin
+          </NuxtLink>
         </div>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
 
 <script setup lang="ts">

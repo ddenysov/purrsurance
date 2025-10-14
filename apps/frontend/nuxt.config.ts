@@ -19,24 +19,30 @@ export default defineNuxtConfig({
       sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3001/stream',
       // Chat API URL from purrsurance-service-router stack
       chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || 'http://localhost:3001/chat',
+      // Backend API URL from service-backend stack
+      backendApiUrl: process.env.NUXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3001/api/vet-appointments',
     }
   },
 
 vite: {
     server: {
         proxy: {
-            // Прокси для SSE stream
+            // Proxy for SSE stream
             '/stream': {
                 target: 'https://ppfpuxcnyds5oa5zbwsbaevata0gybqg.lambda-url.us-east-1.on.aws/',
                 changeOrigin: true,
-                // Переписываем путь: запрос на /stream пойдет на / к target
                 rewrite: (path) => path.replace(/^\/stream/, ''),
             },
-            // Прокси для Chat API
+            // Proxy for Chat API
             '/chat': {
                 target: 'https://f71j8tt6kc.execute-api.us-east-1.amazonaws.com/Prod',
                 changeOrigin: true,
-                // Здесь rewrite не нужен, т.к. запрос на /chat должен пойти на /chat к target
+            },
+            // Proxy for Backend API (vet appointments)
+            '/api/vet-appointments': {
+                target: process.env.NUXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, ''),
             }
         }
     }
