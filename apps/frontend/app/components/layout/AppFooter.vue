@@ -4,7 +4,7 @@
       <div class="flex flex-col md:flex-row items-center justify-between">
         <!-- Copyright -->
         <div class="text-sm text-gray-500 mb-4 md:mb-0">
-          © 2024 Purrsurance. All rights reserved.
+          © 2025 Purrsurance. All rights reserved.
         </div>
         
         <!-- Links -->

@@ -39,11 +39,23 @@ export const handler = async (event, context) => {
     });
 
     const result = await docClient.send(command);
-    const appointments = result.Items || [];
+    let appointments = result.Items || [];
+
+    // Sort appointments by appointmentDate, newest first
+    appointments.sort((a, b) => {
+      const dateA = new Date(a.appointmentDate);
+      const dateB = new Date(b.appointmentDate);
+      return dateB - dateA; // Descending order (newest first)
+    });
+
+    // Limit to first 30 records
+    const totalCount = appointments.length;
+    appointments = appointments.slice(0, 30);
 
     console.log('Successfully retrieved appointments', { 
       requestId,
-      count: appointments.length,
+      totalCount,
+      returnedCount: appointments.length,
     });
 
     return {
@@ -56,6 +68,7 @@ export const handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
+        totalCount: totalCount,
         count: appointments.length,
         data: appointments,
         timestamp: new Date().toISOString(),

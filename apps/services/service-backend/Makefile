@@ -15,7 +15,7 @@ install:
 build:
 	sam build
 
-deploy:
+deploy: build
 	sam deploy
 
 clean:
