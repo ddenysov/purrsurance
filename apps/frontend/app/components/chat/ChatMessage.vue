@@ -22,13 +22,13 @@
     >
       <!-- Agent Badge (only for assistant messages) -->
       <div 
-        v-if="message.sender === 'assistant' && message.agentName"
+        v-if="message.sender === 'assistant' && agentDisplayName"
         class="inline-flex items-center gap-1.5 mb-2 px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-xs font-medium"
       >
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span>{{ message.agentName }}</span>
+        <span>{{ agentDisplayName }}</span>
       </div>
       
       <!-- Dynamic message type rendering -->
@@ -62,6 +62,7 @@
 import { computed } from 'vue'
 import type { ChatMessage } from '~/types'
 import { formatTime } from '~/utils/dateFormatter'
+import { getAgentDisplayName } from '~/utils/agentMapper'
 import AssistantAvatar from './AssistantAvatar.vue'
 import TextMessage from './message-types/TextMessage.vue'
 import ConfirmationMessage from './message-types/ConfirmationMessage.vue'
@@ -82,6 +83,11 @@ const messageComponent = computed(() => {
     default:
       return TextMessage
   }
+})
+
+// Get user-friendly agent display name
+const agentDisplayName = computed(() => {
+  return getAgentDisplayName(props.message.agentName)
 })
 </script>
 
