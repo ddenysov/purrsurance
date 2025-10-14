@@ -36,6 +36,10 @@ Parameters:
     Type: String
     Default: VetAppointments
     Description: Name of the DynamoDB VetAppointments table
+  PoliciesTableName:
+    Type: String
+    Default: Policies
+    Description: Name of the DynamoDB Policies table
   LogLevel:
     Type: String
     Default: info
@@ -97,6 +101,8 @@ Resources:
             Ref: ChatHistoryTableName
           VET_APPOINTMENTS_TABLE_NAME:
             Ref: VetAppointmentsTableName
+          POLICIES_TABLE_NAME:
+            Ref: PoliciesTableName
           LOG_LEVEL:
             Ref: LogLevel
           NODE_ENV: production
@@ -113,6 +119,9 @@ Resources:
       - DynamoDBCrudPolicy:
           TableName:
             Ref: VetAppointmentsTableName
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: PoliciesTableName
     Metadata:
       SamResourceId: BookVetClinicFunction
   BedrockInvokePermission:

@@ -39,6 +39,11 @@ Parameters:
     Default: VetAppointments
     Description: Name of the DynamoDB VetAppointments table
   
+  PoliciesTableName:
+    Type: String
+    Default: Policies
+    Description: Name of the DynamoDB Policies table
+  
   LogLevel:
     Type: String
     Default: info
@@ -96,6 +101,7 @@ Resources:
           EVENT_PUBLISHER_URL: !Ref EventPublisherUrl
           CHAT_HISTORY_TABLE_NAME: !Ref ChatHistoryTableName
           VET_APPOINTMENTS_TABLE_NAME: !Ref VetAppointmentsTableName
+          POLICIES_TABLE_NAME: !Ref PoliciesTableName
           LOG_LEVEL: !Ref LogLevel
           NODE_ENV: production
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
@@ -106,6 +112,8 @@ Resources:
             TableName: !Ref ChatHistoryTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref VetAppointmentsTableName
+        - DynamoDBReadPolicy:
+            TableName: !Ref PoliciesTableName
 
   # Permission for Bedrock Agent to invoke the Lambda function
   BedrockInvokePermission:
