@@ -9,12 +9,13 @@
  * @returns {Object} object - The response object formatted for the Bedrock Agent.
  */
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { sendEventToPublisher, createChatHistoryService } from "./vendor/agent-tools/index.mjs";
 
 const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
 const chatHistoryTableName = process.env.CHAT_HISTORY_TABLE_NAME || 'ChatHistory';
 const vetAppointmentsTableName = process.env.VET_APPOINTMENTS_TABLE_NAME || 'VetAppointments';
+const policiesTableName = process.env.POLICIES_TABLE_NAME || 'Policies';
 
 // Initialize DynamoDB clients
 const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
@@ -50,6 +51,14 @@ export const lambdaHandler = async (event, context) => {
   
   console.log('Session ID:', sessionId);
 
+  // Send incoming event to publisher for debugging (non-blocking)
+  try {
+    await sendEventToPublisher(eventPublisherUrl, sessionId, event, 'AgentToolInvocation');
+  } catch (error) {
+    console.error('Failed to send agent invocation event:', error);
+    // Continue execution even if event publishing fails
+  }
+
   // Extract parameters from the event
   const parameters = event.parameters || [];
   
@@ -81,27 +90,82 @@ export const lambdaHandler = async (event, context) => {
   };
 
   try {
-    // Extract required parameters
-    const policyId = getParam('policyId', true);
-    const petInfo = parseJsonParam('pet', true);
-    const ownerInfo = parseJsonParam('owner', true);
-    const clinicInfo = parseJsonParam('clinic', true);
+    // 1. Get policyId from sessionAttributes (automatic)
+    const policyId = event.sessionAttributes?.policyId;
+    if (!policyId) {
+      throw new Error('Policy ID not found in session attributes. Please ensure you are authenticated.');
+    }
+    
+    console.log('Policy ID from sessionAttributes:', policyId);
+
+    // 2. Extract required parameters (only clinicId, appointmentDate, appointmentType, reason)
+    const clinicId = getParam('clinicId', true);
     const appointmentDate = getParam('appointmentDate', true);
     const appointmentType = getParam('appointmentType', true);
     const reason = getParam('reason', true);
     
     // Extract optional parameters
-    const duration = parseInt(getParam('duration') || '30');
     const notes = getParam('notes') || '';
-    const preparationInstructions = getParam('preparationInstructions') || '';
-    const medicalContext = parseJsonParam('medicalContext');
+    const duration = 30; // Default duration
 
-    // Generate appointment ID
+    // 3. Load policy data from Policies table to get pet and owner information
+    console.log('Loading policy data from Policies table...');
+    const getPolicyCommand = new GetCommand({
+      TableName: policiesTableName,
+      Key: { policyId }
+    });
+    
+    const policyResult = await docClient.send(getPolicyCommand);
+    
+    if (!policyResult.Item) {
+      throw new Error(`Policy not found: ${policyId}`);
+    }
+    
+    const policy = policyResult.Item;
+    const petInfo = policy.pet;
+    const ownerInfo = policy.owner;
+    
+    console.log('Policy loaded:', {
+      policyId,
+      petName: petInfo.name,
+      ownerName: ownerInfo.fullName
+    });
+
+    // 4. Get clinic information from session context
+    console.log('Loading clinic from session context...');
+    const sessionContext = await chatHistory.getSessionContext(sessionId);
+    
+    const selectedClinicData = sessionContext?.context?.contextData?.selected_clinic;
+    if (!selectedClinicData || !Array.isArray(selectedClinicData) || selectedClinicData.length === 0) {
+      throw new Error('Selected clinic not found in context. Please select a clinic first using FindVetClinic and save it with SaveContext.');
+    }
+    
+    const clinicInfo = selectedClinicData[0].data;
+    
+    // Validate that clinicId matches
+    if (clinicInfo.id !== clinicId) {
+      console.warn(`Clinic ID mismatch: requested ${clinicId}, found ${clinicInfo.id} in context`);
+    }
+    
+    console.log('Clinic loaded from context:', {
+      clinicId: clinicInfo.id,
+      clinicName: clinicInfo.name
+    });
+
+    // 5. Get medical context if available (from Vet Doctor agent)
+    let medicalContext = null;
+    const medicalContextData = sessionContext?.context?.contextData?.medical_context;
+    if (medicalContextData && Array.isArray(medicalContextData) && medicalContextData.length > 0) {
+      medicalContext = medicalContextData[0].data;
+      console.log('Medical context found:', medicalContext);
+    }
+
+    // 6. Generate appointment ID
     const appointmentId = generateAppointmentId();
     const now = new Date().toISOString();
 
     // Generate confirmation number (clinic-specific format)
-    const clinicCode = clinicInfo.id?.split('-').slice(-1)[0] || 'VET';
+    const clinicCode = clinicId.split('-').slice(-1)[0] || 'VET';
     const dateCode = appointmentDate.split('T')[0].replace(/-/g, '');
     const randomCode = Math.floor(Math.random() * 900) + 100;
     const confirmationNumber = `${clinicCode}-${dateCode}-${randomCode}`;
@@ -153,7 +217,6 @@ export const lambdaHandler = async (event, context) => {
         appointmentDate,
         duration,
         notes,
-        preparationInstructions,
         confirmationNumber,
         arrivalTime
       },
