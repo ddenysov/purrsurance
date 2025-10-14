@@ -140,6 +140,13 @@ export const useChat = () => {
       // Parse markdown in response
       const parsedResponse = parseMarkdown(response.data.response)
       
+      // Extract agent name from metadata
+      const agentName = response.metadata?.classification || undefined
+      
+      if (agentName) {
+        console.log('[Chat] Message processed by agent:', agentName)
+      }
+      
       // Check if message contains policy ID and unlock pet details
       if (containsPolicyId(text)) {
         const { unlockPetDetails } = usePetProfile()
@@ -149,10 +156,11 @@ export const useChat = () => {
       // Hide typing indicator
       isTyping.value = false
       
-      // Add AI response with parsed markdown
+      // Add AI response with parsed markdown and agent name
       addMessage({
         content: parsedResponse,
-        sender: 'assistant'
+        sender: 'assistant',
+        agentName: agentName
       })
       
     } catch (err: any) {

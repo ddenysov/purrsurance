@@ -31,6 +31,7 @@ export interface ChatMessage {
   type?: 'text' | 'confirmation' | 'choice' | 'form'
   metadata?: MessageMetadata
   visible?: boolean // If false, message won't be displayed in UI but will be in history
+  agentName?: string // Name of the agent that processed this message
 }
 
 export interface MessageMetadata {
@@ -78,6 +79,8 @@ export interface BackendChatResponse {
     timestamp: string
     environment: string
     logs?: LogEntry[]
+    classification?: string // Agent name that processed the message
+    agentId?: string // Agent ID
   }
 }
 
