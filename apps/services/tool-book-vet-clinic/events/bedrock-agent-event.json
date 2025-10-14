@@ -1,0 +1,76 @@
+{
+  "messageVersion": "1.0",
+  "agent": {
+    "name": "BookingManagerAgent",
+    "id": "BOOKING001",
+    "alias": "TSTALIASID",
+    "version": "DRAFT"
+  },
+  "inputText": "Book an appointment for Mittens at City Veterinary Clinic on 2025-10-25 at 10:00 AM",
+  "sessionId": "test-session-booking-001",
+  "sessionState": {
+    "sessionAttributes": {
+      "sessionId": "global-session-booking-001"
+    }
+  },
+  "actionGroup": "BookingActions",
+  "function": "bookVetClinic",
+  "parameters": [
+    {
+      "name": "policyId",
+      "type": "string",
+      "value": "POL-2025-123456"
+    },
+    {
+      "name": "pet",
+      "type": "string",
+      "value": "{\"id\":\"PET-2025-001\",\"name\":\"Mittens\",\"species\":\"cat\",\"breed\":\"Siamese\",\"sex\":\"female\",\"dateOfBirth\":\"2020-03-15\",\"ageMonths\":67,\"weight\":{\"currentKg\":4.2},\"spayedNeutered\":true,\"allergies\":[\"penicillin\"],\"vaccinations\":[{\"type\":\"RCP\",\"date\":\"2024-03-15\",\"validUntil\":\"2025-03-15\"},{\"type\":\"Rabies\",\"date\":\"2024-03-15\",\"validUntil\":\"2027-03-15\"}]}"
+    },
+    {
+      "name": "owner",
+      "type": "string",
+      "value": "{\"id\":\"c6c1c5b9-3c1c-4d2e-a4f1-8c1f2d9a0a55\",\"fullName\":\"Sarah Johnson\",\"phone\":\"+380501234567\",\"email\":\"sarah.johnson@example.com\",\"address\":{\"country\":\"Ukraine\",\"city\":\"Kyiv\",\"street\":\"Khreshchatyk St, 22\",\"postalCode\":\"01001\"}}"
+    },
+    {
+      "name": "clinic",
+      "type": "string",
+      "value": "{\"id\":\"CLINIC-KV-001\",\"name\":\"City Veterinary Clinic\",\"address\":{\"street\":\"Shevchenka St, 45\",\"city\":\"Kyiv\",\"postalCode\":\"02000\",\"country\":\"Ukraine\"},\"phone\":\"+380441234567\",\"email\":\"info@cityvets.ua\",\"specialty\":\"General\",\"acceptsInsurance\":true}"
+    },
+    {
+      "name": "appointmentDate",
+      "type": "string",
+      "value": "2025-10-25T10:00:00.000Z"
+    },
+    {
+      "name": "appointmentType",
+      "type": "string",
+      "value": "routine"
+    },
+    {
+      "name": "reason",
+      "type": "string",
+      "value": "Annual checkup and vaccination booster"
+    },
+    {
+      "name": "duration",
+      "type": "string",
+      "value": "30"
+    },
+    {
+      "name": "notes",
+      "type": "string",
+      "value": "Annual wellness exam"
+    },
+    {
+      "name": "preparationInstructions",
+      "type": "string",
+      "value": "Please bring vaccination records and insurance card"
+    },
+    {
+      "name": "medicalContext",
+      "type": "string",
+      "value": "{\"diagnosis\":\"Routine checkup\",\"urgencyLevel\":\"routine\",\"visitRecommendation\":\"Regular veterinary checkup\",\"petCondition\":\"Healthy, routine preventive care\"}"
+    }
+  ]
+}
+

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Start SaveContext service locally without SAM
+# Start BookVetClinic service locally without SAM
 # This script loads environment variables from env.json and starts the server
 
-echo "🚀 Starting SaveContext service locally..."
+echo "🚀 Starting BookVetClinic service locally..."
 echo "======================================"
 
 # Check if env.json exists
@@ -19,13 +19,13 @@ fi
 if command -v jq &> /dev/null; then
     # Using jq
     echo "Loading environment variables from env.json using jq..."
-    export $(jq -r '.SaveContextFunction | to_entries | .[] | "\(.key)=\(.value)"' env.json)
+    export $(jq -r '.BookVetClinicFunction | to_entries | .[] | "\(.key)=\(.value)"' env.json)
 else
     # Fallback to node
     echo "Loading environment variables from env.json using node..."
     eval $(node -e "
         const config = require('./env.json');
-        const vars = config.SaveContextFunction;
+        const vars = config.BookVetClinicFunction;
         for (const key in vars) {
             console.log('export ' + key + '=\"' + vars[key] + '\"');
         }

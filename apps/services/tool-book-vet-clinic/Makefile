@@ -18,7 +18,7 @@ deploy: sync-packages build
 	sam deploy --no-confirm-changeset
 
 invoke:
-	sam local invoke SaveContextFunction -e events/bedrock-agent-event.json --env-vars env.json
+	sam local invoke BookVetClinicFunction -e events/bedrock-agent-event.json --env-vars env.json
 
 clean:
 	rm -rf .aws-sam
