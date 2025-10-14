@@ -41,8 +41,10 @@ fi
 SSE_STREAM_URL=""
 API_BASE_URL=""
 CHAT_API_URL=""
+BACKEND_API_URL=""
 SERVICE_ROUTER_STACK_NAME="purrsurance-service-router"
 SSE_STREAM_STACK_NAME="purrsurance-sse-stream"
+SERVICE_BACKEND_STACK_NAME="purrsurance-service-backend"
 BACKEND_CONFIG_SUCCESS=false
 
 echo -e "${YELLOW}Step 1: Fetching backend service URLs...${NC}"
@@ -80,6 +82,22 @@ else
     echo -e "${YELLOW}⚠ Warning: SSE Stream stack '${SSE_STREAM_STACK_NAME}' not found${NC}"
 fi
 
+# Get Backend API URL from service-backend stack
+if aws cloudformation describe-stacks --stack-name "$SERVICE_BACKEND_STACK_NAME" &> /dev/null; then
+    BACKEND_API_URL=$(aws cloudformation describe-stacks \
+        --stack-name "$SERVICE_BACKEND_STACK_NAME" \
+        --query 'Stacks[0].Outputs[?OutputKey==`BackendApiUrl`].OutputValue' \
+        --output text 2>/dev/null || echo "")
+    
+    if [ -n "$BACKEND_API_URL" ]; then
+        echo -e "${GREEN}✓ Backend API URL:${NC} ${BACKEND_API_URL}"
+    else
+        echo -e "${YELLOW}⚠ Warning: Could not retrieve Backend API URL from service-backend stack${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠ Warning: Service-backend stack '${SERVICE_BACKEND_STACK_NAME}' not found${NC}"
+fi
+
 # Get other backend URLs if backend stack name is provided (legacy support)
 if [ -n "$BACKEND_STACK_NAME" ]; then
     if aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" &> /dev/null; then
@@ -97,7 +115,7 @@ if [ -n "$BACKEND_STACK_NAME" ]; then
     fi
 fi
 
-if [ -n "$CHAT_API_URL" ] && [ -n "$SSE_STREAM_URL" ]; then
+if [ -n "$CHAT_API_URL" ] && [ -n "$SSE_STREAM_URL" ] && [ -n "$BACKEND_API_URL" ]; then
     BACKEND_CONFIG_SUCCESS=true
 else
     echo -e "${YELLOW}  Will continue with fallback configuration${NC}"
@@ -108,7 +126,8 @@ fi
 if [ "$BACKEND_CONFIG_SUCCESS" = true ]; then
     cat > .env << EOF
 NUXT_PUBLIC_CHAT_API_URL=${CHAT_API_URL}
-NUXT_PUBLIC_SSE_STREAM_URL=${SSE_STREAM_URL:-https://placeholder.example.com/stream}
+NUXT_PUBLIC_SSE_STREAM_URL=${SSE_STREAM_URL}
+NUXT_PUBLIC_BACKEND_API_URL=${BACKEND_API_URL}
 NUXT_PUBLIC_API_BASE_URL=${API_BASE_URL:-https://placeholder.example.com/api}
 NUXT_PUBLIC_API_TIMEOUT=10000
 EOF
@@ -118,6 +137,7 @@ else
     cat > .env << EOF
 NUXT_PUBLIC_CHAT_API_URL=https://placeholder.example.com/chat
 NUXT_PUBLIC_SSE_STREAM_URL=https://placeholder.example.com/stream
+NUXT_PUBLIC_BACKEND_API_URL=https://placeholder.example.com/api/vet-appointments
 NUXT_PUBLIC_API_BASE_URL=https://placeholder.example.com/api
 NUXT_PUBLIC_API_TIMEOUT=10000
 EOF

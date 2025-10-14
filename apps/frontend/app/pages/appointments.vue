@@ -172,7 +172,7 @@ const error = ref<string | null>(null)
 
 // Get backend API URL from runtime config
 const config = useRuntimeConfig()
-const backendApiUrl = config.public.backendApiUrl || 'http://localhost:3000/vet-appointments'
+const backendApiUrl = config.public.backendApiUrl as string
 
 // Fetch appointments from backend
 const fetchAppointments = async () => {

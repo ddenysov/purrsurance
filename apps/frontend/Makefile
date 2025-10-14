@@ -31,7 +31,7 @@ dev: ## Start development server
 	@echo "Starting development server..."
 	pnpm dev
 
-deploy: ## Deploy to AWS (use BACKEND_STACK=stack-name)
+deploy: generate ## Deploy to AWS (use BACKEND_STACK=stack-name)
 	@echo "Deploying application..."
 	@chmod +x deploy.sh
 	./deploy.sh $(BACKEND_STACK)

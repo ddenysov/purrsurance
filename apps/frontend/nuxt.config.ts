@@ -13,14 +13,17 @@ export default defineNuxtConfig({
   // via deploy.sh script and written to .env file
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
       apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
       // SSE Stream URL from purrsurance-sse-stream stack
-      sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || 'http://localhost:3001/stream',
+      // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
+      sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || '/stream',
       // Chat API URL from purrsurance-service-router stack
-      chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || 'http://localhost:3001/chat',
+      // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
+      chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || '/chat',
       // Backend API URL from service-backend stack
-      backendApiUrl: process.env.NUXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3001/api/vet-appointments',
+      // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
+      backendApiUrl: process.env.NUXT_PUBLIC_BACKEND_API_URL || '/api/vet-appointments',
     }
   },
 
@@ -40,7 +43,7 @@ vite: {
             },
             // Proxy for Backend API (vet appointments)
             '/api/vet-appointments': {
-                target: 'https://zzchom9dta.execute-api.us-east-1.amazonaws.com/Prod',
+                target: 'https://3ehcudxdblj37bv2ovnxakr5340pvqlz.lambda-url.us-east-1.on.aws/',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, ''),
             }
