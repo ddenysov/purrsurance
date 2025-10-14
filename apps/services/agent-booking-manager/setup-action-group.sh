@@ -202,25 +202,10 @@ if [ -n "$EXISTING_BOOK_AG" ]; then
       "functions": [
         {
           "name": "BookVetClinic",
-          "description": "Books a veterinary appointment for a pet at a specified clinic. Use this function after the user has selected a clinic and confirmed appointment details. Creates an appointment record in the system and returns a confirmation number.",
+          "description": "Books a veterinary appointment for a pet at a specified clinic. Use this function after the user has selected a clinic and confirmed appointment details. The function will automatically retrieve pet and owner information from the policy (available in sessionAttributes.policyId), and clinic details from the saved context. Creates an appointment record in the system and returns a confirmation number.",
           "parameters": {
-            "policyId": {
-              "description": "The insurance policy ID associated with the pet (e.g., POL-2025-001234)",
-              "type": "string",
-              "required": true
-            },
-            "pet": {
-              "description": "Pet information as a JSON object containing: id, name, species, breed, sex, dateOfBirth, ageMonths, weight, microchip, spayedNeutered, allergies, conditions, vaccinations",
-              "type": "string",
-              "required": true
-            },
-            "owner": {
-              "description": "Owner information as a JSON object containing: id, fullName, phone, email, address",
-              "type": "string",
-              "required": true
-            },
-            "clinic": {
-              "description": "Clinic information as a JSON object containing: id, name, address, phone, email, specialty, acceptsInsurance",
+            "clinicId": {
+              "description": "ID of the selected veterinary clinic (e.g., CLINIC-KV-001). This should be obtained from the FindVetClinic function results.",
               "type": "string",
               "required": true
             },
@@ -230,32 +215,17 @@ if [ -n "$EXISTING_BOOK_AG" ]; then
               "required": true
             },
             "appointmentType": {
-              "description": "Type of appointment (e.g., routine_checkup, vaccination, emergency, consultation, surgery, dental, grooming)",
+              "description": "Type of appointment: routine, urgent, emergency, specialist, follow-up, vaccination, dental, grooming",
               "type": "string",
               "required": true
             },
             "reason": {
-              "description": "Reason for the appointment (e.g., annual checkup, vaccination, illness, injury, follow-up)",
+              "description": "Reason for the appointment (e.g., annual checkup, vaccination, illness symptoms, injury, follow-up visit)",
               "type": "string",
               "required": true
             },
-            "duration": {
-              "description": "Duration of the appointment in minutes (default: 30)",
-              "type": "integer",
-              "required": false
-            },
             "notes": {
-              "description": "Additional notes or special requests for the appointment",
-              "type": "string",
-              "required": false
-            },
-            "preparationInstructions": {
-              "description": "Special preparation instructions for the pet owner (e.g., fasting required, bring medical records)",
-              "type": "string",
-              "required": false
-            },
-            "medicalContext": {
-              "description": "Medical context from previous interactions as a JSON object (symptoms, diagnosis, recommendations, etc.)",
+              "description": "Additional notes or special requests for the appointment (optional)",
               "type": "string",
               "required": false
             }
@@ -279,25 +249,10 @@ else
       "functions": [
         {
           "name": "BookVetClinic",
-          "description": "Books a veterinary appointment for a pet at a specified clinic. Use this function after the user has selected a clinic and confirmed appointment details. Creates an appointment record in the system and returns a confirmation number.",
+          "description": "Books a veterinary appointment for a pet at a specified clinic. Use this function after the user has selected a clinic and confirmed appointment details. The function will automatically retrieve pet and owner information from the policy (available in sessionAttributes.policyId), and clinic details from the saved context. Creates an appointment record in the system and returns a confirmation number.",
           "parameters": {
-            "policyId": {
-              "description": "The insurance policy ID associated with the pet (e.g., POL-2025-001234)",
-              "type": "string",
-              "required": true
-            },
-            "pet": {
-              "description": "Pet information as a JSON object containing: id, name, species, breed, sex, dateOfBirth, ageMonths, weight, microchip, spayedNeutered, allergies, conditions, vaccinations",
-              "type": "string",
-              "required": true
-            },
-            "owner": {
-              "description": "Owner information as a JSON object containing: id, fullName, phone, email, address",
-              "type": "string",
-              "required": true
-            },
-            "clinic": {
-              "description": "Clinic information as a JSON object containing: id, name, address, phone, email, specialty, acceptsInsurance",
+            "clinicId": {
+              "description": "ID of the selected veterinary clinic (e.g., CLINIC-KV-001). This should be obtained from the FindVetClinic function results.",
               "type": "string",
               "required": true
             },
@@ -307,32 +262,17 @@ else
               "required": true
             },
             "appointmentType": {
-              "description": "Type of appointment (e.g., routine_checkup, vaccination, emergency, consultation, surgery, dental, grooming)",
+              "description": "Type of appointment: routine, urgent, emergency, specialist, follow-up, vaccination, dental, grooming",
               "type": "string",
               "required": true
             },
             "reason": {
-              "description": "Reason for the appointment (e.g., annual checkup, vaccination, illness, injury, follow-up)",
+              "description": "Reason for the appointment (e.g., annual checkup, vaccination, illness symptoms, injury, follow-up visit)",
               "type": "string",
               "required": true
             },
-            "duration": {
-              "description": "Duration of the appointment in minutes (default: 30)",
-              "type": "integer",
-              "required": false
-            },
             "notes": {
-              "description": "Additional notes or special requests for the appointment",
-              "type": "string",
-              "required": false
-            },
-            "preparationInstructions": {
-              "description": "Special preparation instructions for the pet owner (e.g., fasting required, bring medical records)",
-              "type": "string",
-              "required": false
-            },
-            "medicalContext": {
-              "description": "Medical context from previous interactions as a JSON object (symptoms, diagnosis, recommendations, etc.)",
+              "description": "Additional notes or special requests for the appointment (optional)",
               "type": "string",
               "required": false
             }
