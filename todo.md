@@ -16,12 +16,3 @@
 + deploy to S3
 
 
-
-
-
-+ delete agetnt booking manager alias
-+ delete booking manahger agent
-+ delete save context tool
-+ deploy save context tool
-+ deploy booking manager
-+ deploy book vet clinic
