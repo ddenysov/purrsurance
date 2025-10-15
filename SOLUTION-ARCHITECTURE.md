@@ -134,7 +134,7 @@ Purrsurance addresses the need for accessible, intelligent pet insurance managem
 ### 4.2 Logical Architecture Layers
 
 **Presentation Layer**
-- Nuxt.js 3 SPA with Vue 3
+- Nuxt.js 4 SPA with Vue 3
 - Server-Sent Events (SSE) client
 - Responsive UI with Tailwind CSS
 
@@ -163,7 +163,7 @@ Purrsurance addresses the need for accessible, intelligent pet insurance managem
 
 ### 5.1 Frontend Application
 
-**Technology:** Nuxt.js 3 + Vue 3 + TypeScript + Pinia
+**Technology:** Nuxt.js 4 + Vue 3 + TypeScript + Pinia
 
 **Key Components:**
 - `ChatComposer.vue`: Message input and submission
@@ -797,8 +797,6 @@ aws cloudformation describe-stacks --stack-name <stack-name>
 - Cost optimization
 - Simplified operations
 
-**User Rule:** "не делай разделения продакшн, стейджинг, дев и т д"
-
 **Future Consideration:** Add staging for pre-production testing
 
 ### 9.4 Stack Organization
@@ -939,6 +937,25 @@ pnpm build
 3. Vet Doctor: Veterinary consultation with RAG
 4. Booking Manager: Find clinics and book appointments
 
+**Model Selection: Claude Haiku**
+
+**Decision:** Use Claude Haiku (Anthropic) as the foundation model for all agents
+
+**Rationale:**
+- **Cost Efficiency**: Haiku is the most cost-effective model in Claude family, significantly reducing operational costs for high-volume conversations
+- **Specialized Task Performance**: Each agent has a narrow, well-defined domain with specific prompts and tools. Haiku excels at focused tasks with clear instructions
+- **Low Latency**: Fast response times (sub-second) improve user experience for real-time chat
+- **Sufficient Capability**: For domain-specific tasks (policy lookup, appointment booking, intent classification), Haiku provides adequate intelligence without requiring expensive larger models
+- **Scalability**: Lower per-request cost enables scaling to more users without proportional cost increase
+- **Action Group Optimization**: Agents primarily orchestrate tool calls rather than generating long-form content, making Haiku's focused reasoning ideal
+
+**Cost Comparison:**
+- Claude Haiku: ~$0.25 per million input tokens
+- Claude Sonnet: ~$3.00 per million input tokens (12x more expensive)
+- Claude Opus: ~$15.00 per million input tokens (60x more expensive)
+
+For our specialized agents handling thousands of daily conversations, Haiku provides the optimal balance of performance and cost. The multi-agent architecture with narrow responsibilities means we don't need the advanced reasoning capabilities of larger models.
+
 ### 11.3 Why DynamoDB?
 
 **Decision:** Use DynamoDB for all data storage
@@ -987,7 +1004,7 @@ pnpm build
 
 ### 11.6 Why Nuxt.js?
 
-**Decision:** Use Nuxt.js 3 instead of plain Vue or React
+**Decision:** Use Nuxt.js 4 instead of plain Vue or React
 
 **Rationale:**
 - **Vue Ecosystem**: Team expertise
@@ -1058,260 +1075,6 @@ pnpm build
 
 **Future:** Add Cognito authentication before production
 
----
-
-## 12. Scalability & Performance
-
-### 12.1 Scalability Characteristics
-
-**Horizontal Scaling:**
-- Lambda: Automatic, up to 1000 concurrent executions per region
-- DynamoDB: On-demand scaling, no limits
-- API Gateway: Scales to millions of requests/second
-
-**Vertical Scaling:**
-- Lambda memory: 128 MB to 10 GB (CPU scales proportionally)
-- Current: 256-512 MB per function
-
-### 12.2 Performance Targets
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| API Response Time (p95) | < 500ms | ~300ms |
-| SSE Event Delivery | < 2s | ~1-2s |
-| Agent Response Time | < 3s | ~2-5s |
-| DynamoDB Query | < 10ms | ~5-8ms |
-| Frontend Load Time | < 2s | ~1.5s |
-
-### 12.3 Performance Optimizations
-
-**Frontend:**
-- Code splitting (Nuxt.js automatic)
-- Image optimization (future)
-- CDN caching (CloudFront)
-
-**Backend:**
-- Connection reuse: `AWS_NODEJS_CONNECTION_REUSE_ENABLED=1`
-- DynamoDB batch operations where applicable
-- Lambda provisioned concurrency for critical paths (future)
-
-**Database:**
-- GSIs for efficient queries
-- Consistent reads only when necessary
-- Batch operations for writes
-
-### 12.4 Bottlenecks & Mitigations
-
-**Potential Bottleneck:** Bedrock Agent response time (2-5s)
-- **Mitigation:** Show typing indicator, use SSE for progressive responses
-
-**Potential Bottleneck:** DynamoDB hot partitions
-- **Mitigation:** Session ID provides natural distribution
-
-**Potential Bottleneck:** Lambda cold starts
-- **Mitigation:** Provisioned concurrency for critical functions (if needed)
-
-### 12.5 Load Testing (Future)
-
-**Tools:** Artillery, Locust
-
-**Scenarios:**
-1. Sustained load: 100 concurrent users, 10 minutes
-2. Spike test: 0 → 500 users in 1 minute
-3. Stress test: Incremental load until failure
-
-**Metrics:**
-- Request rate (req/s)
-- Error rate (%)
-- Response time (p50, p95, p99)
-- Lambda throttles
-- DynamoDB consumed capacity
-
----
-
-## 13. Monitoring & Observability
-
-### 13.1 Logging Strategy
-
-**Format:** Structured JSON logs
-
-**Example:**
-```json
-{
-  "timestamp": "2025-10-15T12:00:00.000Z",
-  "level": "info",
-  "service": "service-router",
-  "requestId": "abc-123",
-  "message": "Agent invoked",
-  "metadata": {
-    "agentId": "XXX",
-    "sessionId": "YYY",
-    "duration": 234
-  }
-}
-```
-
-**Log Levels:**
-- `error`: Failures requiring attention
-- `warn`: Potential issues
-- `info`: Important events (requests, responses)
-- `debug`: Detailed troubleshooting (disabled in prod)
-
-**Destinations:**
-- CloudWatch Logs (all services)
-- Log groups: `/aws/lambda/<function-name>`
-
-### 13.2 Metrics & Dashboards
-
-**CloudWatch Metrics:**
-- Lambda: Invocations, Errors, Duration, Throttles
-- DynamoDB: ConsumedReadCapacity, ConsumedWriteCapacity, Throttles
-- API Gateway: Count, Latency, 4xx/5xx errors
-
-**Custom Metrics (Future):**
-- Agent routing accuracy
-- Session duration
-- Event delivery latency
-
-**Dashboards:**
-- Overview: Request rate, error rate, latency
-- Service health: Per-Lambda metrics
-- Database health: DynamoDB capacity and throttles
-
-### 13.3 Alerting (Future)
-
-**Alert Conditions:**
-- Error rate > 1% for 5 minutes
-- Lambda throttles > 10 in 5 minutes
-- API Gateway 5xx > 5% for 5 minutes
-- DynamoDB throttles > 0
-
-**Channels:**
-- Email (CloudWatch Alarms)
-- Slack (SNS integration)
-- PagerDuty (critical alerts)
-
-### 13.4 Distributed Tracing (Future)
-
-**Tool:** AWS X-Ray
-
-**Benefits:**
-- End-to-end request tracing
-- Performance bottleneck identification
-- Service dependency visualization
-
-**Implementation:**
-- Enable X-Ray in SAM templates
-- Instrument with AWS SDK
-- Annotate with custom segments
-
----
-
-## 14. Future Considerations
-
-### 14.1 Short-Term Enhancements (1-3 months)
-
-**Authentication & Authorization:**
-- Implement Amazon Cognito
-- JWT-based API authentication
-- Role-based access control (owner, admin)
-
-**Enhanced Monitoring:**
-- Custom CloudWatch dashboards
-- Alerting via SNS
-- X-Ray distributed tracing
-
-**Performance:**
-- Lambda provisioned concurrency for router
-- DynamoDB DAX caching (if needed)
-- CloudFront CDN for frontend
-
-**Features:**
-- Appointment cancellation workflow
-- Email/SMS notifications (via SNS + SES/Pinpoint)
-- Multi-language support (Ukrainian + English)
-
-### 14.2 Mid-Term Evolution (3-6 months)
-
-**Mobile Applications:**
-- React Native app for iOS/Android
-- Shared API with web frontend
-- Push notifications
-
-**Advanced Analytics:**
-- User behavior tracking
-- Agent performance metrics
-- Conversation quality scoring
-
-**Integration:**
-- Third-party vet clinic APIs
-- Insurance provider APIs
-- Payment gateway (for premium features)
-
-**Infrastructure:**
-- Multi-region deployment (disaster recovery)
-- CI/CD pipeline (GitHub Actions)
-- Staging environment
-
-### 14.3 Long-Term Vision (6-12 months)
-
-**AI Enhancements:**
-- Multi-modal agents (image analysis for pet photos)
-- Voice interface (Alexa/Google Assistant)
-- Predictive analytics (anticipate pet health issues)
-
-**Platform Expansion:**
-- B2B portal for veterinary clinics
-- Partner integrations (pet food, supplies)
-- Community features (pet owner forums)
-
-**Compliance & Security:**
-- GDPR compliance (if expanding to EU)
-- SOC 2 certification
-- Regular security audits
-
-**Business Features:**
-- Claims processing automation
-- Policy renewal workflows
-- Premium subscription tiers
-
-### 14.4 Technical Debt Items
-
-**Code Quality:**
-- Add comprehensive test suite (unit, integration, e2e)
-- Implement linting (ESLint + Prettier)
-- Type coverage improvement (TypeScript strict mode)
-
-**Documentation:**
-- API documentation (OpenAPI/Swagger)
-- Sequence diagrams for key flows
-- Runbooks for common operations
-
-**Infrastructure:**
-- Terraform migration (if needed for multi-cloud)
-- Cost optimization review
-- Disaster recovery testing
-
-### 14.5 Open Questions & Risks
-
-**Scalability:**
-- What happens at 10,000 concurrent users?
-- When do we need database sharding?
-
-**Cost:**
-- Current AWS spend: ~$X/month (estimate)
-- Break-even point for dedicated infrastructure?
-
-**AI Accuracy:**
-- How do we measure agent response quality?
-- When do we need human-in-the-loop review?
-
-**Compliance:**
-- Medical advice liability (disclaimer needed)
-- Data retention policies (GDPR-like)
-- Audit trail requirements
-
----
 
 ## Appendix A: Glossary
 
