@@ -124,4 +124,3 @@ sync-agents:
 # Full setup: install all dependencies and deploy all services
 setup: install deploy-services setup-action-groups sync-agents
 	@echo "✓ Setup complete! All dependencies installed, services deployed, action groups configured, and agents synced"
-
