@@ -4,16 +4,16 @@
     <AssistantAvatar class="flex-shrink-0" />
     
     <!-- Typing Bubble -->
-    <div class="bg-gray-100 rounded-2xl px-4 py-3 flex items-center gap-2">
+    <div class="bg-brand-50 border border-brand-100 rounded-2xl px-4 py-3 flex items-center gap-2">
       <div class="flex gap-1">
         <span 
           v-for="dot in 3" 
           :key="dot"
-          class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+          class="w-2 h-2 bg-brand-400 rounded-full animate-bounce"
           :style="{ animationDelay: `${dot * 0.15}s` }"
         />
       </div>
-      <span class="text-sm text-gray-600 ml-2">
+      <span class="text-sm text-brand-800/80 ml-2">
         ШІ обдумує відповідь…
       </span>
     </div>

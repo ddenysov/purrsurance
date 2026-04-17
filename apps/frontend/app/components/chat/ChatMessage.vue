@@ -16,14 +16,14 @@
       :class="[
         'max-w-[70%] rounded-2xl px-4 py-3',
         message.sender === 'user'
-          ? 'bg-purple-600 text-white'
-          : 'bg-gray-100 text-gray-900'
+          ? 'bg-brand-600 text-white'
+          : 'bg-brand-50 border border-brand-100 text-gray-900'
       ]"
     >
       <!-- Agent Badge (only for assistant messages) -->
       <div 
         v-if="message.sender === 'assistant' && agentDisplayName"
-        class="inline-flex items-center gap-1.5 mb-2 px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-xs font-medium"
+        class="inline-flex items-center gap-1.5 mb-2 px-2 py-1 bg-brand-100 text-brand-800 rounded-md text-xs font-medium"
       >
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -41,7 +41,7 @@
       <div 
         :class="[
           'text-xs mt-1',
-          message.sender === 'user' ? 'text-purple-200' : 'text-gray-500'
+          message.sender === 'user' ? 'text-brand-100' : 'text-brand-600/80'
         ]"
       >
         {{ formatTime(message.timestamp) }}
@@ -51,7 +51,7 @@
     <!-- User Avatar (right side) -->
     <div 
       v-if="message.sender === 'user'"
-      class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold"
+      class="flex-shrink-0 w-10 h-10 rounded-full bg-brand-600 flex items-center justify-center text-white font-semibold"
     >
       В
     </div>
@@ -146,7 +146,7 @@ const agentDisplayName = computed(() => {
 }
 
 .prose :deep(a) {
-  @apply text-purple-600 hover:text-purple-700 underline;
+  @apply text-brand-700 hover:text-brand-800 underline;
 }
 
 .prose :deep(code) {

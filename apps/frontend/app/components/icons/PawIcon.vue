@@ -75,7 +75,7 @@ const props = withDefaults(defineProps<Props>(), {
   isOnline: true,
   bgColor: 'bg-mint-50',
   ringColor: 'ring-1 ring-mint-200',
-  iconColor: 'rgb(22, 154, 105)', // mint-600
+  iconColor: 'rgb(30, 64, 175)', // brand-800
   rounded: 'rounded-2xl',
   shadow: false,
   containerClass: ''

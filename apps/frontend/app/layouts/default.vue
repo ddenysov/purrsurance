@@ -24,9 +24,9 @@ import AppFooter from "~/components/layout/AppFooter.vue";
 }
 
 header {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   padding: 1rem;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 main {
@@ -35,9 +35,9 @@ main {
 }
 
 footer {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   padding: 1rem;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #e5e7eb;
   text-align: center;
 }
 </style>

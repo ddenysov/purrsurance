@@ -14,10 +14,10 @@
         :class="[
           'px-4 py-2 rounded-lg text-sm font-medium transition-all',
           isAnswered && selectedChoice === 'yes'
-            ? 'bg-green-600 text-white'
+            ? 'bg-brand-600 text-white'
             : isAnswered
             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            : 'bg-green-500 text-white hover:bg-green-600'
+            : 'bg-brand-500 text-white hover:bg-brand-600 shadow-sm'
         ]"
       >
         {{ confirmationOptions?.yesLabel || 'Так' }}
@@ -27,12 +27,12 @@
         @click="handleChoice('no')"
         :disabled="isAnswered"
         :class="[
-          'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+          'px-4 py-2 rounded-lg text-sm font-medium transition-all border',
           isAnswered && selectedChoice === 'no'
-            ? 'bg-red-600 text-white'
+            ? 'border-brand-600 bg-brand-50 text-brand-800'
             : isAnswered
-            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            : 'bg-red-500 text-white hover:bg-red-600'
+            ? 'bg-gray-200 text-gray-400 border-transparent cursor-not-allowed'
+            : 'border-brand-200 bg-white text-brand-800 hover:bg-brand-50 hover:border-brand-300'
         ]"
       >
         {{ confirmationOptions?.noLabel || 'Ні' }}

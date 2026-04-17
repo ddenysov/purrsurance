@@ -18,7 +18,7 @@
           @keydown="handleKeydown"
           @input="autoResize"
           placeholder="Введіть повідомлення…"
-          class="block  p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 "></textarea>
+          class="block  p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"></textarea>
         <button type="button"
                 class="inline-flex justify-center p-2 text-gray-500 rounded-lg cursor-pointer hover:text-gray-900 hover:bg-gray-100">
           <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
@@ -32,7 +32,7 @@
           <span class="sr-only">Завантажити зображення</span>
         </button>
         <button type="button" @click.prevent="sendMessage"
-                class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100">
+                class="inline-flex justify-center p-2 text-brand-600 rounded-full cursor-pointer hover:bg-brand-50">
           <svg class="w-5 h-5 rotate-90 rtl:-rotate-90" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                fill="currentColor" viewBox="0 0 18 20">
             <path

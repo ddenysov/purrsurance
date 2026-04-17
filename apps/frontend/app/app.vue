@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-mint-50 to-brand-50">
+  <div class="min-h-screen bg-white">
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />
