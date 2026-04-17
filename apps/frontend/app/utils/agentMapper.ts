@@ -17,7 +17,7 @@ export const AGENT_DISPLAY_NAMES: Record<string, string> = {
   VetDocAgent: 'Ветеринарний агент',
   BookingAgent: 'Агент запису на прийом',
   MockAgent: 'Тестовий агент',
-  DoctorKotryAgent: 'Доктор Котрий',
+  DoctorKotryAgent: 'Доктор Котик',
 }
 
 /**

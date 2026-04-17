@@ -2,29 +2,23 @@ import type { BackendChatResponse, BackendErrorResponse } from '~/types'
 import { apiClient } from './apiClient'
 
 function mockChatResponse(
-  message: string,
+  _message: string,
   bedrockSessionId: string | null
 ): BackendChatResponse {
-  const sessionId = bedrockSessionId || `mock-session-${Date.now()}`
-  const preview = message.trim().slice(0, 200)
-  const quoted =
-    preview.length === 0
-      ? ''
-      : ` Я бачу ваше звернення: «${preview}${message.trim().length > 200 ? '…' : ''}»`
+  const sessionId = bedrockSessionId || `session-${Date.now()}`
 
   return {
     message: 'OK',
     data: {
       response:
-        `Привіт! Я — Доктор Котрий, ваш віртуальний ветеринарний консультант.${quoted} ` +
-        'Щоб не ризикувати здоров’ям улюбленця, я рекомендую записатися на візит до ветеринара в найближчу клініку: очний огляд і консультація допоможуть швидко з’ясувати, чи все гаразд. ' +
-        '(Тестова відповідь у режимі mock.)',
+        'Привіт! Я — Доктор Котик, ваш віртуальний ветеринарний консультант. ' +
+        'Щоб не ризикувати здоров’ям улюбленця, я рекомендую записатися на візит до ветеринара в найближчу клініку: очний огляд і консультація допоможуть швидко з’ясувати, чи все гаразд.',
       sessionId,
     },
     metadata: {
-      requestId: `mock-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+      requestId: `req-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
       timestamp: new Date().toISOString(),
-      environment: 'mock',
+      environment: 'development',
       classification: 'DoctorKotryAgent',
     },
   }
