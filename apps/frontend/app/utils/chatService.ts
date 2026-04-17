@@ -1,13 +1,31 @@
 import type { BackendChatResponse, BackendErrorResponse } from '~/types'
 import { apiClient } from './apiClient'
 
+function mockChatResponse(
+  message: string,
+  bedrockSessionId: string | null
+): BackendChatResponse {
+  const sessionId = bedrockSessionId || `mock-session-${Date.now()}`
+  return {
+    message: 'OK',
+    data: {
+      response: `Тестовый ответ чата (mock). Ваше сообщение: «${message.trim().slice(0, 200)}${message.trim().length > 200 ? '…' : ''}»`,
+      sessionId,
+    },
+    metadata: {
+      requestId: `mock-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+      timestamp: new Date().toISOString(),
+      environment: 'mock',
+      classification: 'MockAgent',
+    },
+  }
+}
+
 /**
  * Get chat API configuration from runtime config
  */
 function getChatApiConfig() {
   const config = useRuntimeConfig()
-
-  console.log(config);
 
   const chatApiUrl = config.public.chatApiUrl as string
   
@@ -38,6 +56,12 @@ export async function sendChatMessage(
   chatHistory: Array<{ content: string; sender: 'user' | 'assistant' }> = []
 ): Promise<BackendChatResponse> {
   try {
+    const runtimeConfig = useRuntimeConfig()
+    if (runtimeConfig.public.chatApiMock) {
+      await new Promise((r) => setTimeout(r, 400))
+      return mockChatResponse(message, bedrockSessionId)
+    }
+
     // Prepare request payload
     const payload: { 
       message: string; 

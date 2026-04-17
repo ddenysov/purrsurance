@@ -21,6 +21,8 @@ export default defineNuxtConfig({
       // Chat API URL from purrsurance-service-router stack
       // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
       chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || '/chat',
+      /** When true, chat responses are mocked on the client (no backend call). Set NUXT_PUBLIC_CHAT_API_MOCK=true */
+      chatApiMock: process.env.NUXT_PUBLIC_CHAT_API_MOCK === 'true',
       // Backend API URL from service-backend stack
       // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
       backendApiUrl: process.env.NUXT_PUBLIC_BACKEND_API_URL || '/api/vet-appointments',
