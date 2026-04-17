@@ -157,7 +157,8 @@ export const usePetProfile = () => {
     pet: readonly(pet),
     vaccinations: readonly(vaccinations),
     appointments: readonly(appointments),
-    isPolicyVerified: readonly(isPolicyVerified),
+    // Pinia ref — не обгортаємо у Vue readonly(), інакше у дочірніх компонентах проп може не розгортатися до boolean
+    isPolicyVerified,
     updatePetProfile,
     addVaccination,
     updateVaccinationStatus,
