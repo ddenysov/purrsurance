@@ -155,14 +155,34 @@ export const useChat = () => {
       
       // Hide typing indicator
       isTyping.value = false
-      
-      // Add AI response with parsed markdown and agent name
-      addMessage({
-        content: parsedResponse,
-        sender: 'assistant',
-        agentName: agentName
-      })
-      
+
+      const doctorVisitConfirmation = {
+        yesLabel: 'Записатися до лікаря',
+        noLabel: 'Не зараз',
+        yesEvent: 'doctor_visit:confirmed',
+        noEvent: 'doctor_visit:declined',
+        eventPayload: { source: 'doctor_kotry_chat' },
+      } as const
+
+      // Доктор Котрий (mock): текст + кнопки запису до ветеринара
+      if (agentName === 'DoctorKotryAgent') {
+        addMessage({
+          content: parsedResponse,
+          sender: 'assistant',
+          type: 'confirmation',
+          agentName,
+          metadata: {
+            confirmationOptions: { ...doctorVisitConfirmation },
+          },
+        })
+      } else {
+        addMessage({
+          content: parsedResponse,
+          sender: 'assistant',
+          agentName: agentName,
+        })
+      }
+
     } catch (err: any) {
       // Hide typing indicator
       isTyping.value = false

@@ -17,6 +17,7 @@ export const AGENT_DISPLAY_NAMES: Record<string, string> = {
   VetDocAgent: 'Ветеринарний агент',
   BookingAgent: 'Агент запису на прийом',
   MockAgent: 'Тестовий агент',
+  DoctorKotryAgent: 'Доктор Котрий',
 }
 
 /**
@@ -42,6 +43,7 @@ export function getAgentIcon(agentId: string | undefined): string {
   const iconMap: Record<string, string> = {
     PolicyAgent: 'shield',
     VetDocAgent: 'medical',
+    DoctorKotryAgent: 'medical',
     BookingAgent: 'calendar',
   }
   

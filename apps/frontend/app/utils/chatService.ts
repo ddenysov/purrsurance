@@ -6,17 +6,26 @@ function mockChatResponse(
   bedrockSessionId: string | null
 ): BackendChatResponse {
   const sessionId = bedrockSessionId || `mock-session-${Date.now()}`
+  const preview = message.trim().slice(0, 200)
+  const quoted =
+    preview.length === 0
+      ? ''
+      : ` Я бачу ваше звернення: «${preview}${message.trim().length > 200 ? '…' : ''}»`
+
   return {
     message: 'OK',
     data: {
-      response: `Тестова відповідь чату (mock). Ваше повідомлення: «${message.trim().slice(0, 200)}${message.trim().length > 200 ? '…' : ''}»`,
+      response:
+        `Привіт! Я — Доктор Котрий, ваш віртуальний ветеринарний консультант.${quoted} ` +
+        'Щоб не ризикувати здоров’ям улюбленця, я рекомендую записатися на візит до ветеринара в найближчу клініку: очний огляд і консультація допоможуть швидко з’ясувати, чи все гаразд. ' +
+        '(Тестова відповідь у режимі mock.)',
       sessionId,
     },
     metadata: {
       requestId: `mock-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
       timestamp: new Date().toISOString(),
       environment: 'mock',
-      classification: 'MockAgent',
+      classification: 'DoctorKotryAgent',
     },
   }
 }
