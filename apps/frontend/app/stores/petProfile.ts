@@ -163,7 +163,7 @@ interface Audit {
   version: number
 }
 
-interface PetProfile {
+export interface PetProfile {
   pet: Pet
   owner: Owner
   policy: Policy
@@ -173,93 +173,116 @@ interface PetProfile {
   audit: Audit
 }
 
-export const usePetProfileStore = defineStore('petProfile', () => {
-  // Default empty pet profile structure
-  const petProfile = ref<PetProfile>({
-    pet: {
-      id: '',
-      name: '',
-      species: 'cat',
-      breed: '',
-      sex: 'female',
-      dateOfBirth: '',
-      ageMonths: 0,
-      color: '',
-      microchip: {
-        number: '',
-        issuer: '',
-        dateImplanted: ''
-      },
-      identifiers: {
-        licenseTag: '',
-        passportNumber: ''
-      },
-      photoUrl: '',
-      weight: {
-        currentKg: 0,
-        lastUpdated: '',
-        history: []
-      },
-      spayedNeutered: false,
-      lifestyle: {
-        indoor: false,
-        outdoor: false,
-        activityLevel: 'moderate',
-        diet: 'dry'
-      }
+/** Matches the first policy in `data/seeds/001_policies_seed.mjs` (POL-2025-123456). */
+const DEFAULT_SEEDED_PET_PROFILE: PetProfile = {
+  pet: {
+    id: '7f4f0c1a-6f3a-4497-9d6a-9f9d1a3a1e22',
+    name: 'Mittens',
+    species: 'cat',
+    breed: 'British Shorthair',
+    sex: 'female',
+    dateOfBirth: '2021-04-15',
+    ageMonths: 54,
+    color: 'blue',
+    microchip: {
+      number: '981000123456789',
+      issuer: 'ISO11784/11785',
+      dateImplanted: '2021-06-01'
     },
-    owner: {
-      id: '',
-      fullName: '',
-      phone: '',
-      email: '',
-      address: {
-        country: '',
-        city: '',
-        street: '',
-        postalCode: ''
-      }
+    identifiers: {
+      licenseTag: 'KY-2025-00987',
+      passportNumber: 'UA-PET-000112233'
     },
-    policy: {
-      policyId: '',
-      provider: '',
-      status: 'inactive',
-      startDate: '',
-      endDate: '',
-      plan: '',
-      coverage: {
-        annualLimitUAH: 0,
-        deductibleUAH: 0,
-        copayPercent: 0,
-        covered: [],
-        exclusions: []
-      }
+    photoUrl: 'https://images.unsplash.com/photo-1574158622682-e40e69881006',
+    weight: {
+      currentKg: 4.3,
+      lastUpdated: '',
+      history: []
     },
-    medical: {
-      allergies: [],
-      conditions: [],
-      vaccinations: [],
-      medications: [],
-      lastCheckup: {
-        date: '',
-        clinic: {
-          id: '',
-          name: '',
-          phone: ''
-        },
-        notes: ''
-      },
-      procedures: []
-    },
-    claims: [],
-    vetContacts: [],
-    audit: {
-      createdAt: '',
-      updatedAt: '',
-      source: '',
-      version: 1
+    spayedNeutered: true,
+    lifestyle: {
+      indoor: true,
+      outdoor: false,
+      activityLevel: 'moderate',
+      diet: 'wet_dry_mix'
     }
-  })
+  },
+  owner: {
+    id: 'c6c1c5b9-3c1c-4d2e-a4f1-8c1f2d9a0a55',
+    fullName: 'Dmytro Denysov',
+    phone: '+380671112233',
+    email: 'dmytro@example.com',
+    address: {
+      country: 'Ukraine',
+      city: 'Kyiv',
+      street: 'Khreshchatyk 10',
+      postalCode: '01001'
+    }
+  },
+  policy: {
+    policyId: 'POL-2025-123456',
+    provider: 'PurrSure Insurance',
+    status: 'active',
+    startDate: '2025-01-01',
+    endDate: '2025-12-31',
+    plan: 'Premium',
+    coverage: {
+      annualLimitUAH: 150000,
+      deductibleUAH: 1500,
+      copayPercent: 10,
+      covered: ['accidents', 'illness', 'diagnostics', 'hospitalization', 'surgery', 'prescription_meds'],
+      exclusions: ['pre_existing_conditions', 'cosmetic_procedures']
+    }
+  },
+  medical: {
+    allergies: ['chicken_protein'],
+    conditions: [
+      {
+        code: 'ICD-11:ME81',
+        name: 'Feline asthma',
+        diagnosedAt: '2024-02-10',
+        status: 'managed'
+      }
+    ],
+    vaccinations: [
+      {
+        type: 'RCP',
+        date: '2025-02-12',
+        validUntil: '2026-02-12',
+        vetClinicId: 'vet-kyiv-center'
+      }
+    ],
+    medications: [
+      {
+        name: 'Fluticasone inhaler',
+        dosage: '110 mcg',
+        frequency: '2x/day',
+        since: '2024-02-15'
+      }
+    ],
+    lastCheckup: {
+      date: '2025-09-20',
+      clinic: {
+        id: 'vet-kyiv-center',
+        name: 'Kyiv Vet Center',
+        phone: '+380442223344'
+      },
+      notes: 'Normal exam; asthma stable; weight slightly up.'
+    },
+    procedures: []
+  },
+  claims: [],
+  vetContacts: [],
+  audit: {
+    createdAt: '2025-01-01T09:00:00Z',
+    updatedAt: '2025-09-20T14:35:12Z',
+    source: 'default-seed',
+    version: 1
+  }
+}
+
+export const usePetProfileStore = defineStore('petProfile', () => {
+  const petProfile = ref<PetProfile>(structuredClone(DEFAULT_SEEDED_PET_PROFILE))
 
   // Actions
 

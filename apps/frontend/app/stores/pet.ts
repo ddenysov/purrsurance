@@ -2,27 +2,23 @@ import { defineStore } from 'pinia'
 import type { Pet, Vaccination, Appointment } from '~/types'
 
 export const usePetStore = defineStore('pet', () => {
-  // Policy verification state
-  const isPolicyVerified = ref<boolean>(false)
+  // Policy verification state — default true with first seeded policy (see petProfile store)
+  const isPolicyVerified = ref<boolean>(true)
 
-  // Default pet data matching the mockup
+  // Legacy pet snapshot (UI uses petProfile store via usePetProfile)
   const pet = ref<Pet>({
-    id: '1',
-    name: 'Luna',
+    id: '7f4f0c1a-6f3a-4497-9d6a-9f9d1a3a1e22',
+    name: 'Mittens',
     species: 'Cat',
-    age: '2 years',
+    age: '4 years',
     gender: 'Female',
-    avatar: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=480',
-    policyId: 'PS-2578412',
-    coveragePlan: 'Premium 80%'
+    avatar: 'https://images.unsplash.com/photo-1574158622682-e40e69881006',
+    policyId: 'POL-2025-123456',
+    coveragePlan: 'Premium'
   })
 
-  // Default vaccinations data
   const vaccinations = ref<Vaccination[]>([
-    { id: '1', name: 'Сказ', status: 'completed' },
-    { id: '2', name: 'FVRCP', status: 'completed' },
-    { id: '3', name: 'FeLV', status: 'due' },
-    { id: '4', name: 'Бордетельоз', status: 'overdue' }
+    { id: '1', name: 'RCP', status: 'completed' }
   ])
 
   // Default appointments data
