@@ -20,7 +20,7 @@
             : 'bg-green-500 text-white hover:bg-green-600'
         ]"
       >
-        {{ confirmationOptions?.yesLabel || 'Yes' }}
+        {{ confirmationOptions?.yesLabel || 'Так' }}
       </button>
       
       <button
@@ -35,13 +35,13 @@
             : 'bg-red-500 text-white hover:bg-red-600'
         ]"
       >
-        {{ confirmationOptions?.noLabel || 'No' }}
+        {{ confirmationOptions?.noLabel || 'Ні' }}
       </button>
     </div>
     
     <!-- Answer indication -->
     <div v-if="isAnswered" class="mt-2 text-xs text-gray-600 italic">
-      You selected: {{ selectedChoice === 'yes' ? confirmationOptions?.yesLabel || 'Yes' : confirmationOptions?.noLabel || 'No' }}
+      Ви обрали: {{ selectedChoice === 'yes' ? confirmationOptions?.yesLabel || 'Так' : confirmationOptions?.noLabel || 'Ні' }}
     </div>
   </div>
 </template>
@@ -74,8 +74,8 @@ const handleChoice = (choice: 'yes' | 'no') => {
   
   // Send invisible message with user choice
   const choiceLabel = choice === 'yes' 
-    ? (confirmationOptions.value?.yesLabel || 'Yes')
-    : (confirmationOptions.value?.noLabel || 'No')
+    ? (confirmationOptions.value?.yesLabel || 'Так')
+    : (confirmationOptions.value?.noLabel || 'Ні')
   
   addMessage({
     content: choiceLabel,

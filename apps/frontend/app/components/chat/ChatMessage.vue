@@ -53,7 +53,7 @@
       v-if="message.sender === 'user'"
       class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold"
     >
-      U
+      В
     </div>
   </div>
 </template>

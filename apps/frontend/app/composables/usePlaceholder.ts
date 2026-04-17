@@ -5,7 +5,7 @@
 export const usePlaceholder = () => {
   // TBD: Add composable logic here
   
-  const placeholderValue = ref('TBD: Placeholder value')
+  const placeholderValue = ref('TBD: значення-заглушка')
   
   const placeholderFunction = () => {
     // TBD: Add function logic here

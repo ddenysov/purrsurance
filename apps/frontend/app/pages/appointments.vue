@@ -4,20 +4,20 @@
     <!-- Page Header -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Veterinary Appointments</h1>
-        <p class="mt-2 text-sm text-gray-600">View and manage all scheduled appointments</p>
+        <h1 class="text-3xl font-bold text-gray-900">Ветеринарні записи</h1>
+        <p class="mt-2 text-sm text-gray-600">Перегляд і керування запланованими візитами</p>
         <NuxtLink
           to="/"
           class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-mint-500 text-white hover:bg-mint-600 transition-colors duration-150 shadow-sm hover:shadow-md"
         >
-          ← Back to Chat
+          ← До чату
         </NuxtLink>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-mint-500 border-t-transparent"></div>
-        <p class="mt-4 text-gray-600">Loading appointments...</p>
+        <p class="mt-4 text-gray-600">Завантаження записів…</p>
       </div>
 
       <!-- Error State -->
@@ -25,13 +25,13 @@
         <div class="flex items-center justify-center">
           <div class="text-center">
             <div class="text-red-500 text-5xl mb-4">⚠️</div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Error Loading Appointments</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Не вдалося завантажити записи</h3>
             <p class="text-gray-600 mb-4">{{ error }}</p>
             <button 
               @click="fetchAppointments"
               class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-mint-500 text-white hover:bg-mint-600 transition-colors"
             >
-              Try Again
+              Спробувати знову
             </button>
           </div>
         </div>
@@ -42,10 +42,10 @@
         <!-- Table Header -->
         <div class="px-6 py-4 border-b border-gray-200 bg-white/60">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">All Appointments</h2>
+            <h2 class="text-lg font-semibold text-gray-900">Усі записи</h2>
             <div class="flex items-center gap-4">
               <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-brand-100 text-brand-800">
-                {{ appointments.length }} appointments
+                {{ appointments.length }} {{ pluralZapysiv(appointments.length) }}
               </span>
               <button 
                 @click="fetchAppointments"
@@ -55,7 +55,7 @@
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Refresh
+                Оновити
               </button>
             </div>
           </div>
@@ -64,8 +64,8 @@
         <!-- Empty State -->
         <div v-if="appointments.length === 0" class="p-12 text-center">
           <div class="text-gray-400 text-6xl mb-4">📅</div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">No Appointments Found</h3>
-          <p class="text-gray-600">There are no appointments scheduled at this time.</p>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Записів не знайдено</h3>
+          <p class="text-gray-600">Наразі немає запланованих візитів.</p>
         </div>
 
         <!-- Table Content -->
@@ -74,19 +74,19 @@
             <thead class="bg-gray-50/50">
               <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Pet & Owner
+                  Улюбленець і власник
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Appointment
+                  Візит
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Clinic
+                  Клініка
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date & Time
+                  Дата й час
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Статус
                 </th>
               </tr>
             </thead>
@@ -97,7 +97,7 @@
                   <div class="space-y-2">
                     <div>
                       <div class="text-sm font-bold text-gray-900">{{ appointment.pet.name }}</div>
-                      <div class="text-xs text-gray-500 capitalize">{{ appointment.pet.species }} • {{ appointment.pet.breed }}</div>
+                      <div class="text-xs text-gray-500">{{ speciesLabel(appointment.pet.species) }} • {{ appointment.pet.breed }}</div>
                     </div>
                     <div class="pt-1 border-t border-gray-200">
                       <div class="text-sm font-medium text-gray-700">{{ appointment.owner.fullName }}</div>
@@ -114,12 +114,12 @@
                         class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
                         :class="getAppointmentTypeClass(appointment.appointment.type)"
                       >
-                        {{ appointment.appointment.type }}
+                        {{ appointmentTypeLabel(appointment.appointment.type) }}
                       </span>
                     </div>
                     <div class="text-sm text-gray-900 font-medium">{{ appointment.appointment.reason }}</div>
-                    <div class="text-xs text-gray-500">Duration: {{ appointment.appointment.duration }} min</div>
-                    <div class="text-xs text-gray-500">Conf: {{ appointment.appointment.confirmationNumber }}</div>
+                    <div class="text-xs text-gray-500">Тривалість: {{ appointment.appointment.duration }} хв</div>
+                    <div class="text-xs text-gray-500">Підтвердження: {{ appointment.appointment.confirmationNumber }}</div>
                   </div>
                 </td>
 
@@ -138,7 +138,7 @@
                   <div class="space-y-1">
                     <div class="text-sm font-medium text-gray-900">{{ formatDate(appointment.appointmentDate) }}</div>
                     <div class="text-sm text-gray-600">{{ formatTime(appointment.appointmentDate) }}</div>
-                    <div class="text-xs text-gray-500">Arrive: {{ formatTime(appointment.appointment.arrivalTime) }}</div>
+                    <div class="text-xs text-gray-500">Прибуття: {{ formatTime(appointment.appointment.arrivalTime) }}</div>
                   </div>
                 </td>
 
@@ -148,10 +148,10 @@
                     class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                     :class="getStatusClass(appointment.status)"
                   >
-                    {{ appointment.status }}
+                    {{ appointmentStatusLabel(appointment.status) }}
                   </span>
                   <div v-if="appointment.medicalContext" class="mt-2 text-xs text-gray-500">
-                    <div class="font-medium text-gray-700">Medical:</div>
+                    <div class="font-medium text-gray-700">Медично:</div>
                     <div>{{ appointment.medicalContext.urgencyLevel }}</div>
                   </div>
                 </td>
@@ -185,7 +185,7 @@ const fetchAppointments = async () => {
     const response = await fetch(backendApiUrl)
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch appointments: ${response.statusText}`)
+      throw new Error(`Не вдалося отримати записи: ${response.statusText}`)
     }
     
     const data = await response.json()
@@ -196,11 +196,11 @@ const fetchAppointments = async () => {
       appointments.value = data.data
       console.log('[Appointments] Loaded', appointments.value.length, 'appointments')
     } else {
-      throw new Error('Invalid response format')
+      throw new Error('Некоректний формат відповіді')
     }
   } catch (err: any) {
     console.error('[Appointments] Error fetching appointments:', err)
-    error.value = err.message || 'Failed to load appointments'
+    error.value = err.message || 'Не вдалося завантажити записи'
   } finally {
     loading.value = false
   }
@@ -230,7 +230,7 @@ const getAppointmentTypeClass = (type: string) => {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  return new Intl.DateTimeFormat('en-US', { 
+  return new Intl.DateTimeFormat('uk-UA', { 
     year: 'numeric',
     month: 'short', 
     day: 'numeric'
@@ -239,16 +239,57 @@ const formatDate = (dateString: string) => {
 
 const formatTime = (dateString: string) => {
   const date = new Date(dateString)
-  return new Intl.DateTimeFormat('en-US', { 
+  return new Intl.DateTimeFormat('uk-UA', { 
     hour: '2-digit', 
     minute: '2-digit',
     hour12: false
   }).format(date)
 }
 
+const pluralZapysiv = (n: number) => {
+  const m = n % 10
+  const k = n % 100
+  if (k >= 11 && k <= 14) return 'записів'
+  if (m === 1) return 'запис'
+  if (m >= 2 && m <= 4) return 'записи'
+  return 'записів'
+}
+
+const appointmentStatusLabel = (status: string) => {
+  const map: Record<string, string> = {
+    scheduled: 'Заплановано',
+    confirmed: 'Підтверджено',
+    completed: 'Завершено',
+    cancelled: 'Скасовано'
+  }
+  return map[status] ?? status
+}
+
+const appointmentTypeLabel = (type: string) => {
+  const map: Record<string, string> = {
+    routine: 'Плановий',
+    specialist: 'До спеціаліста',
+    urgent: 'Терміновий',
+    emergency: 'Надзвичайна ситуація',
+    'follow-up': 'Повторний'
+  }
+  return map[type] ?? type
+}
+
+const speciesLabel = (species: string) => {
+  const map: Record<string, string> = {
+    cat: 'Кіт',
+    dog: 'Собака',
+    bird: 'Птах',
+    rabbit: 'Кролик',
+    other: 'Інше'
+  }
+  return map[species.toLowerCase()] ?? species
+}
+
 // Set page title
 useHead({
-  title: 'Appointments - Purrsurance'
+  title: 'Записи — Purrsurance'
 })
 
 // Fetch appointments on mount

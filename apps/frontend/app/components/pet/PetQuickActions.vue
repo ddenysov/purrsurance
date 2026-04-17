@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <h3 class="text-sm font-medium text-gray-900">Quick Actions</h3>
+    <h3 class="text-sm font-medium text-gray-900">Швидкі дії</h3>
     
     <div class="grid grid-cols-2 gap-2">
       <button

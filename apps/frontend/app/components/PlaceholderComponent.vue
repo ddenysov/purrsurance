@@ -1,7 +1,7 @@
 <template>
   <div class="placeholder-component">
-    <h2>TBD: Component Title</h2>
-    <p>This is a placeholder component.</p>
+    <h2>Заголовок компонента (TBD)</h2>
+    <p>Це тимчасовий компонент-заглушка.</p>
   </div>
 </template>
 

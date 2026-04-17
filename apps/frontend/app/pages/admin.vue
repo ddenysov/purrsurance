@@ -4,14 +4,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-6 flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">Pets Admin Panel</h1>
-          <p class="mt-2 text-sm text-gray-600">Manage and view all registered pets</p>
+          <h1 class="text-3xl font-bold text-gray-900">Адмін-панель улюбленців</h1>
+          <p class="mt-2 text-sm text-gray-600">Перегляд і керування зареєстрованими улюбленцями</p>
         </div>
         <NuxtLink 
           to="/" 
           class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-mint-500 text-white hover:bg-mint-600 transition-colors duration-150 shadow-sm hover:shadow-md"
         >
-          ← Back to Chat
+          ← До чату
         </NuxtLink>
       </div>
 
@@ -20,9 +20,9 @@
         <!-- Table Header -->
         <div class="px-6 py-4 border-b border-gray-200 bg-white/60">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900">All Pets</h2>
+            <h2 class="text-lg font-semibold text-gray-900">Усі улюбленці</h2>
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-brand-100 text-brand-800">
-              {{ pets.length }} pets
+              {{ pets.length }} {{ pluralUliublentsiv(pets.length) }}
             </span>
           </div>
         </div>
@@ -33,19 +33,19 @@
             <thead class="bg-gray-50/50">
               <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Pet
+                  Улюбленець
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Details
+                  Деталі
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Owner
+                  Власник
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Policy
+                  Поліс
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Статус
                 </th>
               </tr>
             </thead>
@@ -73,18 +73,18 @@
                 <td class="px-6 py-6">
                   <div class="space-y-1">
                     <div class="text-sm text-gray-900">
-                      <span class="font-medium">Species:</span> 
-                      <span class="capitalize">{{ pet.species }}</span>
+                      <span class="font-medium">Вид:</span> 
+                      <span>{{ speciesLabel(pet.species) }}</span>
                     </div>
                     <div class="text-sm text-gray-500">
-                      <span class="font-medium">Age:</span> {{ Math.floor(pet.ageMonths / 12) }}y {{ pet.ageMonths % 12 }}m
+                      <span class="font-medium">Вік:</span> {{ Math.floor(pet.ageMonths / 12) }} р. {{ pet.ageMonths % 12 }} міс.
                     </div>
                     <div class="text-sm text-gray-500">
-                      <span class="font-medium">Sex:</span> 
-                      <span class="capitalize">{{ pet.sex }}</span>
+                      <span class="font-medium">Стать:</span> 
+                      <span>{{ sexLabel(pet.sex) }}</span>
                     </div>
                     <div class="text-sm text-gray-500">
-                      <span class="font-medium">Weight:</span> {{ pet.weight.currentKg }} kg
+                      <span class="font-medium">Вага:</span> {{ pet.weight.currentKg }} кг
                     </div>
                   </div>
                 </td>
@@ -104,8 +104,8 @@
                   <div class="space-y-1">
                     <div class="text-sm font-medium text-gray-900">{{ pet.policyId }}</div>
                     <div class="text-sm text-gray-500">{{ pet.policyPlan }}</div>
-                    <div class="text-sm text-gray-500">{{ formatCurrency(pet.policyLimit) }} UAH</div>
-                    <div class="text-sm text-gray-500">Deductible: {{ formatCurrency(pet.policyDeductible) }} UAH</div>
+                    <div class="text-sm text-gray-500">{{ formatCurrency(pet.policyLimit) }} грн</div>
+                    <div class="text-sm text-gray-500">Франшиза: {{ formatCurrency(pet.policyDeductible) }} грн</div>
                   </div>
                 </td>
 
@@ -115,16 +115,16 @@
                     class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                     :class="getStatusClass(pet.policyStatus)"
                   >
-                    {{ pet.policyStatus }}
+                    {{ policyStatusLabel(pet.policyStatus) }}
                   </span>
                   <div class="mt-2 text-xs text-gray-500">
                     <div v-if="pet.medicalConditions.length > 0">
-                      <span class="font-medium">Conditions:</span>
+                      <span class="font-medium">Діагнози:</span>
                       <div v-for="condition in pet.medicalConditions" :key="condition.code" class="mt-1">
                         {{ condition.name }}
                       </div>
                     </div>
-                    <div v-else class="text-mint-600">No conditions</div>
+                    <div v-else class="text-mint-600">Немає діагнозів</div>
                   </div>
                 </td>
               </tr>
@@ -532,9 +532,46 @@ const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('uk-UA').format(amount)
 }
 
-// Set page title
+const pluralUliublentsiv = (n: number) => {
+  const m = n % 10
+  const k = n % 100
+  if (k >= 11 && k <= 14) return 'улюбленців'
+  if (m === 1) return 'улюбленець'
+  if (m >= 2 && m <= 4) return 'улюбленці'
+  return 'улюбленців'
+}
+
+const speciesLabel = (species: string) => {
+  const map: Record<string, string> = {
+    cat: 'Кіт',
+    dog: 'Собака',
+    bird: 'Птах',
+    rabbit: 'Кролик',
+    other: 'Інше'
+  }
+  return map[species.toLowerCase()] ?? species
+}
+
+const sexLabel = (sex: string) => {
+  const map: Record<string, string> = {
+    male: 'Самець',
+    female: 'Самка'
+  }
+  return map[sex.toLowerCase()] ?? sex
+}
+
+const policyStatusLabel = (status: string) => {
+  const map: Record<string, string> = {
+    active: 'Активний',
+    inactive: 'Неактивний',
+    pending: 'Очікує',
+    expired: 'Закінчився'
+  }
+  return map[status] ?? status
+}
+
 useHead({
-  title: 'Pets Admin - Purrsurance'
+  title: 'Адмін улюбленців — Purrsurance'
 })
 </script>
 

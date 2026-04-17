@@ -17,7 +17,7 @@
         />
       </svg>
       <div class="flex-1">
-        <h4 class="text-sm font-semibold text-red-800">Connection Error</h4>
+        <h4 class="text-sm font-semibold text-red-800">Помилка з’єднання</h4>
         <p class="text-sm text-red-700 mt-1">{{ error }}</p>
       </div>
     </div>

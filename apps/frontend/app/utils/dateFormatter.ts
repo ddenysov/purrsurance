@@ -1,10 +1,12 @@
+const UK_LOCALE = 'uk-UA'
+
 /**
  * Format date for display in the UI
  */
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date
   
-  return d.toLocaleDateString('en-US', {
+  return d.toLocaleDateString(UK_LOCALE, {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
@@ -17,10 +19,10 @@ export function formatDate(date: Date | string): string {
 export function formatTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date
   
-  return d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
+  return d.toLocaleTimeString(UK_LOCALE, {
+    hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: false
   })
 }
 
@@ -28,7 +30,7 @@ export function formatTime(date: Date | string): string {
  * Format date and time together
  */
 export function formatDateTime(date: Date | string): string {
-  return `${formatDate(date)} at ${formatTime(date)}`
+  return `${formatDate(date)}, ${formatTime(date)}`
 }
 
 /**
@@ -43,15 +45,15 @@ export function getRelativeTime(date: Date | string): string {
   const diffInDays = Math.floor(diffInHours / 24)
   
   if (diffInMinutes < 1) {
-    return 'Just now'
+    return 'Щойно'
   } else if (diffInMinutes < 60) {
-    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`
+    return `${diffInMinutes} хв тому`
   } else if (diffInHours < 24) {
-    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+    return `${diffInHours} год тому`
   } else if (diffInDays === 1) {
-    return 'Yesterday'
+    return 'Учора'
   } else if (diffInDays < 7) {
-    return `${diffInDays} days ago`
+    return `${diffInDays} дн тому`
   } else {
     return formatDate(d)
   }

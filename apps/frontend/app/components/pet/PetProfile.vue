@@ -9,12 +9,12 @@
         </svg>
       </div>
       <div>
-        <h3 class="text-lg font-semibold text-slate-700">Pet Details Locked</h3>
+        <h3 class="text-lg font-semibold text-slate-700">Дані улюбленця заблоковано</h3>
         <p class="text-sm text-slate-500 mt-2 max-w-xs mx-auto">
-          To view your pet's profile and insurance details, please share your policy ID in the chat.
+          Щоб переглянути профіль і страхові дані, вкажіть номер полісу в чаті.
         </p>
         <p class="text-xs text-mint-600 mt-3 font-medium">
-          Example: "My policy ID is PS-2578412"
+          Наприклад: «Мій номер полісу PS-2578412»
         </p>
       </div>
     </div>
@@ -44,10 +44,10 @@
       
       <!-- Owner Information (from petProfileStore) -->
       <div v-if="petProfileStore.petProfile.owner.fullName" class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900">Owner Information</h3>
+        <h3 class="text-sm font-medium text-gray-900">Дані власника</h3>
         <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
           <div>
-            <span class="text-gray-500">Name:</span>
+            <span class="text-gray-500">Ім’я:</span>
             <span class="ml-2 font-medium text-gray-900">{{ petProfileStore.petProfile.owner.fullName }}</span>
           </div>
           <div v-if="petProfileStore.petProfile.owner.email">
@@ -55,7 +55,7 @@
             <span class="ml-2 text-gray-900">{{ petProfileStore.petProfile.owner.email }}</span>
           </div>
           <div v-if="petProfileStore.petProfile.owner.phone">
-            <span class="text-gray-500">Phone:</span>
+            <span class="text-gray-500">Телефон:</span>
             <span class="ml-2 text-gray-900">{{ petProfileStore.petProfile.owner.phone }}</span>
           </div>
         </div>
@@ -63,7 +63,7 @@
       
       <!-- Medical Conditions -->
       <div v-if="petProfileStore.petProfile.medical.conditions.length > 0" class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900">Medical Conditions</h3>
+        <h3 class="text-sm font-medium text-gray-900">Медичні стани</h3>
         <div class="flex flex-wrap gap-2">
           <span
             v-for="(condition, index) in petProfileStore.petProfile.medical.conditions"
@@ -78,7 +78,7 @@
       
       <!-- Current Medications -->
       <div v-if="petProfileStore.petProfile.medical.medications.length > 0" class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900">Current Medications</h3>
+        <h3 class="text-sm font-medium text-gray-900">Поточні препарати</h3>
         <div class="bg-gray-50 rounded-lg p-3 space-y-2">
           <div 
             v-for="(medication, index) in petProfileStore.petProfile.medical.medications" 
@@ -98,23 +98,23 @@
       
       <!-- Policy Status -->
       <div v-if="petProfileStore.petProfile.policy.status !== 'inactive'" class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900">Policy Status</h3>
+        <h3 class="text-sm font-medium text-gray-900">Статус полісу</h3>
         <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
           <div class="flex items-center justify-between">
-            <span class="text-gray-500">Status:</span>
+            <span class="text-gray-500">Статус:</span>
             <span 
               :class="getPolicyStatusClasses(petProfileStore.petProfile.policy.status)"
               class="px-2 py-1 rounded-full text-xs font-medium"
             >
-              {{ petProfileStore.petProfile.policy.status }}
+              {{ policyStatusLabel(petProfileStore.petProfile.policy.status) }}
             </span>
           </div>
           <div v-if="petProfileStore.petProfile.policy.startDate" class="flex items-center justify-between">
-            <span class="text-gray-500">Start Date:</span>
+            <span class="text-gray-500">Початок:</span>
             <span class="text-gray-900">{{ formatDate(petProfileStore.petProfile.policy.startDate) }}</span>
           </div>
           <div v-if="petProfileStore.petProfile.policy.endDate" class="flex items-center justify-between">
-            <span class="text-gray-500">End Date:</span>
+            <span class="text-gray-500">Кінець:</span>
             <span class="text-gray-900">{{ formatDate(petProfileStore.petProfile.policy.endDate) }}</span>
           </div>
         </div>
@@ -187,7 +187,7 @@ const formatDate = (dateString: string) => {
   if (!dateString) return ''
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('uk-UA', { 
       year: 'numeric', 
       month: 'short', 
       day: 'numeric' 
@@ -195,5 +195,15 @@ const formatDate = (dateString: string) => {
   } catch (error) {
     return dateString
   }
+}
+
+const policyStatusLabel = (status: string) => {
+  const map: Record<string, string> = {
+    active: 'Активний',
+    inactive: 'Неактивний',
+    pending: 'Очікує',
+    expired: 'Закінчився'
+  }
+  return map[status] ?? status
 }
 </script>

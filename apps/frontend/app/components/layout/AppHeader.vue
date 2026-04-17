@@ -11,13 +11,13 @@
             to="/appointments"
             class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-brand-500 text-white hover:bg-brand-600 transition-colors duration-150 shadow-sm hover:shadow-md"
           >
-            📅 Appointments [admin]
+            📅 Записи [адмін]
           </NuxtLink>
           <NuxtLink
             to="/admin"
             class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-mint-500 text-white hover:bg-mint-600 transition-colors duration-150 shadow-sm hover:shadow-md"
           >
-            🐶 Policies [admin]
+            🐶 Поліси [адмін]
           </NuxtLink>
         </div>
       </div>

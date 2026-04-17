@@ -16,9 +16,9 @@ export const useChat = () => {
   const messages = ref<ChatMessage[]>([
     {
       id: '1',
-      content: 'Hi there! 😊\n' +
-          'I’d be happy to help. Could you please provide your policy number?\n' +
-          'I just need it to find your plan and make sure I give you the right information.',
+      content: 'Вітаю! 😊\n' +
+          'Раді допомогти. Будь ласка, вкажіть номер вашого полісу.\n' +
+          'Він потрібен, щоб знайти ваш план і підказати точну інформацію.',
       sender: 'assistant',
       timestamp: new Date()
     }
@@ -94,13 +94,13 @@ export const useChat = () => {
     if (text.trim().toLowerCase() === 'test_form') {
       isTyping.value = false
       addMessage({
-        content: 'Do you want to proceed with filing a claim for your pet?',
+        content: 'Бажаєте подати заяву на відшкодування для вашого улюбленця?',
         sender: 'assistant',
         type: 'confirmation',
         metadata: {
           confirmationOptions: {
-            yesLabel: 'Yes, proceed',
-            noLabel: 'No, cancel',
+            yesLabel: 'Так, продовжити',
+            noLabel: 'Ні, скасувати',
             yesEvent: 'claim:confirmed',
             noEvent: 'claim:cancelled',
             eventPayload: { source: 'chat', action: 'file_claim' }
@@ -168,11 +168,11 @@ export const useChat = () => {
       isTyping.value = false
       
       // Store error
-      error.value = err.message || 'Failed to send message'
+      error.value = err.message || 'Не вдалося надіслати повідомлення'
       
       // Add error message to chat
       addMessage({
-        content: `Sorry, I encountered an error: ${error.value}. Please try again.`,
+        content: `Вибачте, сталася помилка: ${error.value}. Спробуйте ще раз.`,
         sender: 'assistant'
       })
       
@@ -191,7 +191,7 @@ export const useChat = () => {
   const clearMessages = () => {
     messages.value = [{
       id: '1',
-      content: 'Hello! I\'m your Purrsurance AI assistant. I\'m here to help you with your pet insurance needs. How can I assist you today?',
+      content: 'Вітаю! Я ваш ШІ-помічник Purrsurance. Допоможу зі страхуванням улюбленця. Чим можу бути корисним?',
       sender: 'assistant',
       timestamp: new Date()
     }]

@@ -13,9 +13,10 @@
  */
 
 export const AGENT_DISPLAY_NAMES: Record<string, string> = {
-  PolicyAgent: 'Policy Manager Agent',
-  VetDocAgent: 'Veterinary Doctor Agent',
-  BookingAgent: 'Booking Manager Agent',
+  PolicyAgent: 'Агент з полісів',
+  VetDocAgent: 'Ветеринарний агент',
+  BookingAgent: 'Агент запису на прийом',
+  MockAgent: 'Тестовий агент',
 }
 
 /**

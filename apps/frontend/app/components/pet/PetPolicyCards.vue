@@ -3,7 +3,7 @@
     <!-- Policy ID Card -->
     <div class="bg-gray-50 rounded-lg p-3">
       <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-        Policy ID
+        Номер полісу
       </div>
       <div class="text-sm font-semibold text-gray-900">
         {{ policyId }}
@@ -13,7 +13,7 @@
     <!-- Coverage Plan Card -->
     <div class="bg-gray-50 rounded-lg p-3">
       <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-        Coverage
+        Покриття
       </div>
       <div class="text-sm font-semibold text-gray-900">
         {{ coveragePlan }}

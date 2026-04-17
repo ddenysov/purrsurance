@@ -31,27 +31,26 @@ export const usePetProfile = () => {
       const ageMonths = profile.pet.ageMonths % 12
       
       if (ageYears > 0) {
-        ageDisplay = ageMonths > 0 ? `${ageYears} years ${ageMonths} months` : `${ageYears} years`
+        ageDisplay = ageMonths > 0 ? `${ageYears} р. ${ageMonths} міс.` : `${ageYears} р.`
       } else {
-        ageDisplay = `${ageMonths} months`
+        ageDisplay = `${ageMonths} міс.`
       }
     } else if (profile.pet.ageMonths > 0) {
       const years = Math.floor(profile.pet.ageMonths / 12)
       const months = profile.pet.ageMonths % 12
       if (years > 0) {
-        ageDisplay = months > 0 ? `${years} years ${months} months` : `${years} years`
+        ageDisplay = months > 0 ? `${years} р. ${months} міс.` : `${years} р.`
       } else {
-        ageDisplay = `${months} months`
+        ageDisplay = `${months} міс.`
       }
     }
     
-    // Format species with capital first letter
-    const speciesDisplay = profile.pet.species 
+    // Зберігаємо англомовні мітки для сумісності з формами; український текст — у PetInfo
+    const speciesDisplay = profile.pet.species
       ? profile.pet.species.charAt(0).toUpperCase() + profile.pet.species.slice(1)
       : ''
-    
-    // Format gender
-    const genderDisplay = profile.pet.sex 
+
+    const genderDisplay = profile.pet.sex
       ? profile.pet.sex.charAt(0).toUpperCase() + profile.pet.sex.slice(1)
       : ''
     

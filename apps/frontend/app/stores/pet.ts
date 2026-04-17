@@ -19,27 +19,27 @@ export const usePetStore = defineStore('pet', () => {
 
   // Default vaccinations data
   const vaccinations = ref<Vaccination[]>([
-    { id: '1', name: 'Rabies', status: 'completed' },
+    { id: '1', name: 'Сказ', status: 'completed' },
     { id: '2', name: 'FVRCP', status: 'completed' },
     { id: '3', name: 'FeLV', status: 'due' },
-    { id: '4', name: 'Bordetella', status: 'overdue' }
+    { id: '4', name: 'Бордетельоз', status: 'overdue' }
   ])
 
   // Default appointments data
   const appointments = ref<Appointment[]>([
     {
       id: '1',
-      title: 'Annual Checkup',
-      location: 'Happy Paws Vet Clinic',
+      title: 'Щорічний огляд',
+      location: 'Клініка «Веселі лапки»',
       date: '2024-01-15',
-      time: '10:00 AM'
+      time: '10:00'
     },
     {
       id: '2',
-      title: 'Dental Cleaning',
-      location: 'Happy Paws Vet Clinic',
+      title: 'Чистка зубів',
+      location: 'Клініка «Веселі лапки»',
       date: '2024-02-20',
-      time: '2:00 PM'
+      time: '14:00'
     }
   ])
 

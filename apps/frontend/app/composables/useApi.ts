@@ -53,7 +53,7 @@ export const useApi = () => {
       const response = await apiCall()
       return response
     } catch (err) {
-      const apiError = err instanceof ApiError ? err : new ApiError('Unknown error', 0, 'Unknown Error')
+      const apiError = err instanceof ApiError ? err : new ApiError('Невідома помилка', 0, 'Unknown Error')
       
       if (showError) {
         error.value = errorMessage || apiError.message

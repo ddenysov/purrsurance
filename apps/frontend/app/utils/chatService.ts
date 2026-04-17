@@ -9,7 +9,7 @@ function mockChatResponse(
   return {
     message: 'OK',
     data: {
-      response: `Тестовый ответ чата (mock). Ваше сообщение: «${message.trim().slice(0, 200)}${message.trim().length > 200 ? '…' : ''}»`,
+      response: `Тестова відповідь чату (mock). Ваше повідомлення: «${message.trim().slice(0, 200)}${message.trim().length > 200 ? '…' : ''}»`,
       sessionId,
     },
     metadata: {
@@ -134,7 +134,7 @@ export async function sendChatMessage(
     
     // Validate response structure
     if (!response.data?.data?.response) {
-      throw new Error('Invalid response structure from backend')
+      throw new Error('Некоректна структура відповіді від сервера')
     }
     
     return response.data
@@ -149,17 +149,17 @@ export async function sendChatMessage(
       
       throw new Error(
         errorData.message || 
-        `Server error: ${error.response.status}`
+        `Помилка сервера: ${error.response.status}`
       )
     } else if (error.request) {
       // Request made but no response received
       throw new Error(
-        'No response from server. Please check your connection and try again.'
+        'Немає відповіді від сервера. Перевірте з’єднання й спробуйте ще раз.'
       )
     } else {
       // Error in request setup
       throw new Error(
-        error.message || 'Failed to send message. Please try again.'
+        error.message || 'Не вдалося надіслати повідомлення. Спробуйте ще раз.'
       )
     }
   }

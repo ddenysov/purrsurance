@@ -54,27 +54,27 @@ const latestPolicyEvent = ref<SSEEvent | null>(null)
 const quickActions = ref<QuickAction[]>([
   {
     id: '1',
-    label: 'Check Policy',
+    label: 'Перевірити поліс',
     color: '#10B981',
-    prompt: 'My policy id is POL-2025-123456'
+    prompt: 'Мій номер полісу POL-2025-123456'
   },
   {
     id: '2',
-    label: 'Find Vet',
+    label: 'Знайти ветеринара',
     color: '#3B82F6',
-    prompt: 'Help me find a veterinarian near me'
+    prompt: 'Допоможіть знайти ветеринара поруч зі мною'
   },
   {
     id: '3',
-    label: 'Submit Claim',
+    label: 'Подати заяву',
     color: '#F59E0B',
-    prompt: 'I need to submit a claim'
+    prompt: 'Мені потрібно подати заяву на відшкодування'
   },
   {
     id: '4',
-    label: 'Emergency',
+    label: 'Надзвичайна ситуація',
     color: '#EF4444',
-    prompt: 'My pet needs urgent medical help right now. Please find me a clinic.'
+    prompt: 'Моєму улюбленцю потрібна термінова допомога. Знайдіть клініку.'
   }
 ])
 
@@ -150,7 +150,7 @@ const handleRecommendDoctorVisit = (event: SSEEvent) => {
 
     // Create a confirmation message for doctor visit
     const message = eventData.message ||
-      'Based on the symptoms described, it would be advisable to schedule a visit to the veterinarian. Would you like to book an appointment?'
+      'За описаними симптомами варто записатися до ветеринара. Забронювати візит?'
 
     addMessage({
       content: message,
@@ -158,8 +158,8 @@ const handleRecommendDoctorVisit = (event: SSEEvent) => {
       type: 'confirmation',
       metadata: {
         confirmationOptions: {
-          yesLabel: 'Yes, book appointment',
-          noLabel: 'Not now',
+          yesLabel: 'Так, записатися',
+          noLabel: 'Не зараз',
           yesEvent: 'doctor_visit:confirmed',
           noEvent: 'doctor_visit:declined',
           eventPayload: {
@@ -349,7 +349,7 @@ const handlePolicyUpdated = (event: SSEEvent) => {
 
 // Set page title
 useHead({
-  title: 'Purrsurance - AI Pet Insurance Assistant'
+  title: 'Purrsurance — ШІ-помічник зі страхування улюбленців'
 })
 
 // SSE subscription: logs every event to the console and cleans up on unmount
@@ -424,17 +424,17 @@ onMounted(() => {
       // TODO: Implement booking flow or notify backend
       // For now, just send a message to the chat
       addMessage({
-        content: 'Great! I\'ll help you find available appointments with veterinarians in your area.',
+        content: 'Чудово! Допоможу знайти доступні записи до ветеринарів у вашій зоні.',
         sender: 'assistant'
       })
-      sendMessage('Please book a vet clinic for me. Which clinics are available and for what time?', true);
+      sendMessage('Забронюйте для мене візит у ветклініку. Які клініки доступні і на який час?', true);
     })
 
     onEvent('doctor_visit:declined', (event) => {
       console.log('[EventBus] User declined doctor visit:', event)
       // Send acknowledgment message
       addMessage({
-        content: 'Understood. If symptoms worsen or you change your mind, feel free to ask for help booking an appointment.',
+        content: 'Зрозуміло. Якщо стан погіршиться або передумаєте — звертайтесь, допоможу з записом.',
         sender: 'assistant'
       })
     })

@@ -2,13 +2,13 @@
   <div class="p-2.5 border-t border-gray-100">
     <!-- Help Text -->
     <div class="text-xs text-gray-500 p-2.5">
-      Press Enter to send, Shift+Enter for new line
+      Enter — надіслати, Shift+Enter — новий рядок
     </div>
 
     <!-- Input Area -->
 
     <form>
-      <label for="chat" class="sr-only">Your message</label>
+      <label for="chat" class="sr-only">Ваше повідомлення</label>
       <div class="flex items-center px-3 py-2 rounded-lg">
         <textarea
           id="chat"
@@ -17,7 +17,7 @@
           v-model="message"
           @keydown="handleKeydown"
           @input="autoResize"
-          placeholder="Type your message..."
+          placeholder="Введіть повідомлення…"
           class="block  p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 "></textarea>
         <button type="button"
                 class="inline-flex justify-center p-2 text-gray-500 rounded-lg cursor-pointer hover:text-gray-900 hover:bg-gray-100">
@@ -29,7 +29,7 @@
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M13 5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0ZM7.565 7.423 4.5 14h11.518l-2.516-3.71L11 13 7.565 7.423Z" />
           </svg>
-          <span class="sr-only">Upload image</span>
+          <span class="sr-only">Завантажити зображення</span>
         </button>
         <button type="button" @click.prevent="sendMessage"
                 class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100">
@@ -38,7 +38,7 @@
             <path
               d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z" />
           </svg>
-          <span class="sr-only">Send message</span>
+          <span class="sr-only">Надіслати повідомлення</span>
         </button>
       </div>
     </form>

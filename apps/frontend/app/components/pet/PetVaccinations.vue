@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <h3 class="text-sm font-medium text-gray-900">Vaccinations</h3>
+    <h3 class="text-sm font-medium text-gray-900">Щеплення</h3>
     
     <div class="flex flex-wrap gap-2">
       <span

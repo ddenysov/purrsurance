@@ -14,7 +14,7 @@
         />
       </div>
       <span class="text-sm text-gray-600 ml-2">
-        AI is thinking...
+        ШІ обдумує відповідь…
       </span>
     </div>
   </div>

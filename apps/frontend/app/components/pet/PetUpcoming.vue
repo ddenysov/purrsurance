@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <h3 class="text-sm font-medium text-gray-900">Upcoming Appointments</h3>
+    <h3 class="text-sm font-medium text-gray-900">Майбутні візити</h3>
     
     <div class="space-y-2">
       <div
@@ -19,12 +19,12 @@
         <div class="flex-1 min-w-0">
           <div class="text-sm font-medium text-gray-900">{{ appointment.title }}</div>
           <div class="text-xs text-gray-500">{{ appointment.location }}</div>
-          <div class="text-xs text-gray-500">{{ appointment.date }} at {{ appointment.time }}</div>
+          <div class="text-xs text-gray-500">{{ appointment.date }}, {{ appointment.time }}</div>
         </div>
         
         <!-- Reschedule Button -->
         <button class="flex-shrink-0 text-xs text-brand-600 hover:text-brand-700 font-medium">
-          Reschedule
+          Перенести
         </button>
       </div>
     </div>

@@ -12,11 +12,11 @@
       <div class="relative bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <!-- Header -->
         <div class="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">Edit Pet Profile</h2>
+          <h2 class="text-lg font-semibold text-gray-900">Редагувати профіль улюбленця</h2>
           <button
             @click="$emit('close')"
             class="text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close modal"
+            aria-label="Закрити вікно"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -29,7 +29,7 @@
           <!-- Name -->
           <div>
             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
-              Pet Name *
+              Ім’я улюбленця *
             </label>
             <input
               id="name"
@@ -43,7 +43,7 @@
           <!-- Species -->
           <div>
             <label for="species" class="block text-sm font-medium text-gray-700 mb-1">
-              Species *
+              Вид *
             </label>
             <select
               id="species"
@@ -51,25 +51,25 @@
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint-500 focus:border-transparent"
             >
-              <option value="">Select species</option>
-              <option value="Cat">Cat</option>
-              <option value="Dog">Dog</option>
-              <option value="Bird">Bird</option>
-              <option value="Rabbit">Rabbit</option>
-              <option value="Other">Other</option>
+              <option value="">Оберіть вид</option>
+              <option value="Cat">Кіт</option>
+              <option value="Dog">Собака</option>
+              <option value="Bird">Птах</option>
+              <option value="Rabbit">Кролик</option>
+              <option value="Other">Інше</option>
             </select>
           </div>
           
           <!-- Age -->
           <div>
             <label for="age" class="block text-sm font-medium text-gray-700 mb-1">
-              Age *
+              Вік *
             </label>
             <input
               id="age"
               v-model="formData.age"
               type="text"
-              placeholder="e.g., 2 years, 6 months"
+              placeholder="наприклад: 2 роки, 6 місяців"
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint-500 focus:border-transparent"
             />
@@ -78,7 +78,7 @@
           <!-- Gender -->
           <div>
             <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">
-              Gender *
+              Стать *
             </label>
             <select
               id="gender"
@@ -86,16 +86,16 @@
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint-500 focus:border-transparent"
             >
-              <option value="">Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="">Оберіть стать</option>
+              <option value="Male">Самець</option>
+              <option value="Female">Самка</option>
             </select>
           </div>
           
           <!-- Policy ID -->
           <div>
             <label for="policyId" class="block text-sm font-medium text-gray-700 mb-1">
-              Policy ID *
+              Номер полісу *
             </label>
             <input
               id="policyId"
@@ -109,7 +109,7 @@
           <!-- Coverage Plan -->
           <div>
             <label for="coveragePlan" class="block text-sm font-medium text-gray-700 mb-1">
-              Coverage Plan *
+              Тариф *
             </label>
             <select
               id="coveragePlan"
@@ -117,7 +117,7 @@
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint-500 focus:border-transparent"
             >
-              <option value="">Select coverage plan</option>
+              <option value="">Оберіть тариф</option>
               <option value="Basic 60%">Basic 60%</option>
               <option value="Standard 70%">Standard 70%</option>
               <option value="Premium 80%">Premium 80%</option>
@@ -128,7 +128,7 @@
           <!-- Avatar URL -->
           <div>
             <label for="avatar" class="block text-sm font-medium text-gray-700 mb-1">
-              Avatar URL
+              URL фото
             </label>
             <input
               id="avatar"
@@ -146,13 +146,13 @@
             @click="$emit('close')"
             class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            Скасувати
           </button>
           <button
             @click="handleSave"
             class="px-4 py-2 bg-mint-500 text-white rounded-lg hover:bg-mint-600 transition-colors"
           >
-            Save Changes
+            Зберегти
           </button>
         </div>
       </div>

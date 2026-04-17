@@ -149,11 +149,11 @@ class ApiClient {
       }
 
       if (error.name === 'AbortError') {
-        throw new ApiError('Request timeout', 408, 'Request Timeout')
+        throw new ApiError('Час очікування запиту вичерпано', 408, 'Request Timeout')
       }
 
       throw new ApiError(
-        error.message || 'Network error',
+        error.message || 'Помилка мережі',
         0,
         'Network Error'
       )
