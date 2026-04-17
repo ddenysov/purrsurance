@@ -1,7 +1,7 @@
 {
-  "name": "purrsurance-data",
+  "name": "vet-expert-data",
   "version": "1.0.0",
-  "description": "Database migrations and seeds for Purrsurance project",
+  "description": "Database migrations and seeds for Вет Експерт project",
   "type": "module",
   "scripts": {
     "migrate": "node migrate.mjs up",

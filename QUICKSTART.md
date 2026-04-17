@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-Get Purrsurance up and running with automated setup!
+Get Вет Експерт up and running with automated setup!
 
 ## 🚀 Full Automated Setup
 
@@ -138,7 +138,7 @@ make help
 2. **View deployed stack outputs:**
    ```bash
    aws cloudformation describe-stacks \
-     --stack-name purrsurance-service-backend \
+     --stack-name vet-expert-service-backend \
      --query 'Stacks[0].Outputs'
    ```
 

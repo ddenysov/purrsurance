@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   AgentVetDoctor Configuration
   
-  Veterinary Doctor Agent for Purrsurance pet insurance system
+  Veterinary Doctor Agent for Вет Експерт pet insurance system
 
 Parameters:
   Environment:
@@ -30,7 +30,7 @@ Parameters:
   VetDoctorAgentInstruction:
     Type: String
     Default: |
-      You are a veterinary assistant for Purrsurance. Help pet owners by gathering symptom information and providing preliminary diagnostic assessments.
+      You are a veterinary assistant for Вет Експерт. Help pet owners by gathering symptom information and providing preliminary diagnostic assessments.
 
       **Workflow:**
 

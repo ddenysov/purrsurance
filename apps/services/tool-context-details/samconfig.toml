@@ -2,7 +2,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-tool-context-details"
+stack_name = "vet-expert-tool-context-details"
 
 [default.build.parameters]
 cached = true
@@ -16,9 +16,9 @@ region = "us-east-1"
 parameter_overrides = [
     "Environment=prod",
     "LogLevel=info",
-    "EventPublisherStackName=purrsurance-event-publisher",
+    "EventPublisherStackName=vet-expert-event-publisher",
     "EventPublisherUrl=https://d7j4hmm8nj.execute-api.us-east-1.amazonaws.com/Prod/publish",
-    "ChatHistoryTableName=purrsurance-service-router-ChatHistory"
+    "ChatHistoryTableName=vet-expert-service-router-ChatHistory"
 ]
 
 [default.package.parameters]

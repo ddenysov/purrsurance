@@ -34,7 +34,7 @@ Parameters:
   
   EventPublisherStackName:
     Type: String
-    Default: purrsurance-event-publisher
+    Default: vet-expert-event-publisher
     Description: Name of the Event Publisher stack to import from
   
   SSEPollInterval:

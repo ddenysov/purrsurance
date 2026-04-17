@@ -1,6 +1,6 @@
 # Agent Vet Doctor
 
-Veterinary Doctor Agent for Purrsurance pet insurance system. This agent provides preliminary diagnostic assessments for pets by gathering symptom information and providing educated recommendations.
+Veterinary Doctor Agent for Вет Експерт pet insurance system. This agent provides preliminary diagnostic assessments for pets by gathering symptom information and providing educated recommendations.
 
 ## Overview
 
@@ -175,7 +175,7 @@ After deployment, the agent needs to be registered with the service router:
 1. Get the Agent ID and Alias ID from CloudFormation outputs:
    ```bash
    aws cloudformation describe-stacks \
-     --stack-name purrsurance-agent-vet-doctor \
+     --stack-name vet-expert-agent-vet-doctor \
      --query 'Stacks[0].Outputs'
    ```
 
@@ -239,5 +239,5 @@ For issues or questions, check:
 
 ## License
 
-Part of the Purrsurance pet insurance system.
+Part of the Вет Експерт pet insurance system.
 

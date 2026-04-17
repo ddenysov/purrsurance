@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: 'AgentPolicyManager Configuration
 
-  Policy Manager Agent for Purrsurance pet insurance system
+  Policy Manager Agent for Вет Експерт pet insurance system
 
   '
 Parameters:
@@ -14,7 +14,7 @@ Parameters:
     Description: Environment name
   ToolPolicyDetailsStackName:
     Type: String
-    Default: purrsurance-tool-policy-details
+    Default: vet-expert-tool-policy-details
     Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction
       ARN
   PolicyManagerAgentName:
@@ -30,7 +30,7 @@ Parameters:
     - us.anthropic.claude-3-5-haiku-20241022-v1:0
   PolicyManagerAgentInstruction:
     Type: String
-    Default: "You are a warm and friendly insurance policy assistant for Purrsurance\
+    Default: "You are a warm and friendly insurance policy assistant for Вет Експерт\
       \ pet insurance. Your main task is to help users retrieve their policy information\
       \ and engage with them in a personal, caring manner.\n\n**Your workflow:**\n\
       \n1. **Extract Policy ID**: When a user asks about their policy, try to identify\
@@ -133,7 +133,7 @@ Resources:
     Properties:
       AgentName:
         Ref: PolicyManagerAgentName
-      Description: Policy manager agent for Purrsurance system
+      Description: Policy manager agent for Вет Експерт system
       AgentResourceRoleArn:
         Fn::GetAtt:
         - PolicyManagerAgentRole

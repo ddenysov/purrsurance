@@ -1,6 +1,6 @@
 # Icon Components
 
-This folder contains icon components for the Purrsurance application, matching the design from the mockup.
+This folder contains icon components for the Вет Експерт application, matching the design from the mockup.
 
 ## Components
 
@@ -11,7 +11,7 @@ This folder contains icon components for the Purrsurance application, matching t
 
 ## PawIcon Component
 
-A customizable paw icon component for the Purrsurance application, matching the design from the mockup.
+A customizable paw icon component for the Вет Експерт application, matching the design from the mockup.
 
 ## Features
 

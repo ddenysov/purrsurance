@@ -22,7 +22,7 @@ export const config = {
   
   // DynamoDB Configuration
   dynamodb: {
-    tableName: process.env.EVENTS_TABLE_NAME || 'purrsurance-event-publisher-events',
+    tableName: process.env.EVENTS_TABLE_NAME || 'vet-expert-event-publisher-events',
   },
   
   // Logging configuration

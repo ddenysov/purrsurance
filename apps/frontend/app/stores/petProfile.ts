@@ -221,7 +221,7 @@ const DEFAULT_SEEDED_PET_PROFILE: PetProfile = {
   },
   policy: {
     policyId: 'POL-2025-123456',
-    provider: 'PurrSure Insurance',
+    provider: 'Вет Експерт',
     status: 'active',
     startDate: '2025-01-01',
     endDate: '2025-12-31',

@@ -1,7 +1,7 @@
-# PET-3: Implement Purrsurance Chat Interface
+# PET-3: Implement Вет Експерт Chat Interface
 
 ## Description
-Implement the complete Purrsurance AI Insurance Assistant interface for pets based on the v2 mockup. Create a clean, component-based architecture with proper separation of concerns.
+Implement the complete Вет Експерт AI Insurance Assistant interface for pets based on the v2 mockup. Create a clean, component-based architecture with proper separation of concerns.
 
 ## Design Requirements
 - Use Tailwind CSS with custom brand colors (mint, brand pink)
@@ -158,7 +158,7 @@ Simple modal state:
 Requirements:
 - Sticky header with backdrop blur
 - Logo (paw SVG) on the left
-- "Purrsurance" title with subtitle
+- "Вет Експерт" title with subtitle
 - Badges on the right (desktop only): "Clean UI", "Light Theme", "Pet Friendly"
 - Use Tailwind classes from mockup
 
@@ -220,7 +220,7 @@ Requirements:
 #### `app/components/chat/ChatHeader.vue`
 Requirements:
 - Agent avatar (paw icon) with online status indicator
-- "Purrsurance Agent" name
+- "Вет Експерт Agent" name
 - "Online • Friendly & HIPAA-ready" status
 - Info text on desktop
 

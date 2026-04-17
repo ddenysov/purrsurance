@@ -1024,7 +1024,7 @@ Create `samconfig.toml`:
 
 ```toml
 [dev.deploy.parameters]
-stack_name = "purrsurance-dev"
+stack_name = "vet-expert-dev"
 s3_bucket = "your-deployment-bucket"
 region = "us-east-1"
 parameter_overrides = "BedrockAgentId=AGENT_ID BedrockAgentAliasId=TSTALIASID Environment=dev"
@@ -1147,7 +1147,7 @@ View logs locally:
 
 View logs in AWS:
 ```bash
-sam logs -n HelloWorldFunction --stack-name purrsurance-dev --tail
+sam logs -n HelloWorldFunction --stack-name vet-expert-dev --tail
 ```
 
 ## Cost Estimation

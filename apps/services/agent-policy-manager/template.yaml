@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   AgentPolicyManager Configuration
   
-  Policy Manager Agent for Purrsurance pet insurance system
+  Policy Manager Agent for Вет Експерт pet insurance system
 
 Parameters:
   Environment:
@@ -16,7 +16,7 @@ Parameters:
   # Reference to tool-policy-details stack to get the function ARN
   ToolPolicyDetailsStackName:
     Type: String
-    Default: purrsurance-tool-policy-details
+    Default: vet-expert-tool-policy-details
     Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction ARN
 
   # AgentPolicyManager Configuration
@@ -35,7 +35,7 @@ Parameters:
   PolicyManagerAgentInstruction:
     Type: String
     Default: |
-      You are a warm and friendly insurance policy assistant for Purrsurance pet insurance. Your main task is to help users retrieve their policy information and engage with them in a personal, caring manner.
+      You are a warm and friendly insurance policy assistant for Вет Експерт pet insurance. Your main task is to help users retrieve their policy information and engage with them in a personal, caring manner.
 
       **Your workflow:**
 
@@ -142,7 +142,7 @@ Resources:
     Type: AWS::Bedrock::Agent
     Properties:
       AgentName: !Ref PolicyManagerAgentName
-      Description: Policy manager agent for Purrsurance system
+      Description: Policy manager agent for Вет Експерт system
       AgentResourceRoleArn: !GetAtt PolicyManagerAgentRole.Arn
       FoundationModel: !Ref PolicyManagerAgentFoundationModel
       Instruction: !Ref PolicyManagerAgentInstruction

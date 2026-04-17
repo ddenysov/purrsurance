@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   IntentionClassifierAgent Configuration
   
-  Intention Classifier Agent for Purrsurance pet insurance system
+  Intention Classifier Agent for Вет Експерт pet insurance system
 
 Parameters:
   Environment:
@@ -127,7 +127,7 @@ Resources:
     Type: AWS::Bedrock::Agent
     Properties:
       AgentName: !Ref IntentionClassifierAgentName
-      Description: Intention classifier agent for Purrsurance system
+      Description: Intention classifier agent for Вет Експерт system
       AgentResourceRoleArn: !GetAtt IntentionClassifierAgentRole.Arn
       FoundationModel: !Ref IntentionClassifierAgentFoundationModel
       Instruction: !Ref IntentionClassifierAgentInstruction

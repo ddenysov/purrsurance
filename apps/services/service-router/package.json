@@ -5,7 +5,7 @@
   "type": "module",
   "main": "app.mjs",
   "repository": "",
-  "author": "Purrsurance Team",
+  "author": "Вет Експерт Team",
   "license": "MIT",
   "dependencies": {
     "@aws-sdk/client-bedrock-agent-runtime": "^3.600.0",

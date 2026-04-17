@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: 'AgentVetDoctor Configuration
 
-  Veterinary Doctor Agent for Purrsurance pet insurance system
+  Veterinary Doctor Agent for Вет Експерт pet insurance system
 
   '
 Parameters:
@@ -25,7 +25,7 @@ Parameters:
     - us.anthropic.claude-3-5-haiku-20241022-v1:0
   VetDoctorAgentInstruction:
     Type: String
-    Default: "You are a veterinary assistant for Purrsurance. Help pet owners by gathering\
+    Default: "You are a veterinary assistant for Вет Експерт. Help pet owners by gathering\
       \ symptom information and providing preliminary diagnostic assessments.\n\n\
       **Workflow:**\n\n1. **Gather Information**: Collect pet type/breed, age, symptoms,\
       \ duration, severity, behavioral changes, health history, and medications.\n\

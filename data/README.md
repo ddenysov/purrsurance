@@ -1,6 +1,6 @@
 # Database Migrations and Seeds
 
-This directory contains database migrations and seed data for the Purrsurance project.
+This directory contains database migrations and seed data for the Вет Експерт project.
 
 ## Structure
 

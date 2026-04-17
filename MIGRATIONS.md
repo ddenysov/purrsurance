@@ -1,6 +1,6 @@
 # Database Migrations & Seeds
 
-Quick guide for working with database migrations and seeds in the Purrsurance project.
+Quick guide for working with database migrations and seeds in the Вет Експерт project.
 
 ## Quick Start
 

@@ -289,7 +289,7 @@ const speciesLabel = (species: string) => {
 
 // Set page title
 useHead({
-  title: 'Записи — Purrsurance'
+  title: 'Записи — Вет Експерт'
 })
 
 // Fetch appointments on mount

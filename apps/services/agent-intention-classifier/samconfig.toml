@@ -3,7 +3,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-agent-intention-classifier"
+stack_name = "vet-expert-agent-intention-classifier"
 
 [default.build.parameters]
 cached = true

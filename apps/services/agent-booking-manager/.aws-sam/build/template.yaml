@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: 'AgentBookingManager Configuration
 
-  Booking Manager Agent for Purrsurance pet insurance system - handles veterinary
+  Booking Manager Agent for Вет Експерт pet insurance system - handles veterinary
   appointment scheduling
 
   '
@@ -15,16 +15,16 @@ Parameters:
     Description: Environment name
   ToolPolicyDetailsStackName:
     Type: String
-    Default: purrsurance-tool-policy-details
+    Default: vet-expert-tool-policy-details
     Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction
       ARN
   ToolContextGetStackName:
     Type: String
-    Default: purrsurance-tool-context-get
+    Default: vet-expert-tool-context-get
     Description: Name of the tool-context-get stack to get GetContextFunction ARN
   ToolContextSaveStackName:
     Type: String
-    Default: purrsurance-tool-context-save
+    Default: vet-expert-tool-context-save
     Description: Name of the tool-context-save stack to get SaveContextFunction ARN
   BookingManagerAgentName:
     Type: String
@@ -39,7 +39,7 @@ Parameters:
     - us.anthropic.claude-3-5-haiku-20241022-v1:0
   BookingManagerAgentInstruction:
     Type: String
-    Default: 'You are a helpful appointment booking assistant for Purrsurance pet
+    Default: 'You are a helpful appointment booking assistant for Вет Експерт pet
       insurance. Your role is to help users schedule veterinary appointments for their
       pets.
 

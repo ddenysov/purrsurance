@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  purrsurance-frontend
+  vet-expert-frontend
   
-  Simple static website hosting for Purrsurance frontend application on S3
+  Simple static website hosting for Вет Експерт frontend application on S3
 
 Resources:
   # S3 Bucket for storing static website files
@@ -21,7 +21,7 @@ Resources:
         ErrorDocument: index.html
       Tags:
         - Key: Application
-          Value: purrsurance-frontend
+          Value: vet-expert-frontend
 
   # Bucket Policy to allow public read access
   WebsiteBucketPolicy:

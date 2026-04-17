@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deployment script for Purrsurance Frontend to AWS S3 + CloudFront
+# Deployment script for Вет Експерт Frontend to AWS S3 + CloudFront
 # Usage: ./deploy.sh [backend-stack-name]
 # Example: ./deploy.sh agent-operator
 
@@ -15,10 +15,10 @@ NC='\033[0m' # No Color
 
 # Default values
 BACKEND_STACK_NAME="${1:-}"
-FRONTEND_STACK_NAME="purrsurance-frontend"
+FRONTEND_STACK_NAME="vet-expert-frontend"
 
 echo -e "${BLUE}=================================================${NC}"
-echo -e "${BLUE}  Purrsurance Frontend Deployment${NC}"
+echo -e "${BLUE}  Вет Експерт Frontend Deployment${NC}"
 echo -e "${BLUE}=================================================${NC}"
 echo ""
 echo -e "${GREEN}Frontend Stack:${NC} ${FRONTEND_STACK_NAME}"
@@ -42,9 +42,9 @@ SSE_STREAM_URL=""
 API_BASE_URL=""
 CHAT_API_URL=""
 BACKEND_API_URL=""
-SERVICE_ROUTER_STACK_NAME="purrsurance-service-router"
-SSE_STREAM_STACK_NAME="purrsurance-sse-stream"
-SERVICE_BACKEND_STACK_NAME="purrsurance-service-backend"
+SERVICE_ROUTER_STACK_NAME="vet-expert-service-router"
+SSE_STREAM_STACK_NAME="vet-expert-sse-stream"
+SERVICE_BACKEND_STACK_NAME="vet-expert-service-backend"
 BACKEND_CONFIG_SUCCESS=false
 
 echo -e "${YELLOW}Step 1: Fetching backend service URLs...${NC}"

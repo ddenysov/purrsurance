@@ -1,5 +1,5 @@
 {
-  "name": "@purrsurance/agent-tools",
+  "name": "@vet-expert/agent-tools",
   "version": "1.0.0",
   "description": "Shared utilities for AWS Bedrock Agent tools",
   "type": "module",

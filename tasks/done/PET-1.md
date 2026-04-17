@@ -1,7 +1,7 @@
 # PET-1: Basic Project Setup
 
 ## Description
-Set up the basic project structure and configuration for the Purrsurance application.
+Set up the basic project structure and configuration for the Вет Експерт application.
 
 ## Acceptance Criteria
 - [x] Project structure is properly organized

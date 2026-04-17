@@ -2,7 +2,7 @@
  * Chat History Service
  * 
  * Provides functions for saving and retrieving chat messages from DynamoDB
- * Part of @purrsurance/agent-tools package
+ * Part of @vet-expert/agent-tools package
  */
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';

@@ -30,7 +30,7 @@ test:
 	sam local invoke SSEStreamFunction --env-vars env.json
 
 logs:
-	sam logs --stack-name purrsurance-sse-stream --tail
+	sam logs --stack-name vet-expert-sse-stream --tail
 
 # Delete the CloudFormation stack
 delete:
@@ -41,7 +41,7 @@ delete:
 get-urls:
 	@echo "Fetching deployment URLs..."
 	@aws cloudformation describe-stacks \
-		--stack-name purrsurance-sse-stream \
+		--stack-name vet-expert-sse-stream \
 		--query 'Stacks[0].Outputs[?OutputKey==`SSEStreamFunctionUrl`].[OutputKey,OutputValue]' \
 		--output table
 
@@ -49,7 +49,7 @@ get-urls:
 update-env:
 	@echo "Updating env.json with deployed Function URL..."
 	@FUNCTION_URL=$$(aws cloudformation describe-stacks \
-		--stack-name purrsurance-sse-stream \
+		--stack-name vet-expert-sse-stream \
 		--query 'Stacks[0].Outputs[?OutputKey==`SSEStreamFunctionUrl`].OutputValue' \
 		--output text 2>/dev/null || echo ""); \
 	if [ -z "$$FUNCTION_URL" ]; then \

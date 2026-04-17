@@ -78,7 +78,7 @@ Update `samconfig.toml` with your Event Publisher URL:
 parameter_overrides = [
     "Environment=prod",
     "LogLevel=info",
-    "EventPublisherStackName=purrsurance-event-publisher",
+    "EventPublisherStackName=vet-expert-event-publisher",
     "EventPublisherUrl=https://YOUR-API-URL/Prod/publish"
 ]
 ```
@@ -175,7 +175,7 @@ Example test event is provided in `events/bedrock-agent-event.json`:
 View logs in CloudWatch:
 
 ```bash
-aws logs tail /aws/lambda/purrsurance-tool-recommend-doctor-visit-RecommendDoctorVisitFunction --follow
+aws logs tail /aws/lambda/vet-expert-tool-recommend-doctor-visit-RecommendDoctorVisitFunction --follow
 ```
 
 ## Stack Outputs

@@ -3,7 +3,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-agent-policy-manager"
+stack_name = "vet-expert-agent-policy-manager"
 
 [default.build.parameters]
 cached = true
@@ -20,7 +20,7 @@ region = "us-east-1"
 s3_prefix = "agent-policy-manager"
 parameter_overrides = [
     "Environment=prod",
-    "ToolPolicyDetailsStackName=purrsurance-tool-policy-details"
+    "ToolPolicyDetailsStackName=vet-expert-tool-policy-details"
 ]
 
 [default.package.parameters]

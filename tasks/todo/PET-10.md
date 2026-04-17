@@ -549,7 +549,7 @@ Add the chat history table name to local environment configuration.
     "ENVIRONMENT": "local",
     "LOG_LEVEL": "debug",
     "AWS_SAM_LOCAL": "true",
-    "CHAT_HISTORY_TABLE_NAME": "purrsurance-ChatHistory"
+    "CHAT_HISTORY_TABLE_NAME": "vet-expert-ChatHistory"
   }
 }
 ```
@@ -1087,7 +1087,7 @@ sam deploy
 
 ```bash
 # Check table exists
-aws dynamodb describe-table --table-name purrsurance-ChatHistory
+aws dynamodb describe-table --table-name vet-expert-ChatHistory
 
 # Check Lambda has permissions
 aws lambda get-policy --function-name HelloWorldFunction
@@ -1105,7 +1105,7 @@ cd hello-world
 
 ```bash
 # Query messages
-aws dynamodb scan --table-name purrsurance-ChatHistory --limit 10
+aws dynamodb scan --table-name vet-expert-ChatHistory --limit 10
 ```
 
 ---

@@ -191,7 +191,7 @@ export const useChat = () => {
   const clearMessages = () => {
     messages.value = [{
       id: '1',
-      content: 'Вітаю! Я ваш ШІ-помічник Purrsurance. Допоможу зі страхуванням улюбленця. Чим можу бути корисним?',
+      content: 'Вітаю! Я ваш ШІ-помічник Вет Експерт. Допоможу зі страхуванням улюбленця. Чим можу бути корисним?',
       sender: 'assistant',
       timestamp: new Date()
     }]

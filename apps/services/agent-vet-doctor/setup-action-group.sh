@@ -5,11 +5,11 @@
 
 set -e
 
-STACK_NAME="purrsurance-agent-vet-doctor"
-TOOL_STACK_NAME="purrsurance-tool-recommend-doctor-visit"
-POLICY_DETAILS_TOOL_STACK="purrsurance-tool-policy-details"
-CONTEXT_SAVE_TOOL_STACK="purrsurance-tool-context-save"
-CONTEXT_DETAILS_TOOL_STACK="purrsurance-tool-context-details"
+STACK_NAME="vet-expert-agent-vet-doctor"
+TOOL_STACK_NAME="vet-expert-tool-recommend-doctor-visit"
+POLICY_DETAILS_TOOL_STACK="vet-expert-tool-policy-details"
+CONTEXT_SAVE_TOOL_STACK="vet-expert-tool-context-save"
+CONTEXT_DETAILS_TOOL_STACK="vet-expert-tool-context-details"
 REGION="us-east-1"
 
 echo "Setting up Action Groups for AgentVetDoctor..."

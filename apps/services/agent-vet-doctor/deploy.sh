@@ -44,7 +44,7 @@ echo "📝 Updating agent instruction via AWS CLI..."
 echo ""
 
 AGENT_ID=$(aws cloudformation describe-stacks \
-  --stack-name purrsurance-agent-vet-doctor \
+  --stack-name vet-expert-agent-vet-doctor \
   --query 'Stacks[0].Outputs[?OutputKey==`VetDoctorAgentId`].OutputValue' \
   --output text 2>/dev/null)
 
@@ -55,7 +55,7 @@ else
   echo "📤 Updating instruction..."
   
   ROLE_ARN=$(aws cloudformation describe-stacks \
-    --stack-name purrsurance-agent-vet-doctor \
+    --stack-name vet-expert-agent-vet-doctor \
     --query 'Stacks[0].Outputs[?OutputKey==`VetDoctorAgentRoleArn`].OutputValue' \
     --output text)
   

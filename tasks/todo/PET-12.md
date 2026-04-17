@@ -73,7 +73,7 @@ Add these parameters after the existing VetDocAgent parameters:
   SupervisorAgentInstruction:
     Type: String
     Default: |
-      You are SupervisorAgent, an intelligent request router for the Purrsurance pet insurance system.
+      You are SupervisorAgent, an intelligent request router for the Вет Експерт pet insurance system.
       
       Your primary role is to analyze incoming user requests and route them to the appropriate specialized agent:
       
@@ -203,7 +203,7 @@ Add this resource after SupervisorAgentRole:
     Type: AWS::Bedrock::Agent
     Properties:
       AgentName: !Ref SupervisorAgentName
-      Description: Supervisor agent with routing capabilities for Purrsurance system
+      Description: Supervisor agent with routing capabilities for Вет Експерт system
       AgentResourceRoleArn: !GetAtt SupervisorAgentRole.Arn
       FoundationModel: !Ref SupervisorAgentFoundationModel
       Instruction: !Ref SupervisorAgentInstruction
@@ -347,7 +347,7 @@ Create comprehensive documentation for SupervisorAgent configuration and routing
 ```markdown
 # SupervisorAgent - Request Router with Supervision
 
-AWS Bedrock Agent for intelligent request routing in the Purrsurance pet insurance system.
+AWS Bedrock Agent for intelligent request routing in the Вет Експерт pet insurance system.
 
 ## Overview
 
@@ -402,7 +402,7 @@ To change the model, update the `SupervisorAgentFoundationModel` parameter in sa
 The system instruction defines the agent's routing logic and behavior. The default instruction includes:
 
 ```
-You are SupervisorAgent, an intelligent request router for the Purrsurance pet insurance system.
+You are SupervisorAgent, an intelligent request router for the Вет Експерт pet insurance system.
 
 Your primary role is to analyze incoming user requests and route them to the appropriate specialized agent:
 
@@ -905,7 +905,7 @@ RouterRule:
   Properties:
     EventPattern:
       source:
-        - purrsurance.chat
+        - vet-expert.chat
       detail-type:
         - UserMessage
     Targets:

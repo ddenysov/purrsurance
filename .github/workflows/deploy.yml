@@ -1,4 +1,4 @@
-name: Deploy Purrsurance to AWS
+name: Deploy Вет Експерт to AWS
 
 on:
   push:
@@ -55,7 +55,7 @@ jobs:
           
           echo "environment=${ENV}" >> $GITHUB_OUTPUT
           echo "backend-stack=agent-operator-${ENV}" >> $GITHUB_OUTPUT
-          echo "frontend-stack=purrsurance-frontend-${ENV}" >> $GITHUB_OUTPUT
+          echo "frontend-stack=vet-expert-frontend-${ENV}" >> $GITHUB_OUTPUT
           
           echo "Deploying to environment: ${ENV}"
 

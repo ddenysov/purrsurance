@@ -2,7 +2,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-event-publisher"
+stack_name = "vet-expert-event-publisher"
 
 [default.build.parameters]
 cached = true

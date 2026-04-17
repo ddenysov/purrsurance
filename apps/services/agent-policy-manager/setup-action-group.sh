@@ -5,9 +5,9 @@
 
 set -e
 
-STACK_NAME="purrsurance-agent-policy-manager"
-TOOL_STACK_NAME="purrsurance-tool-policy-details"
-CONTEXT_GET_TOOL_STACK="purrsurance-tool-context-get"
+STACK_NAME="vet-expert-agent-policy-manager"
+TOOL_STACK_NAME="vet-expert-tool-policy-details"
+CONTEXT_GET_TOOL_STACK="vet-expert-tool-context-get"
 REGION="us-east-1"
 
 echo "Setting up Action Group for AgentPolicyManager..."

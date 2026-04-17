@@ -9,7 +9,7 @@
 
 set -e
 
-TOOL_STACK_NAME="purrsurance-tool-context-save"
+TOOL_STACK_NAME="vet-expert-tool-context-save"
 REGION="us-east-1"
 
 # Check if agent ID is provided

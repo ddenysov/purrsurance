@@ -1,12 +1,12 @@
-# Makefile for Purrsurance Frontend Deployment
+# Makefile for Вет Експерт Frontend Deployment
 
 .PHONY: help install build dev deploy clean update-env
 
 # Stack name
 BACKEND_STACK ?= agent-operator
-FRONTEND_STACK = purrsurance-frontend
-SERVICE_ROUTER_STACK = purrsurance-service-router
-SSE_STREAM_STACK = purrsurance-sse-stream
+FRONTEND_STACK = vet-expert-frontend
+SERVICE_ROUTER_STACK = vet-expert-service-router
+SSE_STREAM_STACK = vet-expert-sse-stream
 
 help: ## Show this help message
 	@echo 'Usage: make [target] [BACKEND_STACK=stack-name]'

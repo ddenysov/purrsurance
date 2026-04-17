@@ -1,6 +1,6 @@
 # Agent Booking Manager
 
-Booking Manager Agent for Purrsurance pet insurance system. Handles veterinary appointment scheduling and clinic finding for pets.
+Booking Manager Agent for Вет Експерт pet insurance system. Handles veterinary appointment scheduling and clinic finding for pets.
 
 ## Overview
 
@@ -16,7 +16,7 @@ The **AgentBookingManager** is a conversational AI agent powered by AWS Bedrock 
 - **Clinic Finder**: Integrated with `tool-find-vet-clinic` to help users find appropriate veterinary clinics
 - **Urgency Recognition**: Identifies emergency situations and prioritizes urgent care
 - **Specialty Matching**: Helps users find specialized veterinary services (cardiology, dental, emergency, etc.)
-- **Insurance Integration**: Confirms clinic acceptance of Purrsurance pet insurance
+- **Insurance Integration**: Confirms clinic acceptance of Вет Експерт pet insurance
 
 ## Architecture
 
@@ -244,4 +244,4 @@ make setup-action-group
 
 ## License
 
-Part of the Purrsurance pet insurance system.
+Part of the Вет Експерт pet insurance system.

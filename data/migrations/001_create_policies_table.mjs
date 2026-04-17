@@ -77,7 +77,7 @@ export async function up() {
     Tags: [
       {
         Key: "Project",
-        Value: "Purrsurance"
+        Value: "Вет Експерт"
       },
       {
         Key: "Environment",

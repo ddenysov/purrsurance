@@ -38,12 +38,12 @@ validate:
 # View stack events
 logs:
 	@echo "Viewing stack events..."
-	aws cloudformation describe-stack-events --stack-name purrsurance-agent-vet-doctor --max-items 20
+	aws cloudformation describe-stack-events --stack-name vet-expert-agent-vet-doctor --max-items 20
 
 # Show stack status
 status:
 	@echo "Stack status..."
-	aws cloudformation describe-stacks --stack-name purrsurance-agent-vet-doctor --query 'Stacks[0].[StackName,StackStatus]' --output table
+	aws cloudformation describe-stacks --stack-name vet-expert-agent-vet-doctor --query 'Stacks[0].[StackName,StackStatus]' --output table
 
 # Clean build artifacts
 clean:
@@ -59,7 +59,7 @@ deploy-full: deploy
 # Get Agent ID from CloudFormation stack
 get-agent-id:
 	@aws cloudformation describe-stacks \
-		--stack-name purrsurance-agent-vet-doctor \
+		--stack-name vet-expert-agent-vet-doctor \
 		--query 'Stacks[0].Outputs[?OutputKey==`VetDoctorAgentId`].OutputValue' \
 		--output text
 
@@ -71,7 +71,7 @@ update-instruction:
 		exit 1; \
 	fi
 	@AGENT_ID=$$(aws cloudformation describe-stacks \
-		--stack-name purrsurance-agent-vet-doctor \
+		--stack-name vet-expert-agent-vet-doctor \
 		--query 'Stacks[0].Outputs[?OutputKey==`VetDoctorAgentId`].OutputValue' \
 		--output text 2>/dev/null); \
 	if [ -z "$$AGENT_ID" ]; then \
@@ -82,7 +82,7 @@ update-instruction:
 	echo "📤 Updating instruction..."; \
 	INSTRUCTION=$$(cat instruction.txt); \
 	ROLE_ARN=$$(aws cloudformation describe-stacks \
-		--stack-name purrsurance-agent-vet-doctor \
+		--stack-name vet-expert-agent-vet-doctor \
 		--query 'Stacks[0].Outputs[?OutputKey==`VetDoctorAgentRoleArn`].OutputValue' \
 		--output text); \
 	aws bedrock-agent update-agent \

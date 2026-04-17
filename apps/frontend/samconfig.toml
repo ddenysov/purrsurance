@@ -3,8 +3,8 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "purrsurance-frontend"
-s3_prefix = "purrsurance-frontend"
+stack_name = "vet-expert-frontend"
+s3_prefix = "vet-expert-frontend"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = false

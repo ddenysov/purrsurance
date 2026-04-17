@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   AgentBookingManager Configuration
   
-  Booking Manager Agent for Purrsurance pet insurance system - handles veterinary appointment scheduling
+  Booking Manager Agent for Вет Експерт pet insurance system - handles veterinary appointment scheduling
 
 Parameters:
   Environment:
@@ -16,19 +16,19 @@ Parameters:
   # Reference to tool-policy-details stack to get the function ARN
   ToolPolicyDetailsStackName:
     Type: String
-    Default: purrsurance-tool-policy-details
+    Default: vet-expert-tool-policy-details
     Description: Name of the tool-policy-details stack to get GetPolicyDetailsFunction ARN
 
   # Reference to tool-context-get stack to get the function ARN
   ToolContextGetStackName:
     Type: String
-    Default: purrsurance-tool-context-get
+    Default: vet-expert-tool-context-get
     Description: Name of the tool-context-get stack to get GetContextFunction ARN
 
   # Reference to tool-context-save stack to get the function ARN
   ToolContextSaveStackName:
     Type: String
-    Default: purrsurance-tool-context-save
+    Default: vet-expert-tool-context-save
     Description: Name of the tool-context-save stack to get SaveContextFunction ARN
 
   # AgentBookingManager Configuration
@@ -47,7 +47,7 @@ Parameters:
   BookingManagerAgentInstruction:
     Type: String
     Default: |
-      You are a helpful appointment booking assistant for Purrsurance pet insurance. Your role is to help users schedule veterinary appointments for their pets.
+      You are a helpful appointment booking assistant for Вет Експерт pet insurance. Your role is to help users schedule veterinary appointments for their pets.
       
       MANDATORY FIRST STEP: Always start by using GetPolicyDetails tool to retrieve owner and pet information. Get policy ID from session attributes or ask user for it. Use this information throughout the conversation - NEVER ask for information already available in GetPolicyDetails (owner name, pet name, breed, age, medical history, address).
       

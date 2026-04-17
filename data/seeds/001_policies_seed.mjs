@@ -60,7 +60,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-123456",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-01-01",
       endDate: "2025-12-31",
@@ -154,7 +154,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-234567",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-02-15",
       endDate: "2026-02-15",
@@ -244,7 +244,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-345678",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-03-01",
       endDate: "2026-03-01",
@@ -333,7 +333,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-456789",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-01-15",
       endDate: "2026-01-15",
@@ -433,7 +433,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-567890",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-04-01",
       endDate: "2026-04-01",
@@ -523,7 +523,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-678901",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-05-10",
       endDate: "2026-05-10",
@@ -613,7 +613,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-789012",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-06-01",
       endDate: "2026-06-01",
@@ -697,7 +697,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-890123",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-07-15",
       endDate: "2026-07-15",
@@ -787,7 +787,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-901234",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-08-01",
       endDate: "2026-08-01",
@@ -877,7 +877,7 @@ const policies = [
     },
     policy: {
       policyId: "POL-2025-012345",
-      provider: "PurrSure Insurance",
+      provider: "Вет Експерт",
       status: "active",
       startDate: "2025-09-01",
       endDate: "2026-09-01",

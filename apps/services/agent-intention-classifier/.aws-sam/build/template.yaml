@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: 'IntentionClassifierAgent Configuration
 
-  Intention Classifier Agent for Purrsurance pet insurance system
+  Intention Classifier Agent for Вет Експерт pet insurance system
 
   '
 Parameters:
@@ -163,7 +163,7 @@ Resources:
     Properties:
       AgentName:
         Ref: IntentionClassifierAgentName
-      Description: Intention classifier agent for Purrsurance system
+      Description: Intention classifier agent for Вет Експерт system
       AgentResourceRoleArn:
         Fn::GetAtt:
         - IntentionClassifierAgentRole

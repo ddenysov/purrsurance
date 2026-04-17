@@ -1,7 +1,7 @@
 # PET-5: Deploy Website to AWS S3 Static Hosting
 
 ## Description
-Set up and deploy the Purrsurance chat application to AWS S3 as a static website. This includes configuring S3 buckets, setting up CloudFront CDN for better performance and SSL support, and implementing a deployment pipeline for easy updates.
+Set up and deploy the Вет Експерт chat application to AWS S3 as a static website. This includes configuring S3 buckets, setting up CloudFront CDN for better performance and SSL support, and implementing a deployment pipeline for easy updates.
 
 ## Business Logic
 1. **Static Site Generation**: Configure Nuxt to generate a fully static version of the application
@@ -85,7 +85,7 @@ Add to the `scripts` section:
     // ... existing scripts
     "generate": "nuxt generate",
     "deploy:build": "nuxt generate",
-    "deploy:upload": "aws s3 sync .output/public s3://purrsurance-app --delete",
+    "deploy:upload": "aws s3 sync .output/public s3://vet-expert-app --delete",
     "deploy:invalidate": "aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DIST_ID --paths '/*'",
     "deploy": "pnpm deploy:build && pnpm deploy:upload && pnpm deploy:invalidate"
   }
@@ -111,9 +111,9 @@ Create a script to set up S3 bucket with proper configuration.
 #!/bin/bash
 
 # Configuration
-BUCKET_NAME="purrsurance-app"
+BUCKET_NAME="vet-expert-app"
 REGION="us-east-1"
-CLOUDFRONT_ORIGIN_ID="purrsurance-s3-origin"
+CLOUDFRONT_ORIGIN_ID="vet-expert-s3-origin"
 
 echo "Setting up S3 bucket for static hosting..."
 
@@ -198,7 +198,7 @@ Create a script to set up CloudFront CDN with SSL support.
 #!/bin/bash
 
 # Configuration
-BUCKET_NAME="purrsurance-app"
+BUCKET_NAME="vet-expert-app"
 REGION="us-east-1"
 DOMAIN_NAME="$BUCKET_NAME.s3-website-$REGION.amazonaws.com"
 
@@ -207,14 +207,14 @@ echo "Setting up CloudFront distribution..."
 # Create CloudFront distribution config
 cat > /tmp/cloudfront-config.json <<EOF
 {
-  "CallerReference": "purrsurance-$(date +%s)",
-  "Comment": "Purrsurance Chat App CDN",
+  "CallerReference": "vet-expert-$(date +%s)",
+  "Comment": "Вет Експерт Chat App CDN",
   "Enabled": true,
   "Origins": {
     "Quantity": 1,
     "Items": [
       {
-        "Id": "purrsurance-s3-origin",
+        "Id": "vet-expert-s3-origin",
         "DomainName": "$DOMAIN_NAME",
         "CustomOriginConfig": {
           "HTTPPort": 80,
@@ -226,7 +226,7 @@ cat > /tmp/cloudfront-config.json <<EOF
   },
   "DefaultRootObject": "index.html",
   "DefaultCacheBehavior": {
-    "TargetOriginId": "purrsurance-s3-origin",
+    "TargetOriginId": "vet-expert-s3-origin",
     "ViewerProtocolPolicy": "redirect-to-https",
     "AllowedMethods": {
       "Quantity": 2,
@@ -318,7 +318,7 @@ Create comprehensive deployment documentation.
 **Create new file: `apps/chat/DEPLOYMENT.md`**
 
 ```markdown
-# Deployment Guide - Purrsurance Chat App
+# Deployment Guide - Вет Експерт Chat App
 
 ## Prerequisites
 
@@ -458,12 +458,12 @@ aws cloudfront get-distribution --id $CLOUDFRONT_DIST_ID
 
 ### Check S3 Bucket Size
 ```bash
-aws s3 ls s3://purrsurance-app --recursive --human-readable --summarize
+aws s3 ls s3://vet-expert-app --recursive --human-readable --summarize
 ```
 
 ### View CloudFront Logs (if enabled)
 ```bash
-aws s3 ls s3://purrsurance-app-logs/
+aws s3 ls s3://vet-expert-app-logs/
 ```
 
 ## Security Best Practices

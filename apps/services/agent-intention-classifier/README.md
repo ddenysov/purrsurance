@@ -1,6 +1,6 @@
 # Intention Classifier Agent
 
-AWS Bedrock Agent for classifying user intentions in the Purrsurance pet insurance system.
+AWS Bedrock Agent for classifying user intentions in the Вет Експерт pet insurance system.
 
 ## Overview
 
@@ -61,7 +61,7 @@ This will update the agent instruction and create a new alias without requiring 
 
 ## Configuration
 
-Configuration is managed through `samconfig.toml`. The stack name is `purrsurance-agent-intention-classifier`.
+Configuration is managed through `samconfig.toml`. The stack name is `vet-expert-agent-intention-classifier`.
 
 ## Outputs
 

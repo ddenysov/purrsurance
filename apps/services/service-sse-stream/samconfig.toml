@@ -2,7 +2,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-sse-stream"
+stack_name = "vet-expert-sse-stream"
 
 [default.build.parameters]
 cached = true
@@ -16,7 +16,7 @@ region = "us-east-1"
 parameter_overrides = [
     "Environment=prod",
     "LogLevel=info",
-    "EventPublisherStackName=purrsurance-event-publisher",
+    "EventPublisherStackName=vet-expert-event-publisher",
     "SSEPollInterval=2000",
     "SSEMaxDuration=300000",
     "SSEKeepaliveInterval=30000"

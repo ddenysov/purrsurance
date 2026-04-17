@@ -70,7 +70,7 @@ Add these parameters after the existing `BedrockAgentAliasId` parameter:
   VetDocAgentInstruction:
     Type: String
     Default: |
-      You are VetDocAgent, a specialized veterinary documentation assistant for Purrsurance pet insurance.
+      You are VetDocAgent, a specialized veterinary documentation assistant for Вет Експерт pet insurance.
       
       Your role is to help veterinarians and pet insurance agents with:
       - Medical documentation and record-keeping
@@ -169,7 +169,7 @@ Add this resource after VetDocAgentRole:
     Type: AWS::Bedrock::Agent
     Properties:
       AgentName: !Ref VetDocAgentName
-      Description: Veterinary documentation assistant for Purrsurance pet insurance
+      Description: Veterinary documentation assistant for Вет Експерт pet insurance
       AgentResourceRoleArn: !GetAtt VetDocAgentRole.Arn
       FoundationModel: !Ref VetDocAgentFoundationModel
       Instruction: !Ref VetDocAgentInstruction
@@ -308,7 +308,7 @@ Create comprehensive documentation for VetDocAgent configuration.
 ```markdown
 # VetDocAgent - Veterinary Documentation Assistant
 
-AWS Bedrock Agent for veterinary documentation and pet insurance assistance in the Purrsurance system.
+AWS Bedrock Agent for veterinary documentation and pet insurance assistance in the Вет Експерт system.
 
 ## Overview
 
@@ -350,7 +350,7 @@ To change the model, update the `VetDocAgentFoundationModel` parameter in samcon
 The system instruction defines the agent's behavior and capabilities. The default instruction is:
 
 ```
-You are VetDocAgent, a specialized veterinary documentation assistant for Purrsurance pet insurance.
+You are VetDocAgent, a specialized veterinary documentation assistant for Вет Експерт pet insurance.
 
 Your role is to help veterinarians and pet insurance agents with:
 - Medical documentation and record-keeping
@@ -717,7 +717,7 @@ sam deploy --parameter-overrides VetDocAgentIdleSessionTTL="900"
 2. **Scope Boundaries**: Define what it should/shouldn't do
 3. **Tone and Style**: Set expected communication style
 4. **Safety Guidelines**: Include disclaimers for medical advice
-5. **Context Awareness**: Mention the Purrsurance domain
+5. **Context Awareness**: Mention the Вет Експерт domain
 
 ### Cost Management
 

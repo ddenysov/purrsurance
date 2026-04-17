@@ -22,5 +22,5 @@ test:
 	./test-local.sh
 
 logs:
-	sam logs --stack-name purrsurance-event-publisher --tail
+	sam logs --stack-name vet-expert-event-publisher --tail
 

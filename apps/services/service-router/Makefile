@@ -53,7 +53,7 @@ start-api: build
 # Tail CloudWatch logs
 logs:
 	@echo "Tailing logs..."
-	sam logs -n ServiceRouterFunction --stack-name purrsurance-service-router --tail
+	sam logs -n ServiceRouterFunction --stack-name vet-expert-service-router --tail
 
 # Clean build artifacts
 clean:
@@ -101,7 +101,7 @@ list-agents:
 get-urls:
 	@echo "Fetching deployment URLs..."
 	@aws cloudformation describe-stacks \
-		--stack-name purrsurance-service-router \
+		--stack-name vet-expert-service-router \
 		--query 'Stacks[0].Outputs[?OutputKey==`ServiceRouterApi`].[OutputKey,OutputValue]' \
 		--output table
 
@@ -109,7 +109,7 @@ get-urls:
 update-env:
 	@echo "Updating env.json with deployed API endpoint URL..."
 	@API_URL=$$(aws cloudformation describe-stacks \
-		--stack-name purrsurance-service-router \
+		--stack-name vet-expert-service-router \
 		--query 'Stacks[0].Outputs[?OutputKey==`ServiceRouterApi`].OutputValue' \
 		--output text 2>/dev/null || echo ""); \
 	if [ -z "$$API_URL" ]; then \

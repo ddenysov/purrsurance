@@ -1,5 +1,5 @@
 /**
- * @purrsurance/agent-tools
+ * @vet-expert/agent-tools
  * 
  * Shared utilities for AWS Bedrock Agent tools
  */

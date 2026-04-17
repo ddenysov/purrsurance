@@ -12,7 +12,7 @@ export const useChatWithApi = () => {
   const messages = ref<ChatMessage[]>([
     {
       id: '1',
-      content: 'Hello! I\'m your Purrsurance AI assistant. I\'m here to help you with your pet insurance needs. How can I assist you today?',
+      content: 'Hello! I\'m your Вет Експерт AI assistant. I\'m here to help you with your pet insurance needs. How can I assist you today?',
       sender: 'assistant',
       timestamp: new Date()
     }

@@ -1,6 +1,6 @@
 # API Client Documentation
 
-This directory contains the API client implementation for the Purrsurance chat application.
+This directory contains the API client implementation for the Вет Експерт chat application.
 
 ## Files Overview
 

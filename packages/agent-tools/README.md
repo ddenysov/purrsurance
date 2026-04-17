@@ -1,11 +1,11 @@
-# @purrsurance/agent-tools
+# @vet-expert/agent-tools
 
 Shared utilities for AWS Bedrock Agent tools.
 
 ## Installation
 
 ```bash
-pnpm add @purrsurance/agent-tools@file:../../../packages/agent-tools
+pnpm add @vet-expert/agent-tools@file:../../../packages/agent-tools
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ pnpm add @purrsurance/agent-tools@file:../../../packages/agent-tools
 ### Creating Agent Response
 
 ```javascript
-import { createAgentResponse } from '@purrsurance/agent-tools';
+import { createAgentResponse } from '@vet-expert/agent-tools';
 
 export const lambdaHandler = async (event, context) => {
   const responseBodyContent = {
@@ -28,7 +28,7 @@ export const lambdaHandler = async (event, context) => {
 ### Extracting Session ID
 
 ```javascript
-import { extractSessionId } from '@purrsurance/agent-tools';
+import { extractSessionId } from '@vet-expert/agent-tools';
 
 export const lambdaHandler = async (event, context) => {
   const sessionId = extractSessionId(event);
@@ -39,7 +39,7 @@ export const lambdaHandler = async (event, context) => {
 ### Extracting Parameters
 
 ```javascript
-import { extractParameters } from '@purrsurance/agent-tools';
+import { extractParameters } from '@vet-expert/agent-tools';
 
 export const lambdaHandler = async (event, context) => {
   const params = extractParameters(event);
@@ -51,7 +51,7 @@ export const lambdaHandler = async (event, context) => {
 ### Sending Events to Event Publisher
 
 ```javascript
-import { sendEventToPublisher, extractSessionId } from '@purrsurance/agent-tools';
+import { sendEventToPublisher, extractSessionId } from '@vet-expert/agent-tools';
 
 const eventPublisherUrl = process.env.EVENT_PUBLISHER_URL;
 

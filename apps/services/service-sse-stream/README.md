@@ -158,7 +158,7 @@ View logs:
 ```bash
 make logs
 # or
-sam logs --stack-name purrsurance-sse-stream --tail
+sam logs --stack-name vet-expert-sse-stream --tail
 ```
 
 ## Outputs

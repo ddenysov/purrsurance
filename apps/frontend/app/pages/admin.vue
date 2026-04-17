@@ -571,7 +571,7 @@ const policyStatusLabel = (status: string) => {
 }
 
 useHead({
-  title: 'Адмін улюбленців — Purrsurance'
+  title: 'Адмін улюбленців — Вет Експерт'
 })
 </script>
 

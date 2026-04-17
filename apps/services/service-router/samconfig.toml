@@ -3,7 +3,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-service-router"
+stack_name = "vet-expert-service-router"
 
 [default.build.parameters]
 cached = true

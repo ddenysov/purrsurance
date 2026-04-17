@@ -5,13 +5,13 @@
 
 set -e
 
-STACK_NAME="purrsurance-agent-booking-manager"
-VET_CLINIC_TOOL_STACK="purrsurance-tool-find-vet-clinic"
-BOOK_VET_CLINIC_TOOL_STACK="purrsurance-tool-book-vet-clinic"
-POLICY_DETAILS_TOOL_STACK="purrsurance-tool-policy-details"
-CONTEXT_DETAILS_TOOL_STACK="purrsurance-tool-context-details"
-CONTEXT_SAVE_TOOL_STACK="purrsurance-tool-context-save"
-CONTEXT_GET_TOOL_STACK="purrsurance-tool-context-get"
+STACK_NAME="vet-expert-agent-booking-manager"
+VET_CLINIC_TOOL_STACK="vet-expert-tool-find-vet-clinic"
+BOOK_VET_CLINIC_TOOL_STACK="vet-expert-tool-book-vet-clinic"
+POLICY_DETAILS_TOOL_STACK="vet-expert-tool-policy-details"
+CONTEXT_DETAILS_TOOL_STACK="vet-expert-tool-context-details"
+CONTEXT_SAVE_TOOL_STACK="vet-expert-tool-context-save"
+CONTEXT_GET_TOOL_STACK="vet-expert-tool-context-get"
 REGION="us-east-1"
 
 echo "Setting up Action Groups for AgentBookingManager..."

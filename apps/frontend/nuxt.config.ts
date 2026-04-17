@@ -23,10 +23,10 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
       apiTimeout: process.env.NUXT_PUBLIC_API_TIMEOUT || '10000',
-      // SSE Stream URL from purrsurance-sse-stream stack
+      // SSE Stream URL from vet-expert-sse-stream stack
       // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
       sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || '/stream',
-      // Chat API URL from purrsurance-service-router stack
+      // Chat API URL from vet-expert-service-router stack
       // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
       chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || '/chat',
       /** When true, chat responses are mocked on the client (no backend call). Set NUXT_PUBLIC_CHAT_API_MOCK=true */

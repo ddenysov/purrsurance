@@ -349,7 +349,7 @@ const handlePolicyUpdated = (event: SSEEvent) => {
 
 // Set page title
 useHead({
-  title: 'Purrsurance — ШІ-помічник зі страхування улюбленців'
+  title: 'Вет Експерт — ШІ-помічник зі страхування улюбленців'
 })
 
 // SSE subscription: logs every event to the console and cleans up on unmount

@@ -1,8 +1,8 @@
-# Purrsurance - AI-Powered Pet Insurance Platform
+# Вет Експерт - AI-Powered Pet Insurance Platform
 
 ## Overview
 
-**Purrsurance** is an intelligent pet insurance management platform that leverages AI agents powered by AWS Bedrock to provide instant policy information, veterinary consultations, and appointment booking through a conversational interface. The platform combines insurance management with AI-driven pet healthcare assistance to deliver a seamless user experience for pet owners.
+**Вет Експерт** is an intelligent pet insurance management platform that leverages AI agents powered by AWS Bedrock to provide instant policy information, veterinary consultations, and appointment booking through a conversational interface. The platform combines insurance management with AI-driven pet healthcare assistance to deliver a seamless user experience for pet owners.
 
 ## Problem Statement
 
@@ -12,7 +12,7 @@ Pet owners often face multiple challenges:
 - Finding and booking appointments with appropriate veterinarians
 - Accessing reliable veterinary medical information quickly
 
-Purrsurance solves these problems by providing an intelligent, conversational assistant that can handle insurance inquiries, provide preliminary veterinary assessments, and facilitate appointment booking - all in one place.
+Вет Експерт solves these problems by providing an intelligent, conversational assistant that can handle insurance inquiries, provide preliminary veterinary assessments, and facilitate appointment booking - all in one place.
 
 ## Key Features
 
@@ -258,7 +258,7 @@ All services are independently deployable and scalable.
 
 ## Conclusion
 
-Purrsurance demonstrates how modern AI capabilities can transform traditional insurance services into intelligent, conversational experiences. By combining AWS Bedrock's agent orchestration, RAG-enhanced knowledge retrieval, and serverless architecture, the platform delivers a scalable, cost-effective solution for pet insurance management with integrated healthcare guidance.
+Вет Експерт demonstrates how modern AI capabilities can transform traditional insurance services into intelligent, conversational experiences. By combining AWS Bedrock's agent orchestration, RAG-enhanced knowledge retrieval, and serverless architecture, the platform delivers a scalable, cost-effective solution for pet insurance management with integrated healthcare guidance.
 
 The multi-agent approach ensures specialized, accurate responses while maintaining a seamless user experience through intelligent routing and real-time streaming. This architecture can be adapted for various insurance domains, healthcare applications, and customer service scenarios.
 

@@ -4,7 +4,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
-          <h1 class="text-xl font-bold text-gray-900">🐾 Purrsurance</h1>
+          <h1 class="text-xl font-bold text-gray-900">🐾 Вет Експерт</h1>
         </div>
         <div class="flex items-center gap-4">
           <NuxtLink

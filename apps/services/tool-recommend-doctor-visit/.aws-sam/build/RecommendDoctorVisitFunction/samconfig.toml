@@ -2,7 +2,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "purrsurance-tool-recommend-doctor-visit"
+stack_name = "vet-expert-tool-recommend-doctor-visit"
 
 [default.build.parameters]
 cached = true
@@ -16,7 +16,7 @@ region = "us-east-1"
 parameter_overrides = [
     "Environment=prod",
     "LogLevel=info",
-    "EventPublisherStackName=purrsurance-event-publisher",
+    "EventPublisherStackName=vet-expert-event-publisher",
     "EventPublisherUrl=https://d7j4hmm8nj.execute-api.us-east-1.amazonaws.com/Prod/publish"
 ]
 
