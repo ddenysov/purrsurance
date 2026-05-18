@@ -92,6 +92,8 @@ const agentDisplayName = computed(() => {
 </script>
 
 <style scoped>
+@reference '../../../css/app.css';
+
 /* Markdown prose styles for assistant messages */
 .prose {
   @apply text-gray-900;

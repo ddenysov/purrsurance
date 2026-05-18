@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-white rounded-xl shadow-soft flex flex-col" style="height: 72vh;">
+  <div
+    class="flex h-[min(72vh,900px)] min-h-[20rem] w-full flex-col rounded-xl border border-gray-200 bg-white shadow-sm"
+  >
     <!-- Chat Header -->
     <ChatHeader />
     
@@ -17,6 +19,9 @@
 
 <script setup lang="ts">
 import type { ChatMessage } from '@/types'
+import ChatComposer from './ChatComposer.vue'
+import ChatHeader from './ChatHeader.vue'
+import ChatMessages from './ChatMessages.vue'
 
 interface Props {
     messages: ReadonlyArray<ChatMessage> | ChatMessage[];

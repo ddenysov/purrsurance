@@ -3,34 +3,34 @@
         <Head title="Вет Експерт — ШІ-помічник зі страхування улюбленців" />
 
         <div class="min-h-screen bg-white">
-            <!-- Main Content -->
-            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Left Column: Pet Profile (1 column on mobile, 1 column on desktop) -->
-        <div class="lg:col-span-1">
-          <PetProfile
-            :pet="pet"
-            :vaccinations="vaccinations"
-            :appointments="appointments"
-            :quick-actions="quickActions"
-            :is-policy-verified="isPolicyVerified"
-            @edit-profile="openModal"
-            @action-click="handleQuickAction"
-          />
-        </div>
+            <!-- Content (not a nested <main> — layout already has one from AppLayout) -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                    <!-- Pet profile: second on mobile, left column on lg+ -->
+                    <div class="order-2 min-w-0 lg:order-1 lg:col-span-1">
+                        <PetProfile
+                            :pet="pet"
+                            :vaccinations="vaccinations"
+                            :appointments="appointments"
+                            :quick-actions="quickActions"
+                            :is-policy-verified="isPolicyVerified"
+                            @edit-profile="openModal"
+                            @action-click="handleQuickAction"
+                        />
+                    </div>
 
-        <!-- Right Column: Chat Container (1 column on mobile, 2 columns on desktop) -->
-        <div class="lg:col-span-2">
-          <ChatContainer
-            :messages="messages"
-            :is-typing="isTyping"
-            :error="error"
-            @send="handleSendMessage"
-            @suggestion-click="handleSuggestionClick"
-          />
+                    <!-- Chat: first on mobile so it is visible without scrolling -->
+                    <div class="order-1 min-w-0 lg:order-2 lg:col-span-2">
+                        <ChatContainer
+                            :messages="messages"
+                            :is-typing="isTyping"
+                            :error="error"
+                            @send="handleSendMessage"
+                            @suggestion-click="handleSuggestionClick"
+                        />
+                    </div>
+                </div>
             </div>
-            </div>
-            </main>
         </div>
     </AppLayout>
 </template>
