@@ -135,6 +135,12 @@
 <script setup lang="ts">
 import { usePetProfileStore } from '@/stores/petProfile';
 import type { Pet, Vaccination, Appointment, QuickAction } from '@/types';
+import PetAvatar from './PetAvatar.vue';
+import PetInfo from './PetInfo.vue';
+import PetPolicyCards from './PetPolicyCards.vue';
+import PetQuickActions from './PetQuickActions.vue';
+import PetUpcoming from './PetUpcoming.vue';
+import PetVaccinations from './PetVaccinations.vue';
 
 interface Props {
   pet: Pet
@@ -184,8 +190,8 @@ const getPolicyStatusClasses = (status: string) => {
 
 const formatDate = (dateString: string) => {
   if (!dateString) {
-return ''
-}
+    return '';
+  }
 
   try {
     const date = new Date(dateString)
