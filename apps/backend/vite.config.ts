@@ -7,6 +7,24 @@ import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    server: {
+        proxy: {
+            '/stream': {
+                target: 'https://ppfpuxcnyds5oa5zbwsbaevata0gybqg.lambda-url.us-east-1.on.aws/',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/stream/, ''),
+            },
+            '/chat': {
+                target: 'https://f71j8tt6kc.execute-api.us-east-1.amazonaws.com/Prod',
+                changeOrigin: true,
+            },
+            '/api/vet-appointments': {
+                target: 'https://3ehcudxdblj37bv2ovnxakr5340pvqlz.lambda-url.us-east-1.on.aws/',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, ''),
+            },
+        },
+    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.ts'],

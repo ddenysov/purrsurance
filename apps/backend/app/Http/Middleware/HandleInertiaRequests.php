@@ -41,6 +41,14 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'client' => [
+                'apiBaseUrl' => config('purrsurance.api_base_url'),
+                'apiTimeout' => config('purrsurance.api_timeout'),
+                'sseStreamUrl' => config('purrsurance.sse_stream_url'),
+                'chatApiUrl' => config('purrsurance.chat_api_url'),
+                'chatApiMock' => config('purrsurance.chat_api_mock'),
+                'backendApiUrl' => config('purrsurance.backend_api_url'),
+            ],
         ];
     }
 }

@@ -1,0 +1,33 @@
+<template>
+  <div class="bg-white rounded-xl shadow-soft flex flex-col" style="height: 72vh;">
+    <!-- Chat Header -->
+    <ChatHeader />
+    
+    <!-- Chat Messages -->
+    <ChatMessages 
+      :messages="messages"
+      :is-typing="isTyping"
+      :error="error"
+    />
+    
+    <!-- Chat Composer -->
+    <ChatComposer @send="$emit('send', $event)" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { ChatMessage } from '@/types'
+
+interface Props {
+    messages: ReadonlyArray<ChatMessage> | ChatMessage[];
+    isTyping: boolean;
+    error?: string | null;
+}
+
+defineProps<Props>()
+
+defineEmits<{
+  send: [message: string]
+  'suggestion-click': [suggestion: string]
+}>()
+</script>
