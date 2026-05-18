@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => response()->json('OK'))->name('home');
+Route::inertia('/', 'Welcome')->name('home');
