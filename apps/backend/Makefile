@@ -6,7 +6,7 @@ COMPOSE := docker compose
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build up down restart ps logs worker-logs shell root composer npm npm-dev npm-build artisan migrate migrate-fresh seed test pint install setup mcp-demo ngrok ngrok-stop ngrok-sync-env ngrok-tg tg telegram-set-webhook telegram-delete-webhook telegram-set-webhook-all telegram-delete-webhook-all
+.PHONY: help build up down restart ps logs worker-logs shell root composer npm npm-dev npm-build artisan migrate migrate-fresh seed test pint install setup php-settings mcp-demo ngrok ngrok-stop ngrok-sync-env ngrok-tg tg telegram-set-webhook telegram-delete-webhook telegram-set-webhook-all telegram-delete-webhook-all
 
 help: ## Show available commands
 	@awk 'BEGIN {FS = ":.*##"; printf "\nAvailable commands:\n"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  make %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -51,6 +51,9 @@ npm-build: ## Build frontend assets
 
 artisan: ## Run Artisan command, e.g. make artisan ARGS="route:list"
 	$(COMPOSE) exec $(APP_SERVICE) php artisan $(ARGS)
+
+php-settings: ## Show PHP settings in the app container
+	@$(COMPOSE) exec -T $(APP_SERVICE) php -r 'echo "memory_limit = ", ini_get("memory_limit"), PHP_EOL;'
 
 mcp-server: ## Run MCP calculator demo (stdio); requires containers up (`make up`)
 	$(COMPOSE) exec $(APP_SERVICE) php mcp/server.php
