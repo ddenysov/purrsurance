@@ -3,13 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Agents\VetDocAgent;
+use App\Support\Neuron\ConsoleRagDebugObserver;
 use Illuminate\Console\Command;
 use NeuronAI\Chat\Messages\UserMessage;
 use Throwable;
 
 class VetDocAgentChatCommand extends Command
 {
-    protected $signature = 'vet-doc:chat';
+    protected $signature = 'vet-doc:chat {--debug : Print RAG retrieval details after each response}';
 
     protected $description = 'Interactive chat with the Vet Doc agent (Gemini + veterinary textbook RAG)';
 
@@ -22,6 +23,13 @@ class VetDocAgentChatCommand extends Command
         }
 
         $agent = new VetDocAgent;
+        $ragDebug = null;
+
+        if ($this->option('debug')) {
+            $ragDebug = new ConsoleRagDebugObserver;
+            $agent->observe($ragDebug);
+            $this->line('RAG debug enabled.');
+        }
 
         if (! $agent->hasVectorStore()) {
             $this->warn('Vector store is missing or empty. Run: php artisan rag:build-vet-docs');
@@ -50,6 +58,11 @@ class VetDocAgentChatCommand extends Command
             try {
                 $response = $agent->chat(new UserMessage($input))->getMessage();
                 $content = $response->getContent() ?? '';
+
+                if ($ragDebug !== null) {
+                    $this->newLine();
+                    $ragDebug->writeTo($this->output);
+                }
 
                 $this->newLine();
                 $this->line('<comment>VetDoc:</comment> '.$content);
