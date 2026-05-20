@@ -5,11 +5,17 @@ namespace App\Console\Commands;
 use App\RAG\VetDocsRag;
 use Illuminate\Console\Command;
 use NeuronAI\RAG\DataLoader\FileDataLoader;
+use NeuronAI\RAG\Document;
 use NeuronAI\RAG\Splitter\SentenceTextSplitter;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Throwable;
 
 class BuildVetDocsVectorStoreCommand extends Command
 {
+    private const RATE_LIMIT_WAIT_SECONDS = 120;
+
+    private const BATCH_SIZE = 10;
+
     protected $signature = 'rag:build-vet-docs
                             {--fresh : Delete the existing vector store and rebuild from scratch}';
 
@@ -70,38 +76,62 @@ class BuildVetDocsVectorStoreCommand extends Command
             $this->warn('Removed existing vector store.');
         }
 
+        [$pendingDocuments, $skippedChunks, $partialSources] = $this->resolvePendingDocuments(
+            $documents,
+            $storePath,
+            $fresh,
+            $rag,
+        );
+
         $this->info(sprintf(
-            'Indexing %d chunks from %d files into %s',
+            'Total: %d chunks from %d files → store: %s',
             count($documents),
             count($txtFiles),
             $storePath,
         ));
         $this->line('Embedding model: '.config('rag.embeddings.model'));
+
+        if ($skippedChunks > 0) {
+            $this->line(sprintf('Resume: skipping %d chunks already indexed.', $skippedChunks));
+        }
+
+        foreach ($partialSources as $sourceName => $counts) {
+            $this->line(sprintf(
+                'Resume: re-indexing partial source %s (%d/%d chunks).',
+                $sourceName,
+                $counts['indexed'],
+                $counts['expected'],
+            ));
+        }
+
+        if ($pendingDocuments === []) {
+            $this->newLine();
+            $this->info('Vector store is already up to date. Nothing to index.');
+
+            return self::SUCCESS;
+        }
+
+        $this->line(sprintf('Pending: %d chunks to index.', count($pendingDocuments)));
         $this->newLine();
 
-        $useFreshBuild = $fresh || ! file_exists($storePath);
-
-        $bar = $this->output->createProgressBar($useFreshBuild ? count($documents) : 1);
-        $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %message%');
-        $bar->setMessage('embedding...');
+        $bar = $this->output->createProgressBar(count($pendingDocuments));
+        $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% — %message%');
+        $bar->setMessage('работа');
         $bar->start();
 
         try {
-            if ($useFreshBuild) {
-                $batchSize = 10;
-
-                foreach (array_chunk($documents, $batchSize) as $chunk) {
-                    $rag->addDocuments($chunk, $batchSize);
+            foreach (array_chunk($pendingDocuments, self::BATCH_SIZE) as $chunk) {
+                $this->runWithRateLimitRetry(function () use ($rag, $chunk, $bar): void {
+                    $bar->setMessage('работа');
+                    $rag->addDocuments($chunk, self::BATCH_SIZE);
                     $bar->advance(count($chunk));
-                }
-            } else {
-                $rag->reindexBySource($documents);
-                $bar->advance();
+                }, $bar);
             }
         } catch (Throwable $exception) {
             $bar->finish();
             $this->newLine(2);
             $this->error('Failed to build vector store: '.$exception->getMessage());
+            $this->line('Run the same command again (without --fresh) to resume.');
 
             return self::FAILURE;
         }
@@ -112,5 +142,138 @@ class BuildVetDocsVectorStoreCommand extends Command
         $this->line("Store file: {$storePath}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param  Document[]  $documents
+     * @return array{0: Document[], 1: int, 2: array<string, array{indexed: int, expected: int}>}
+     */
+    private function resolvePendingDocuments(
+        array $documents,
+        string $storePath,
+        bool $fresh,
+        VetDocsRag $rag,
+    ): array {
+        $bySource = [];
+
+        foreach ($documents as $document) {
+            $bySource[$document->sourceName][] = $document;
+        }
+
+        ksort($bySource);
+
+        if ($fresh || ! file_exists($storePath)) {
+            $pending = [];
+
+            foreach ($bySource as $chunks) {
+                array_push($pending, ...$chunks);
+            }
+
+            return [$pending, 0, []];
+        }
+
+        $indexedCounts = $this->countIndexedChunksBySource($storePath);
+        $vectorStore = $rag->resolveVectorStore();
+        $pending = [];
+        $skippedChunks = 0;
+        $partialSources = [];
+
+        foreach ($bySource as $sourceName => $chunks) {
+            $expected = count($chunks);
+            $indexed = $indexedCounts[$sourceName] ?? 0;
+
+            if ($indexed >= $expected) {
+                $skippedChunks += $expected;
+
+                continue;
+            }
+
+            if ($indexed > 0) {
+                $vectorStore->deleteBy('files', $sourceName);
+                $partialSources[$sourceName] = [
+                    'indexed' => $indexed,
+                    'expected' => $expected,
+                ];
+            }
+
+            array_push($pending, ...$chunks);
+        }
+
+        return [$pending, $skippedChunks, $partialSources];
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function countIndexedChunksBySource(string $storePath): array
+    {
+        $counts = [];
+        $handle = fopen($storePath, 'r');
+
+        if ($handle === false) {
+            return $counts;
+        }
+
+        try {
+            while (($line = fgets($handle)) !== false) {
+                $line = trim($line);
+
+                if ($line === '') {
+                    continue;
+                }
+
+                $document = json_decode($line, true);
+
+                if (! is_array($document) || ! isset($document['sourceName'])) {
+                    continue;
+                }
+
+                $sourceName = (string) $document['sourceName'];
+                $counts[$sourceName] = ($counts[$sourceName] ?? 0) + 1;
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        return $counts;
+    }
+
+    private function isRateLimitExceeded(Throwable $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, '429')
+            || str_contains($message, 'RESOURCE_EXHAUSTED');
+    }
+
+    /**
+     * @param  callable(): void  $callback
+     */
+    private function runWithRateLimitRetry(callable $callback, ProgressBar $bar): void
+    {
+        while (true) {
+            try {
+                $callback();
+
+                return;
+            } catch (Throwable $exception) {
+                if (! $this->isRateLimitExceeded($exception)) {
+                    throw $exception;
+                }
+
+                $bar->clear();
+                $this->newLine();
+                $this->warn(sprintf(
+                    'Ожидание: rate limit (429), пауза %d сек...',
+                    self::RATE_LIMIT_WAIT_SECONDS,
+                ));
+                $bar->setMessage('ожидание');
+
+                sleep(self::RATE_LIMIT_WAIT_SECONDS);
+
+                $this->line('Работа: продолжаем индексацию...');
+                $bar->display();
+            }
+        }
     }
 }
