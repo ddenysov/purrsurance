@@ -17,6 +17,10 @@ return [
 
     'sse_stream_url' => env('PURRSURANCE_SSE_STREAM_URL', env('NUXT_PUBLIC_SSE_STREAM_URL', '/stream')),
 
+    'sse_max_duration' => (int) env('PURRSURANCE_SSE_MAX_DURATION', 300),
+
+    'sse_mock_interval' => (int) env('PURRSURANCE_SSE_MOCK_INTERVAL', 5),
+
     'chat_api_url' => env('PURRSURANCE_CHAT_API_URL', env('NUXT_PUBLIC_CHAT_API_URL', '/chat')),
 
     'chat_api_mock' => filter_var(

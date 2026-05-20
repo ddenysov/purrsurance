@@ -10,9 +10,8 @@ export default defineConfig({
     server: {
         proxy: {
             '/stream': {
-                target: 'https://ppfpuxcnyds5oa5zbwsbaevata0gybqg.lambda-url.us-east-1.on.aws/',
+                target: process.env.VITE_SSE_PROXY_TARGET || 'http://127.0.0.1:80',
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/stream/, ''),
             },
             '/chat': {
                 target: 'https://f71j8tt6kc.execute-api.us-east-1.amazonaws.com/Prod',
