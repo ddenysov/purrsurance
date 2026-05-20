@@ -32,13 +32,9 @@ class VetDocsRag extends RAG
     {
         return new FileVectorStore(
             directory: (string) config('rag.vector_store.directory'),
+            topK: (int) config('rag.retrieval.top_k'),
             name: (string) config('rag.vector_store.name'),
         );
-    }
-
-    protected function instructions(): string
-    {
-        return 'You are a veterinary knowledge assistant. Use retrieved textbook excerpts to answer clinical questions accurately.';
     }
 
     public function storeFilePath(): string
@@ -47,5 +43,12 @@ class VetDocsRag extends RAG
         $name = (string) config('rag.vector_store.name');
 
         return $directory.DIRECTORY_SEPARATOR.$name.'.store';
+    }
+
+    public function hasVectorStore(): bool
+    {
+        $path = $this->storeFilePath();
+
+        return file_exists($path) && filesize($path) > 0;
     }
 }

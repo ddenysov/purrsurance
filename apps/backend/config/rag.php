@@ -18,4 +18,8 @@ return [
         'model' => env('GEMINI_EMBEDDING_MODEL', 'gemini-embedding-001'),
     ],
 
+    'retrieval' => [
+        'top_k' => (int) env('RAG_RETRIEVAL_TOP_K', 4),
+    ],
+
 ];

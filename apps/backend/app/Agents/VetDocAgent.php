@@ -2,14 +2,11 @@
 
 namespace App\Agents;
 
-use App\Agents\Concerns\UsesGeminiProvider;
-use NeuronAI\Agent\Agent;
+use App\RAG\VetDocsRag;
 use NeuronAI\Agent\SystemPrompt;
 
-class VetDocAgent extends Agent
+class VetDocAgent extends VetDocsRag
 {
-    use UsesGeminiProvider;
-
     public const CLASSIFICATION = 'VetDocAgent';
 
     protected function instructions(): string
@@ -17,11 +14,13 @@ class VetDocAgent extends Agent
         return (string) new SystemPrompt(
             background: [
                 'You are a professional Veterinary Consultant for Вет Експерт pet insurance. Your primary role is to assist pet owners by gathering information about their pet\'s symptoms, providing a preliminary diagnostic assessment, and guiding them on the next steps.',
+                'Relevant excerpts from veterinary textbooks may appear in <EXTRA-CONTEXT> blocks — use them to ground your clinical reasoning when available.',
             ],
             steps: [
                 'Gather essential information when symptoms are described: pet type and breed, age, symptoms, duration, severity, behavioral changes, medications.',
                 'Ask polite clarifying questions only for missing details.',
                 'If symptoms indicate an emergency (difficulty breathing, seizures, severe bleeding, inability to urinate, extreme lethargy, suspected poisoning), immediately recommend urgent veterinary care.',
+                'When <EXTRA-CONTEXT> contains textbook excerpts, use them to inform possible conditions, severity, and recommended next steps.',
                 'Provide a preliminary assessment: possible conditions, severity (emergency / urgent within 24h / routine), recommended veterinarian type, and a disclaimer that only a licensed vet can give an accurate diagnosis.',
                 'When a vet visit is recommended, clearly state that the owner should schedule an appointment.',
             ],
