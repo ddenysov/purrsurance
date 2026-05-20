@@ -2,6 +2,7 @@
 
 namespace App\Services\AgentRouter;
 
+use App\Agents\DefaultAssistantAgent;
 use App\Agents\IntentionClassifierAgent;
 use App\Support\Chat\ChatHistoryFormatter;
 use NeuronAI\Agent\Agent;
@@ -22,14 +23,6 @@ class AgentRouter
         $sessionId = $sessionId ?? $this->newSessionId();
 
         $classification = $this->classify($message, $chatHistory);
-
-        if ($classification === 'AgentNotFoundException') {
-            return new AgentRouterResult(
-                response: (string) config('agents.fallback.not_found'),
-                sessionId: $sessionId,
-                classification: $classification,
-            );
-        }
 
         $agentClass = config("agents.mapping.{$classification}");
 
@@ -53,11 +46,15 @@ class AgentRouter
             $content = (string) config('agents.fallback.unknown');
         }
 
+        $displayClassification = $classification === 'AgentNotFoundException'
+            ? DefaultAssistantAgent::CLASSIFICATION
+            : $classification;
+
         return new AgentRouterResult(
             response: $content,
             sessionId: $sessionId,
-            classification: $classification,
-            agentId: $classification,
+            classification: $displayClassification,
+            agentId: $displayClassification,
         );
     }
 

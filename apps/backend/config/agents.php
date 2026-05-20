@@ -1,6 +1,7 @@
 <?php
 
 use App\Agents\BookingManagerAgent;
+use App\Agents\DefaultAssistantAgent;
 use App\Agents\PolicyManagerAgent;
 use App\Agents\VetDocAgent;
 
@@ -16,6 +17,7 @@ return [
         'PolicyAgent' => PolicyManagerAgent::class,
         'VetDocAgent' => VetDocAgent::class,
         'BookingAgent' => BookingManagerAgent::class,
+        'AgentNotFoundException' => DefaultAssistantAgent::class,
     ],
 
     'classifications' => [

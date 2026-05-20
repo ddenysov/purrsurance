@@ -16,6 +16,8 @@ export const AGENT_DISPLAY_NAMES: Record<string, string> = {
   PolicyAgent: 'Агент з полісів',
   VetDocAgent: 'Ветеринарний агент',
   BookingAgent: 'Агент запису на прийом',
+  AssistantAgent: 'Помічник',
+  AgentNotFoundException: 'Помічник',
   MockAgent: 'Тестовий агент',
   DoctorKotryAgent: 'Доктор Котик',
 }
@@ -49,6 +51,8 @@ return 'default'
     VetDocAgent: 'medical',
     DoctorKotryAgent: 'medical',
     BookingAgent: 'calendar',
+    AssistantAgent: 'default',
+    AgentNotFoundException: 'default',
   }
   
   return iconMap[agentId] || 'default'
