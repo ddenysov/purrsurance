@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-xl shadow-soft p-6 space-y-6">
     <!-- LOCKED STATE: Show when policy not verified and no policy loaded in profile -->
-    <div v-if="false" class="text-center py-12 space-y-4">
+    <div v-if="!isProfileUnlocked" class="text-center py-12 space-y-4">
       <div class="w-20 h-20 mx-auto bg-slate-100 rounded-full flex items-center justify-center">
         <!-- Lock icon SVG -->
         <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,12 +153,7 @@ defineEmits<{
 
 const petProfileStore = usePetProfileStore()
 
-/** Прапорець зі сховища або завантажений поліс у профілі (у т.ч. дефолт з сідера). */
-const isProfileUnlocked = computed(
-  () =>
-    props.isPolicyVerified ||
-    Boolean(petProfileStore.petProfile.policy.policyId?.trim())
-)
+const isProfileUnlocked = computed(() => props.isPolicyVerified)
 
 // Helper functions
 const getMedicalConditionClasses = (status: string) => {
