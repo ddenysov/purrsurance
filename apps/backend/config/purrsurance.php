@@ -28,4 +28,9 @@ return [
         'PURRSURANCE_BACKEND_API_URL',
         env('NUXT_PUBLIC_BACKEND_API_URL', '/api/vet-appointments')
     ),
+
+    'policies_api_url' => env(
+        'PURRSURANCE_POLICIES_API_URL',
+        env('NUXT_PUBLIC_POLICIES_API_URL', '/api/policies')
+    ),
 ];

@@ -18,20 +18,62 @@
         </Link>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="loading" class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 p-12 text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-mint-500 border-t-transparent"></div>
+        <p class="mt-4 text-gray-600">Завантаження улюбленців…</p>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="error" class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-red-200 p-8">
+        <div class="flex items-center justify-center">
+          <div class="text-center">
+            <div class="text-red-500 text-5xl mb-4">⚠️</div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Не вдалося завантажити дані</h3>
+            <p class="text-gray-600 mb-4">{{ error }}</p>
+            <button
+              @click="fetchPolicies"
+              class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-mint-500 text-white hover:bg-mint-600 transition-colors"
+            >
+              Спробувати знову
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Pets Table -->
-      <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div v-else class="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
         <!-- Table Header -->
         <div class="px-6 py-4 border-b border-gray-200 bg-white/60">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900">Усі улюбленці</h2>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-brand-100 text-brand-800">
-              {{ pets.length }} {{ pluralUliublentsiv(pets.length) }}
-            </span>
+            <div class="flex items-center gap-4">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-brand-100 text-brand-800">
+                {{ pets.length }} {{ pluralUliublentsiv(pets.length) }}
+              </span>
+              <button
+                @click="fetchPolicies"
+                class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-mint-100 text-mint-700 hover:bg-mint-200 transition-colors"
+                :disabled="loading"
+              >
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Оновити
+              </button>
+            </div>
           </div>
         </div>
 
+        <!-- Empty State -->
+        <div v-if="pets.length === 0" class="p-12 text-center">
+          <div class="text-gray-400 text-6xl mb-4">🐾</div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Улюбленців не знайдено</h3>
+          <p class="text-gray-600">Запустіть сидер: <code class="text-sm bg-gray-100 px-2 py-1 rounded">make seed</code></p>
+        </div>
+
         <!-- Table Content -->
-        <div class="overflow-x-auto">
+        <div v-else class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50/50">
               <tr>
@@ -141,389 +183,102 @@
 </template>
 
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, ref } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { SharedClientConfig } from '@/types/client';
 
-// Static pets data from seeders
-const petsData = [
-  {
-    policyId: "POL-2025-123456",
-    pet: {
-      id: "7f4f0c1a-6f3a-4497-9d6a-9f9d1a3a1e22",
-      name: "Mittens",
-      species: "cat",
-      breed: "British Shorthair",
-      sex: "female",
-      dateOfBirth: "2021-04-15",
-      ageMonths: 54,
-      color: "blue",
-      photoUrl: "https://images.unsplash.com/photo-1574158622682-e40e69881006",
-      weight: { currentKg: 4.3 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Dmytro Denysov",
-      phone: "+380671112233",
-      email: "dmytro@example.com",
-      address: { city: "Kyiv" }
-    },
-    policy: {
-      policyId: "POL-2025-123456",
-      status: "active",
-      plan: "Premium",
-      coverage: {
-        annualLimitUAH: 150000,
-        deductibleUAH: 1500,
-      }
-    },
-    medical: {
-      conditions: [{
-        code: "ICD-11:ME81",
-        name: "Feline asthma",
-      }]
+interface PolicyRecord {
+  policyId: string;
+  pet: {
+    id: string;
+    name: string;
+    species: string;
+    breed: string;
+    sex: string;
+    ageMonths: number;
+    photoUrl?: string;
+    weight?: { currentKg?: number };
+  };
+  owner: {
+    fullName: string;
+    phone?: string;
+    email?: string;
+    address?: { city?: string };
+  };
+  policy: {
+    policyId: string;
+    status: string;
+    plan?: string;
+    coverage?: {
+      annualLimitUAH?: number;
+      deductibleUAH?: number;
+    };
+  };
+  medical?: {
+    conditions?: Array<{ code: string; name: string }>;
+  };
+}
+
+const page = usePage();
+const policiesApiUrl = computed(() => (page.props.client as SharedClientConfig).policiesApiUrl);
+
+const policiesData = ref<PolicyRecord[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
+
+const fetchPolicies = async () => {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const response = await fetch(policiesApiUrl.value);
+
+    if (!response.ok) {
+      throw new Error(`Не вдалося отримати поліси: ${response.statusText}`);
     }
-  },
-  {
-    policyId: "POL-2025-234567",
-    pet: {
-      id: "8e5e1c2b-7f4a-5598-0e7b-0g0e2b4b2f33",
-      name: "Max",
-      species: "dog",
-      breed: "Golden Retriever",
-      sex: "male",
-      dateOfBirth: "2020-06-20",
-      ageMonths: 64,
-      color: "golden",
-      photoUrl: "https://images.unsplash.com/photo-1633722715463-d30f4f325e24",
-      weight: { currentKg: 32.5 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Olena Kovalenko",
-      phone: "+380672223344",
-      email: "olena.k@example.com",
-      address: { city: "Kyiv" }
-    },
-    policy: {
-      policyId: "POL-2025-234567",
-      status: "active",
-      plan: "Standard",
-      coverage: {
-        annualLimitUAH: 100000,
-        deductibleUAH: 2000,
-      }
-    },
-    medical: {
-      conditions: []
+
+    const data = await response.json();
+
+    if (data.success && Array.isArray(data.data)) {
+      policiesData.value = data.data;
+    } else {
+      throw new Error('Некоректний формат відповіді');
     }
-  },
-  {
-    policyId: "POL-2025-345678",
-    pet: {
-      id: "9f6f2d3c-8g5b-6609-1f8c-1h1f3c5c3g44",
-      name: "Luna",
-      species: "cat",
-      breed: "Persian",
-      sex: "female",
-      dateOfBirth: "2022-03-10",
-      ageMonths: 43,
-      color: "white",
-      photoUrl: "https://images.unsplash.com/photo-1595433707802-6b2626ef1c91",
-      weight: { currentKg: 3.8 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Andriy Petrenko",
-      phone: "+380673334455",
-      email: "andriy.p@example.com",
-      address: { city: "Lviv" }
-    },
-    policy: {
-      policyId: "POL-2025-345678",
-      status: "active",
-      plan: "Premium",
-      coverage: {
-        annualLimitUAH: 150000,
-        deductibleUAH: 1500,
-      }
-    },
-    medical: {
-      conditions: [{
-        code: "ICD-11:KA21",
-        name: "Polycystic kidney disease",
-      }]
-    }
-  },
-  {
-    policyId: "POL-2025-456789",
-    pet: {
-      id: "0g7g3e4d-9h6c-7710-2g9d-2i2g4d6d4h55",
-      name: "Rocky",
-      species: "dog",
-      breed: "German Shepherd",
-      sex: "male",
-      dateOfBirth: "2019-08-12",
-      ageMonths: 74,
-      color: "black_tan",
-      photoUrl: "https://images.unsplash.com/photo-1568572933382-74d440642117",
-      weight: { currentKg: 38.2 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Iryna Shevchenko",
-      phone: "+380674445566",
-      email: "iryna.s@example.com",
-      address: { city: "Odesa" }
-    },
-    policy: {
-      policyId: "POL-2025-456789",
-      status: "active",
-      plan: "Standard",
-      coverage: {
-        annualLimitUAH: 100000,
-        deductibleUAH: 2000,
-      }
-    },
-    medical: {
-      conditions: [{
-        code: "ICD-11:FA71",
-        name: "Hip dysplasia",
-      }]
-    }
-  },
-  {
-    policyId: "POL-2025-567890",
-    pet: {
-      id: "1h8h4f5e-0i7d-8821-3h0e-3j3h5e7e5i66",
-      name: "Whiskers",
-      species: "cat",
-      breed: "Maine Coon",
-      sex: "male",
-      dateOfBirth: "2020-11-25",
-      ageMonths: 58,
-      color: "brown_tabby",
-      photoUrl: "https://images.unsplash.com/photo-1491485880348-85d48a9e5312",
-      weight: { currentKg: 7.2 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Serhiy Bondarenko",
-      phone: "+380675556677",
-      email: "serhiy.b@example.com",
-      address: { city: "Kharkiv" }
-    },
-    policy: {
-      policyId: "POL-2025-567890",
-      status: "active",
-      plan: "Premium",
-      coverage: {
-        annualLimitUAH: 150000,
-        deductibleUAH: 1500,
-      }
-    },
-    medical: {
-      conditions: []
-    }
-  },
-  {
-    policyId: "POL-2025-678901",
-    pet: {
-      id: "2i9i5g6f-1j8e-9932-4i1f-4k4i6f8f6j77",
-      name: "Bella",
-      species: "dog",
-      breed: "Labrador Retriever",
-      sex: "female",
-      dateOfBirth: "2021-02-14",
-      ageMonths: 56,
-      color: "chocolate",
-      photoUrl: "https://images.unsplash.com/photo-1587300003388-59208cc962cb",
-      weight: { currentKg: 28.5 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Tetiana Moroz",
-      phone: "+380676667788",
-      email: "tetiana.m@example.com",
-      address: { city: "Dnipro" }
-    },
-    policy: {
-      policyId: "POL-2025-678901",
-      status: "active",
-      plan: "Standard",
-      coverage: {
-        annualLimitUAH: 100000,
-        deductibleUAH: 2000,
-      }
-    },
-    medical: {
-      conditions: []
-    }
-  },
-  {
-    policyId: "POL-2025-789012",
-    pet: {
-      id: "3j0j6h7g-2k9f-0043-5j2g-5l5j7g9g7k88",
-      name: "Shadow",
-      species: "cat",
-      breed: "Siamese",
-      sex: "male",
-      dateOfBirth: "2023-01-08",
-      ageMonths: 33,
-      color: "seal_point",
-      photoUrl: "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8",
-      weight: { currentKg: 4.1 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Viktor Tkachenko",
-      phone: "+380677778899",
-      email: "viktor.t@example.com",
-      address: { city: "Zaporizhzhia" }
-    },
-    policy: {
-      policyId: "POL-2025-789012",
-      status: "active",
-      plan: "Basic",
-      coverage: {
-        annualLimitUAH: 50000,
-        deductibleUAH: 3000,
-      }
-    },
-    medical: {
-      conditions: []
-    }
-  },
-  {
-    policyId: "POL-2025-890123",
-    pet: {
-      id: "4k1k7i8h-3l0g-1154-6k3h-6m6k8h0h8l99",
-      name: "Charlie",
-      species: "dog",
-      breed: "Beagle",
-      sex: "male",
-      dateOfBirth: "2022-05-22",
-      ageMonths: 41,
-      color: "tricolor",
-      photoUrl: "https://images.unsplash.com/photo-1505628346881-b72b27e84530",
-      weight: { currentKg: 12.8 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Natalia Koval",
-      phone: "+380678889900",
-      email: "natalia.k@example.com",
-      address: { city: "Poltava" }
-    },
-    policy: {
-      policyId: "POL-2025-890123",
-      status: "active",
-      plan: "Standard",
-      coverage: {
-        annualLimitUAH: 100000,
-        deductibleUAH: 2000,
-      }
-    },
-    medical: {
-      conditions: []
-    }
-  },
-  {
-    policyId: "POL-2025-901234",
-    pet: {
-      id: "5l2l8j9i-4m1h-2265-7l4i-7n7l9i1i9m00",
-      name: "Fluffy",
-      species: "cat",
-      breed: "Ragdoll",
-      sex: "female",
-      dateOfBirth: "2021-09-30",
-      ageMonths: 48,
-      color: "blue_point",
-      photoUrl: "https://images.unsplash.com/photo-1529778873920-4da4926a72c2",
-      weight: { currentKg: 5.5 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Yuriy Savchenko",
-      phone: "+380679990011",
-      email: "yuriy.s@example.com",
-      address: { city: "Chernivtsi" }
-    },
-    policy: {
-      policyId: "POL-2025-901234",
-      status: "active",
-      plan: "Premium",
-      coverage: {
-        annualLimitUAH: 150000,
-        deductibleUAH: 1500,
-      }
-    },
-    medical: {
-      conditions: []
-    }
-  },
-  {
-    policyId: "POL-2025-012345",
-    pet: {
-      id: "6m3m9k0j-5n2i-3376-8m5j-8o8m0j2j0n11",
-      name: "Rex",
-      species: "dog",
-      breed: "Rottweiler",
-      sex: "male",
-      dateOfBirth: "2020-12-05",
-      ageMonths: 58,
-      color: "black_tan",
-      photoUrl: "https://images.unsplash.com/photo-1567752881298-894bb81f9379",
-      weight: { currentKg: 52.3 },
-      spayedNeutered: true,
-    },
-    owner: {
-      fullName: "Maksym Hryhorenko",
-      phone: "+380670001122",
-      email: "maksym.h@example.com",
-      address: { city: "Ivano-Frankivsk" }
-    },
-    policy: {
-      policyId: "POL-2025-012345",
-      status: "active",
-      plan: "Standard",
-      coverage: {
-        annualLimitUAH: 100000,
-        deductibleUAH: 2000,
-      }
-    },
-    medical: {
-      conditions: [{
-        code: "ICD-11:FA72",
-        name: "Elbow dysplasia",
-      }]
-    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Не вдалося завантажити дані';
+    error.value = message;
+  } finally {
+    loading.value = false;
   }
-]
+};
 
-// Transform data for display
 const pets = computed(() => {
-  return petsData.map(item => ({
+  return policiesData.value.map((item) => ({
     id: item.pet.id,
     name: item.pet.name,
     species: item.pet.species,
     breed: item.pet.breed,
     sex: item.pet.sex,
     ageMonths: item.pet.ageMonths,
-    photoUrl: item.pet.photoUrl,
-    weight: item.pet.weight,
+    photoUrl: item.pet.photoUrl ?? '',
+    weight: item.pet.weight ?? { currentKg: 0 },
     ownerName: item.owner.fullName,
-    ownerPhone: item.owner.phone,
-    ownerEmail: item.owner.email,
-    ownerCity: item.owner.address.city,
+    ownerPhone: item.owner.phone ?? '',
+    ownerEmail: item.owner.email ?? '',
+    ownerCity: item.owner.address?.city ?? '',
     policyId: item.policy.policyId,
     policyStatus: item.policy.status,
-    policyPlan: item.policy.plan,
-    policyLimit: item.policy.coverage.annualLimitUAH,
-    policyDeductible: item.policy.coverage.deductibleUAH,
-    medicalConditions: item.medical.conditions
-  }))
-})
+    policyPlan: item.policy.plan ?? '',
+    policyLimit: item.policy.coverage?.annualLimitUAH ?? 0,
+    policyDeductible: item.policy.coverage?.deductibleUAH ?? 0,
+    medicalConditions: item.medical?.conditions ?? [],
+  }));
+});
+
+onMounted(() => {
+  fetchPolicies();
+});
 
 // Helper functions
 const getStatusClass = (status: string) => {
@@ -594,6 +349,12 @@ const policyStatusLabel = (status: string) => {
 </script>
 
 <style scoped>
-/* Add any custom styles if needed */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
 </style>
 

@@ -4,13 +4,13 @@
     "ownerId": "c6c1c5b9-3c1c-4d2e-a4f1-8c1f2d9a0a55",
     "pet": {
       "id": "7f4f0c1a-6f3a-4497-9d6a-9f9d1a3a1e22",
-      "name": "Mittens",
+      "name": "Маркіза",
       "species": "cat",
-      "breed": "British Shorthair",
+      "breed": "Британська короткошерста",
       "sex": "female",
       "dateOfBirth": "2021-04-15",
       "ageMonths": 54,
-      "color": "blue",
+      "color": "блакитний",
       "microchip": {
         "number": "981000123456789",
         "issuer": "ISO11784/11785",
@@ -21,9 +21,7 @@
         "passportNumber": "UA-PET-000112233"
       },
       "photoUrl": "https://images.unsplash.com/photo-1574158622682-e40e69881006",
-      "weight": {
-        "currentKg": 4.3
-      },
+      "weight": { "currentKg": 4.3 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -34,13 +32,13 @@
     },
     "owner": {
       "id": "c6c1c5b9-3c1c-4d2e-a4f1-8c1f2d9a0a55",
-      "fullName": "Dmytro Denysov",
+      "fullName": "Дмитро Денисов",
       "phone": "+380671112233",
       "email": "dmytro@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Kyiv",
-        "street": "Khreshchatyk 10",
+        "country": "Україна",
+        "city": "Київ",
+        "street": "вул. Хрещатик, 10",
         "postalCode": "01001"
       }
     },
@@ -50,33 +48,21 @@
       "status": "active",
       "startDate": "2025-01-01",
       "endDate": "2025-12-31",
-      "plan": "Premium",
+      "plan": "Преміум",
       "coverage": {
         "annualLimitUAH": 150000,
         "deductibleUAH": 1500,
         "copayPercent": 10,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery",
-          "prescription_meds"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery", "prescription_meds"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures"]
       }
     },
     "medical": {
-      "allergies": [
-        "chicken_protein"
-      ],
+      "allergies": ["білок курки"],
       "conditions": [
         {
           "code": "ICD-11:ME81",
-          "name": "Feline asthma",
+          "name": "Котяча астма",
           "diagnosedAt": "2024-02-10",
           "status": "managed"
         }
@@ -91,9 +77,9 @@
       ],
       "medications": [
         {
-          "name": "Fluticasone inhaler",
-          "dosage": "110 mcg",
-          "frequency": "2x/day",
+          "name": "Інгалятор флутиказону",
+          "dosage": "110 мкг",
+          "frequency": "2 рази на день",
           "since": "2024-02-15"
         }
       ],
@@ -101,10 +87,10 @@
         "date": "2025-09-20",
         "clinic": {
           "id": "vet-kyiv-center",
-          "name": "Kyiv Vet Center",
+          "name": "Ветеринарний центр Київ",
           "phone": "+380442223344"
         },
-        "notes": "Normal exam; asthma stable; weight slightly up."
+        "notes": "Огляд у нормі; астма стабільна; вага трохи зросла."
       }
     },
     "status": "active",
@@ -116,13 +102,13 @@
     "ownerId": "a1b2c3d4-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
     "pet": {
       "id": "8e5e1c2b-7f4a-5598-0e7b-0g0e2b4b2f33",
-      "name": "Max",
+      "name": "Барон",
       "species": "dog",
-      "breed": "Golden Retriever",
+      "breed": "Золотистий ретривер",
       "sex": "male",
       "dateOfBirth": "2020-06-20",
       "ageMonths": 64,
-      "color": "golden",
+      "color": "золотистий",
       "microchip": {
         "number": "981000234567890",
         "issuer": "ISO11784/11785",
@@ -133,9 +119,7 @@
         "passportNumber": "UA-PET-000223344"
       },
       "photoUrl": "https://images.unsplash.com/photo-1633722715463-d30f4f325e24",
-      "weight": {
-        "currentKg": 32.5
-      },
+      "weight": { "currentKg": 32.5 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -146,13 +130,13 @@
     },
     "owner": {
       "id": "a1b2c3d4-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
-      "fullName": "Olena Kovalenko",
+      "fullName": "Олена Коваленко",
       "phone": "+380672223344",
       "email": "olena.k@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Kyiv",
-        "street": "Shevchenka 25",
+        "country": "Україна",
+        "city": "Київ",
+        "street": "вул. Шевченка, 25",
         "postalCode": "01004"
       }
     },
@@ -162,23 +146,13 @@
       "status": "active",
       "startDate": "2025-02-15",
       "endDate": "2026-02-15",
-      "plan": "Standard",
+      "plan": "Стандарт",
       "coverage": {
         "annualLimitUAH": 100000,
         "deductibleUAH": 2000,
         "copayPercent": 20,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures",
-          "breeding"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures", "breeding"]
       }
     },
     "medical": {
@@ -203,10 +177,10 @@
         "date": "2025-08-15",
         "clinic": {
           "id": "vet-kyiv-pets",
-          "name": "Kyiv Pets Clinic",
+          "name": "Клініка «Друзі тварин»",
           "phone": "+380443334455"
         },
-        "notes": "Healthy, active dog. All vitals normal."
+        "notes": "Здоровий, активний пес. Усі показники в нормі."
       }
     },
     "status": "active",
@@ -218,13 +192,13 @@
     "ownerId": "b2c3d4e5-6f7g-8h9i-0j1k-2l3m4n5o6p7q",
     "pet": {
       "id": "9f6f2d3c-8g5b-6609-1f8c-1h1f3c5c3g44",
-      "name": "Luna",
+      "name": "Злата",
       "species": "cat",
-      "breed": "Persian",
+      "breed": "Перс",
       "sex": "female",
       "dateOfBirth": "2022-03-10",
       "ageMonths": 43,
-      "color": "white",
+      "color": "білий",
       "microchip": {
         "number": "981000345678901",
         "issuer": "ISO11784/11785",
@@ -235,9 +209,7 @@
         "passportNumber": "UA-PET-000334455"
       },
       "photoUrl": "https://images.unsplash.com/photo-1595433707802-6b2626ef1c91",
-      "weight": {
-        "currentKg": 3.8
-      },
+      "weight": { "currentKg": 3.8 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -248,13 +220,13 @@
     },
     "owner": {
       "id": "b2c3d4e5-6f7g-8h9i-0j1k-2l3m4n5o6p7q",
-      "fullName": "Andriy Petrenko",
+      "fullName": "Андрій Петренко",
       "phone": "+380673334455",
       "email": "andriy.p@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Lviv",
-        "street": "Franka 15",
+        "country": "Україна",
+        "city": "Львів",
+        "street": "вул. Франка, 15",
         "postalCode": "79000"
       }
     },
@@ -264,24 +236,13 @@
       "status": "active",
       "startDate": "2025-03-01",
       "endDate": "2026-03-01",
-      "plan": "Premium",
+      "plan": "Преміум",
       "coverage": {
         "annualLimitUAH": 150000,
         "deductibleUAH": 1500,
         "copayPercent": 10,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery",
-          "prescription_meds",
-          "dental"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery", "prescription_meds", "dental"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures"]
       }
     },
     "medical": {
@@ -289,7 +250,7 @@
       "conditions": [
         {
           "code": "ICD-11:KA21",
-          "name": "Polycystic kidney disease",
+          "name": "Полікістоз нирок",
           "diagnosedAt": "2024-11-05",
           "status": "monitored"
         }
@@ -307,10 +268,10 @@
         "date": "2025-09-10",
         "clinic": {
           "id": "vet-lviv-care",
-          "name": "Lviv Veterinary Care",
+          "name": "Львівська ветеринарна клініка",
           "phone": "+380322445566"
         },
-        "notes": "Kidney function stable. Continue monitoring."
+        "notes": "Функція нирок стабільна. Продовжити спостереження."
       }
     },
     "status": "active",
@@ -322,13 +283,13 @@
     "ownerId": "c3d4e5f6-7g8h-9i0j-1k2l-3m4n5o6p7q8r",
     "pet": {
       "id": "0g7g3e4d-9h6c-7710-2g9d-2i2g4d6d4h55",
-      "name": "Rocky",
+      "name": "Гром",
       "species": "dog",
-      "breed": "German Shepherd",
+      "breed": "Німецька вівчарка",
       "sex": "male",
       "dateOfBirth": "2019-08-12",
       "ageMonths": 74,
-      "color": "black_tan",
+      "color": "чорно-рижий",
       "microchip": {
         "number": "981000456789012",
         "issuer": "ISO11784/11785",
@@ -339,9 +300,7 @@
         "passportNumber": "UA-PET-000445566"
       },
       "photoUrl": "https://images.unsplash.com/photo-1568572933382-74d440642117",
-      "weight": {
-        "currentKg": 38.2
-      },
+      "weight": { "currentKg": 38.2 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": false,
@@ -352,13 +311,13 @@
     },
     "owner": {
       "id": "c3d4e5f6-7g8h-9i0j-1k2l-3m4n5o6p7q8r",
-      "fullName": "Iryna Shevchenko",
+      "fullName": "Ірина Шевченко",
       "phone": "+380674445566",
       "email": "iryna.s@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Odesa",
-        "street": "Derybasivska 30",
+        "country": "Україна",
+        "city": "Одеса",
+        "street": "вул. Дерибасівська, 30",
         "postalCode": "65000"
       }
     },
@@ -368,33 +327,21 @@
       "status": "active",
       "startDate": "2025-01-15",
       "endDate": "2026-01-15",
-      "plan": "Standard",
+      "plan": "Стандарт",
       "coverage": {
         "annualLimitUAH": 100000,
         "deductibleUAH": 2000,
         "copayPercent": 20,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures",
-          "breeding"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures", "breeding"]
       }
     },
     "medical": {
-      "allergies": [
-        "grain"
-      ],
+      "allergies": ["злаки"],
       "conditions": [
         {
           "code": "ICD-11:FA71",
-          "name": "Hip dysplasia",
+          "name": "Дисплазія тазостегнового суглоба",
           "diagnosedAt": "2023-05-20",
           "status": "managed"
         }
@@ -415,9 +362,9 @@
       ],
       "medications": [
         {
-          "name": "Carprofen",
-          "dosage": "75 mg",
-          "frequency": "2x/day",
+          "name": "Карпрофен",
+          "dosage": "75 мг",
+          "frequency": "2 рази на день",
           "since": "2023-06-01"
         }
       ],
@@ -425,10 +372,10 @@
         "date": "2025-07-20",
         "clinic": {
           "id": "vet-odesa-clinic",
-          "name": "Odesa Veterinary Clinic",
+          "name": "Одеська ветеринарна клініка",
           "phone": "+380482556677"
         },
-        "notes": "Hip condition stable with medication. Continue current treatment."
+        "notes": "Стан кульгавості стабільний на тлі лікування. Продовжити поточну терапію."
       }
     },
     "status": "active",
@@ -440,13 +387,13 @@
     "ownerId": "d4e5f6g7-8h9i-0j1k-2l3m-4n5o6p7q8r9s",
     "pet": {
       "id": "1h8h4f5e-0i7d-8821-3h0e-3j3h5e7e5i66",
-      "name": "Whiskers",
+      "name": "Вусик",
       "species": "cat",
-      "breed": "Maine Coon",
+      "breed": "Мейн-кун",
       "sex": "male",
       "dateOfBirth": "2020-11-25",
       "ageMonths": 58,
-      "color": "brown_tabby",
+      "color": "коричневий табі",
       "microchip": {
         "number": "981000567890123",
         "issuer": "ISO11784/11785",
@@ -457,9 +404,7 @@
         "passportNumber": "UA-PET-000556677"
       },
       "photoUrl": "https://images.unsplash.com/photo-1491485880348-85d48a9e5312",
-      "weight": {
-        "currentKg": 7.2
-      },
+      "weight": { "currentKg": 7.2 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -470,13 +415,13 @@
     },
     "owner": {
       "id": "d4e5f6g7-8h9i-0j1k-2l3m-4n5o6p7q8r9s",
-      "fullName": "Serhiy Bondarenko",
+      "fullName": "Сергій Бондаренко",
       "phone": "+380675556677",
       "email": "serhiy.b@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Kharkiv",
-        "street": "Sumska 40",
+        "country": "Україна",
+        "city": "Харків",
+        "street": "вул. Сумська, 40",
         "postalCode": "61000"
       }
     },
@@ -486,24 +431,13 @@
       "status": "active",
       "startDate": "2025-04-01",
       "endDate": "2026-04-01",
-      "plan": "Premium",
+      "plan": "Преміум",
       "coverage": {
         "annualLimitUAH": 150000,
         "deductibleUAH": 1500,
         "copayPercent": 10,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery",
-          "prescription_meds",
-          "dental"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery", "prescription_meds", "dental"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures"]
       }
     },
     "medical": {
@@ -528,10 +462,10 @@
         "date": "2025-09-01",
         "clinic": {
           "id": "vet-kharkiv-center",
-          "name": "Kharkiv Veterinary Center",
+          "name": "Харківський ветеринарний центр",
           "phone": "+380572667788"
         },
-        "notes": "Excellent health. Large, healthy male Maine Coon."
+        "notes": "Відмінний стан здоров'я. Великий, здоровий котик мейн-кун."
       }
     },
     "status": "active",
@@ -543,13 +477,13 @@
     "ownerId": "e5f6g7h8-9i0j-1k2l-3m4n-5o6p7q8r9s0t",
     "pet": {
       "id": "2i9i5g6f-1j8e-9932-4i1f-4k4i6f8f6j77",
-      "name": "Bella",
+      "name": "Рада",
       "species": "dog",
-      "breed": "Labrador Retriever",
+      "breed": "Лабрадор-ретривер",
       "sex": "female",
       "dateOfBirth": "2021-02-14",
       "ageMonths": 56,
-      "color": "chocolate",
+      "color": "шоколадний",
       "microchip": {
         "number": "981000678901234",
         "issuer": "ISO11784/11785",
@@ -560,9 +494,7 @@
         "passportNumber": "UA-PET-000667788"
       },
       "photoUrl": "https://images.unsplash.com/photo-1587300003388-59208cc962cb",
-      "weight": {
-        "currentKg": 28.5
-      },
+      "weight": { "currentKg": 28.5 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -573,13 +505,13 @@
     },
     "owner": {
       "id": "e5f6g7h8-9i0j-1k2l-3m4n-5o6p7q8r9s0t",
-      "fullName": "Tetiana Moroz",
+      "fullName": "Тетяна Мороз",
       "phone": "+380676667788",
       "email": "tetiana.m@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Dnipro",
-        "street": "Naberezhna 50",
+        "country": "Україна",
+        "city": "Дніпро",
+        "street": "вул. Набережна, 50",
         "postalCode": "49000"
       }
     },
@@ -589,23 +521,13 @@
       "status": "active",
       "startDate": "2025-05-10",
       "endDate": "2026-05-10",
-      "plan": "Standard",
+      "plan": "Стандарт",
       "coverage": {
         "annualLimitUAH": 100000,
         "deductibleUAH": 2000,
         "copayPercent": 20,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures",
-          "breeding"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures", "breeding"]
       }
     },
     "medical": {
@@ -630,10 +552,10 @@
         "date": "2025-08-20",
         "clinic": {
           "id": "vet-dnipro-pets",
-          "name": "Dnipro Pets Clinic",
+          "name": "Клініка «Лапки» Дніпро",
           "phone": "+380562778899"
         },
-        "notes": "Healthy, energetic dog. Weight good for breed."
+        "notes": "Здорова, енергійна собака. Вага відповідає породі."
       }
     },
     "status": "active",
@@ -645,13 +567,13 @@
     "ownerId": "f6g7h8i9-0j1k-2l3m-4n5o-6p7q8r9s0t1u",
     "pet": {
       "id": "3j0j6h7g-2k9f-0043-5j2g-5l5j7g9g7k88",
-      "name": "Shadow",
+      "name": "Сіруня",
       "species": "cat",
-      "breed": "Siamese",
+      "breed": "Сіамська",
       "sex": "male",
       "dateOfBirth": "2023-01-08",
       "ageMonths": 33,
-      "color": "seal_point",
+      "color": "сіам-пойнт",
       "microchip": {
         "number": "981000789012345",
         "issuer": "ISO11784/11785",
@@ -662,9 +584,7 @@
         "passportNumber": "UA-PET-000778899"
       },
       "photoUrl": "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8",
-      "weight": {
-        "currentKg": 4.1
-      },
+      "weight": { "currentKg": 4.1 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -675,13 +595,13 @@
     },
     "owner": {
       "id": "f6g7h8i9-0j1k-2l3m-4n5o-6p7q8r9s0t1u",
-      "fullName": "Viktor Tkachenko",
+      "fullName": "Віктор Ткаченко",
       "phone": "+380677778899",
       "email": "viktor.t@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Zaporizhzhia",
-        "street": "Sobornyi 60",
+        "country": "Україна",
+        "city": "Запоріжжя",
+        "street": "просп. Соборний, 60",
         "postalCode": "69000"
       }
     },
@@ -691,22 +611,13 @@
       "status": "active",
       "startDate": "2025-06-01",
       "endDate": "2026-06-01",
-      "plan": "Basic",
+      "plan": "Базовий",
       "coverage": {
         "annualLimitUAH": 50000,
         "deductibleUAH": 3000,
         "copayPercent": 30,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures",
-          "dental",
-          "prescription_meds"
-        ]
+        "covered": ["accidents", "illness", "diagnostics"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures", "dental", "prescription_meds"]
       }
     },
     "medical": {
@@ -725,10 +636,10 @@
         "date": "2025-09-15",
         "clinic": {
           "id": "vet-zp-clinic",
-          "name": "Zaporizhzhia Vet Clinic",
+          "name": "Ветклініка Запоріжжя",
           "phone": "+380612889900"
         },
-        "notes": "Young, healthy Siamese. Very vocal and active."
+        "notes": "Молодий, здоровий сіамець. Дуже голосний і активний."
       }
     },
     "status": "active",
@@ -740,13 +651,13 @@
     "ownerId": "g7h8i9j0-1k2l-3m4n-5o6p-7q8r9s0t1u2v",
     "pet": {
       "id": "4k1k7i8h-3l0g-1154-6k3h-6m6k8h0h8l99",
-      "name": "Charlie",
+      "name": "Трубадур",
       "species": "dog",
-      "breed": "Beagle",
+      "breed": "Бігль",
       "sex": "male",
       "dateOfBirth": "2022-05-22",
       "ageMonths": 41,
-      "color": "tricolor",
+      "color": "триколір",
       "microchip": {
         "number": "981000890123456",
         "issuer": "ISO11784/11785",
@@ -757,9 +668,7 @@
         "passportNumber": "UA-PET-000889900"
       },
       "photoUrl": "https://images.unsplash.com/photo-1505628346881-b72b27e84530",
-      "weight": {
-        "currentKg": 12.8
-      },
+      "weight": { "currentKg": 12.8 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -770,13 +679,13 @@
     },
     "owner": {
       "id": "g7h8i9j0-1k2l-3m4n-5o6p-7q8r9s0t1u2v",
-      "fullName": "Natalia Koval",
+      "fullName": "Наталія Коваль",
       "phone": "+380678889900",
       "email": "natalia.k@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Poltava",
-        "street": "Sobornosti 70",
+        "country": "Україна",
+        "city": "Полтава",
+        "street": "вул. Соборності, 70",
         "postalCode": "36000"
       }
     },
@@ -786,23 +695,13 @@
       "status": "active",
       "startDate": "2025-07-15",
       "endDate": "2026-07-15",
-      "plan": "Standard",
+      "plan": "Стандарт",
       "coverage": {
         "annualLimitUAH": 100000,
         "deductibleUAH": 2000,
         "copayPercent": 20,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures",
-          "breeding"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures", "breeding"]
       }
     },
     "medical": {
@@ -827,10 +726,10 @@
         "date": "2025-09-05",
         "clinic": {
           "id": "vet-poltava-care",
-          "name": "Poltava Veterinary Care",
+          "name": "Полтавська ветеринарна клініка",
           "phone": "+380532990011"
         },
-        "notes": "Friendly beagle in good health. Watch weight."
+        "notes": "Дружній бігль у хорошому стані. Стежити за вагою."
       }
     },
     "status": "active",
@@ -842,13 +741,13 @@
     "ownerId": "h8i9j0k1-2l3m-4n5o-6p7q-8r9s0t1u2v3w",
     "pet": {
       "id": "5l2l8j9i-4m1h-2265-7l4i-7n7l9i1i9m00",
-      "name": "Fluffy",
+      "name": "Пушинка",
       "species": "cat",
-      "breed": "Ragdoll",
+      "breed": "Регдол",
       "sex": "female",
       "dateOfBirth": "2021-09-30",
       "ageMonths": 48,
-      "color": "blue_point",
+      "color": "блакитний пойнт",
       "microchip": {
         "number": "981000901234567",
         "issuer": "ISO11784/11785",
@@ -859,9 +758,7 @@
         "passportNumber": "UA-PET-000990011"
       },
       "photoUrl": "https://images.unsplash.com/photo-1529778873920-4da4926a72c2",
-      "weight": {
-        "currentKg": 5.5
-      },
+      "weight": { "currentKg": 5.5 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": true,
@@ -872,13 +769,13 @@
     },
     "owner": {
       "id": "h8i9j0k1-2l3m-4n5o-6p7q-8r9s0t1u2v3w",
-      "fullName": "Yuriy Savchenko",
+      "fullName": "Юрій Савченко",
       "phone": "+380679990011",
       "email": "yuriy.s@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Chernivtsi",
-        "street": "Holovna 80",
+        "country": "Україна",
+        "city": "Чернівці",
+        "street": "вул. Головна, 80",
         "postalCode": "58000"
       }
     },
@@ -888,24 +785,13 @@
       "status": "active",
       "startDate": "2025-08-01",
       "endDate": "2026-08-01",
-      "plan": "Premium",
+      "plan": "Преміум",
       "coverage": {
         "annualLimitUAH": 150000,
         "deductibleUAH": 1500,
         "copayPercent": 10,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery",
-          "prescription_meds",
-          "dental"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery", "prescription_meds", "dental"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures"]
       }
     },
     "medical": {
@@ -930,10 +816,10 @@
         "date": "2025-09-25",
         "clinic": {
           "id": "vet-chernivtsi-center",
-          "name": "Chernivtsi Veterinary Center",
+          "name": "Чернівецький ветеринарний центр",
           "phone": "+380372001122"
         },
-        "notes": "Beautiful, calm Ragdoll. Perfect health."
+        "notes": "Спокійна, красива регдол. Стан здоров'я ідеальний."
       }
     },
     "status": "active",
@@ -945,13 +831,13 @@
     "ownerId": "i9j0k1l2-3m4n-5o6p-7q8r-9s0t1u2v3w4x",
     "pet": {
       "id": "6m3m9k0j-5n2i-3376-8m5j-8o8m0j2j0n11",
-      "name": "Rex",
+      "name": "Арчибальд",
       "species": "dog",
-      "breed": "Rottweiler",
+      "breed": "Ротвейлер",
       "sex": "male",
       "dateOfBirth": "2020-12-05",
       "ageMonths": 58,
-      "color": "black_tan",
+      "color": "чорно-рижий",
       "microchip": {
         "number": "981000012345678",
         "issuer": "ISO11784/11785",
@@ -962,9 +848,7 @@
         "passportNumber": "UA-PET-001100112"
       },
       "photoUrl": "https://images.unsplash.com/photo-1567752881298-894bb81f9379",
-      "weight": {
-        "currentKg": 52.3
-      },
+      "weight": { "currentKg": 52.3 },
       "spayedNeutered": true,
       "lifestyle": {
         "indoor": false,
@@ -975,13 +859,13 @@
     },
     "owner": {
       "id": "i9j0k1l2-3m4n-5o6p-7q8r-9s0t1u2v3w4x",
-      "fullName": "Maksym Hryhorenko",
+      "fullName": "Максим Григоренко",
       "phone": "+380670001122",
       "email": "maksym.h@example.com",
       "address": {
-        "country": "Ukraine",
-        "city": "Ivano-Frankivsk",
-        "street": "Nezalezhnosti 90",
+        "country": "Україна",
+        "city": "Івано-Франківськ",
+        "street": "вул. Незалежності, 90",
         "postalCode": "76000"
       }
     },
@@ -991,23 +875,13 @@
       "status": "active",
       "startDate": "2025-09-01",
       "endDate": "2026-09-01",
-      "plan": "Standard",
+      "plan": "Стандарт",
       "coverage": {
         "annualLimitUAH": 100000,
         "deductibleUAH": 2000,
         "copayPercent": 20,
-        "covered": [
-          "accidents",
-          "illness",
-          "diagnostics",
-          "hospitalization",
-          "surgery"
-        ],
-        "exclusions": [
-          "pre_existing_conditions",
-          "cosmetic_procedures",
-          "breeding"
-        ]
+        "covered": ["accidents", "illness", "diagnostics", "hospitalization", "surgery"],
+        "exclusions": ["pre_existing_conditions", "cosmetic_procedures", "breeding"]
       }
     },
     "medical": {
@@ -1015,7 +889,7 @@
       "conditions": [
         {
           "code": "ICD-11:FA72",
-          "name": "Elbow dysplasia",
+          "name": "Дисплазія ліктьового суглоба",
           "diagnosedAt": "2024-03-15",
           "status": "managed"
         }
@@ -1036,9 +910,9 @@
       ],
       "medications": [
         {
-          "name": "Rimadyl",
-          "dosage": "100 mg",
-          "frequency": "1x/day",
+          "name": "Рімадил",
+          "dosage": "100 мг",
+          "frequency": "1 раз на день",
           "since": "2024-04-01"
         }
       ],
@@ -1046,10 +920,10 @@
         "date": "2025-09-28",
         "clinic": {
           "id": "vet-if-clinic",
-          "name": "Ivano-Frankivsk Vet Clinic",
+          "name": "Ветклініка Івано-Франківськ",
           "phone": "+380342112233"
         },
-        "notes": "Large, protective dog. Elbow condition managed with medication."
+        "notes": "Великий, охоронний пес. Стан ліктя під контролем на тлі лікування."
       }
     },
     "status": "active",

@@ -5,4 +5,5 @@ export interface SharedClientConfig {
     chatApiUrl: string;
     chatApiMock: boolean;
     backendApiUrl: string;
+    policiesApiUrl: string;
 }

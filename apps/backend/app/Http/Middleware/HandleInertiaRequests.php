@@ -48,6 +48,7 @@ class HandleInertiaRequests extends Middleware
                 'chatApiUrl' => config('purrsurance.chat_api_url'),
                 'chatApiMock' => config('purrsurance.chat_api_mock'),
                 'backendApiUrl' => config('purrsurance.backend_api_url'),
+                'policiesApiUrl' => config('purrsurance.policies_api_url'),
             ],
         ];
     }
