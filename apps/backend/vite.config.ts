@@ -14,7 +14,7 @@ export default defineConfig({
                 changeOrigin: true,
             },
             '/chat': {
-                target: 'https://f71j8tt6kc.execute-api.us-east-1.amazonaws.com/Prod',
+                target: process.env.VITE_CHAT_PROXY_TARGET || 'http://127.0.0.1:80',
                 changeOrigin: true,
             },
             '/api/vet-appointments': {

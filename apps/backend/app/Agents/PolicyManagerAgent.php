@@ -2,6 +2,7 @@
 
 namespace App\Agents;
 
+use App\Agents\Concerns\UsesGeminiProvider;
 use App\Agents\Tools\GetPolicyDetailsTool;
 use App\Support\Neuron\SafeTokenCounter;
 use NeuronAI\Agent\Agent;
@@ -9,21 +10,13 @@ use NeuronAI\Agent\SystemPrompt;
 use NeuronAI\Chat\History\ChatHistoryInterface;
 use NeuronAI\Chat\History\HistoryTrimmer;
 use NeuronAI\Chat\History\InMemoryChatHistory;
-use NeuronAI\Providers\AIProviderInterface;
-use NeuronAI\Providers\Gemini\Gemini;
 use NeuronAI\Tools\ToolInterface;
 
 class PolicyManagerAgent extends Agent
 {
-    public const CLASSIFICATION = 'PolicyAgent';
+    use UsesGeminiProvider;
 
-    protected function provider(): AIProviderInterface
-    {
-        return new Gemini(
-            key: (string) config('gemini.api_key'),
-            model: (string) config('gemini.model'),
-        );
-    }
+    public const CLASSIFICATION = 'PolicyAgent';
 
     protected function chatHistory(): ChatHistoryInterface
     {
