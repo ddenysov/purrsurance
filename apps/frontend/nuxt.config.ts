@@ -28,7 +28,7 @@ export default defineNuxtConfig({
       sseStreamUrl: process.env.NUXT_PUBLIC_SSE_STREAM_URL || '/stream',
       // Chat API URL from vet-expert-service-router stack
       // In dev mode: use relative path for proxy; in prod: use full AWS URL from env
-      chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || '/chat',
+      chatApiUrl: process.env.NUXT_PUBLIC_CHAT_API_URL || '/api/chat',
       /** When true, chat responses are mocked on the client (no backend call). Set NUXT_PUBLIC_CHAT_API_MOCK=true */
       chatApiMock: process.env.NUXT_PUBLIC_CHAT_API_MOCK === 'true',
       // Backend API URL from service-backend stack
@@ -46,9 +46,9 @@ vite: {
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/stream/, ''),
             },
-            // Proxy for Chat API
-            '/chat': {
-                target: 'https://f71j8tt6kc.execute-api.us-east-1.amazonaws.com/Prod',
+            // Proxy for Chat API (Laravel agent router)
+            '/api/chat': {
+                target: process.env.NUXT_CHAT_PROXY_TARGET || 'http://127.0.0.1:80',
                 changeOrigin: true,
             },
             // Proxy for Backend API (vet appointments)
