@@ -6,7 +6,7 @@ COMPOSE := docker compose
 
 .DEFAULT_GOAL := help
 
-.PHONY: help build up down restart ps logs worker-logs shell root composer npm npm-dev npm-build artisan migrate migrate-fresh test pint install setup mcp-demo ngrok ngrok-stop ngrok-sync-env ngrok-tg tg telegram-set-webhook telegram-delete-webhook telegram-set-webhook-all telegram-delete-webhook-all
+.PHONY: help build up down restart ps logs worker-logs shell root composer npm npm-dev npm-build artisan migrate migrate-fresh seed test pint install setup mcp-demo ngrok ngrok-stop ngrok-sync-env ngrok-tg tg telegram-set-webhook telegram-delete-webhook telegram-set-webhook-all telegram-delete-webhook-all
 
 help: ## Show available commands
 	@awk 'BEGIN {FS = ":.*##"; printf "\nAvailable commands:\n"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  make %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -60,6 +60,9 @@ migrate: ## Run database migrations
 
 migrate-fresh: ## Recreate database schema and seed
 	$(COMPOSE) exec $(APP_SERVICE) php artisan migrate:fresh --seed
+
+seed: ## Run database seeders (policies, vet appointments)
+	$(COMPOSE) exec $(APP_SERVICE) php artisan db:seed --force
 
 test: ## Run Laravel test suite
 	$(COMPOSE) exec $(APP_SERVICE) php artisan test
