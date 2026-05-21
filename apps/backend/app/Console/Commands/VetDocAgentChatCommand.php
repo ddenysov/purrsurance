@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Agents\VetDocAgent;
+use App\Support\Neuron\AgentMessageContent;
 use App\Support\Neuron\ConsoleRagDebugObserver;
 use Illuminate\Console\Command;
 use NeuronAI\Chat\Messages\UserMessage;
@@ -57,7 +58,7 @@ class VetDocAgentChatCommand extends Command
 
             try {
                 $response = $agent->chat(new UserMessage($input))->getMessage();
-                $content = $response->getContent() ?? '';
+                $content = AgentMessageContent::text($response);
 
                 if ($ragDebug !== null) {
                     $this->newLine();

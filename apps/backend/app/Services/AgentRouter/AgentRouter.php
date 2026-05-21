@@ -6,6 +6,7 @@ use App\Agents\DefaultAssistantAgent;
 use App\Agents\IntentionClassifierAgent;
 use App\Services\Sse\ChatSessionContext;
 use App\Support\Chat\ChatHistoryFormatter;
+use App\Support\Neuron\AgentMessageContent;
 use Illuminate\Support\Facades\Log;
 use NeuronAI\Agent\Agent;
 use NeuronAI\Chat\Messages\UserMessage;
@@ -49,7 +50,7 @@ class AgentRouter
 
         try {
             $response = $agent->chat(new UserMessage($agentInput))->getMessage();
-            $content = trim($response->getContent() ?? '');
+            $content = trim(AgentMessageContent::text($response));
         } catch (Throwable $exception) {
             Log::warning('Agent chat failed', [
                 'classification' => $classification,

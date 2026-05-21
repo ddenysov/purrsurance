@@ -38,6 +38,10 @@ final class TransientLlmError
     public static function isRetryable(Throwable $exception): bool
     {
         if ($exception instanceof HttpException) {
+            if (self::isPermanentClientError($exception->getMessage())) {
+                return false;
+            }
+
             if ($exception->response !== null && self::isRetryableHttpStatus($exception->response->statusCode)) {
                 return true;
             }
@@ -64,6 +68,10 @@ final class TransientLlmError
 
     private static function messageMatches(string $message): bool
     {
+        if (self::isPermanentClientError($message)) {
+            return false;
+        }
+
         foreach (self::RETRYABLE_MESSAGE_PATTERNS as $pattern) {
             if (str_contains($message, $pattern)) {
                 return true;
@@ -71,5 +79,11 @@ final class TransientLlmError
         }
 
         return false;
+    }
+
+    private static function isPermanentClientError(string $message): bool
+    {
+        return str_contains($message, 'INVALID_ARGUMENT')
+            || str_contains($message, 'Invalid JSON payload');
     }
 }
