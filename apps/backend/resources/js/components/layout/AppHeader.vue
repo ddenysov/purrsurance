@@ -19,6 +19,12 @@
                     >
                         🐶 Поліси [адмін]
                     </Link>
+                    <Link
+                        href="/clinics"
+                        class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-purple-500 text-white hover:bg-purple-600 transition-colors duration-150 shadow-sm hover:shadow-md"
+                    >
+                        🏥 Клініки [адмін]
+                    </Link>
                 </div>
             </div>
         </div>

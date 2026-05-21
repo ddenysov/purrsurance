@@ -73,4 +73,25 @@ trait MapsDynamoSeedRecords
 
         return $row;
     }
+
+    /**
+     * @param  array<string, mixed>  $clinic
+     * @return array<string, mixed>
+     */
+    protected function mapVetClinicRecord(array $clinic): array
+    {
+        $now = now();
+
+        return [
+            'name' => $clinic['name'],
+            'address' => json_encode($clinic['address'], JSON_THROW_ON_ERROR),
+            'phone' => $clinic['phone'],
+            'email' => $clinic['email'],
+            'specialty' => $clinic['specialty'],
+            'accepts_insurance' => (bool) ($clinic['acceptsInsurance'] ?? true),
+            'city' => $clinic['address']['city'],
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+    }
 }

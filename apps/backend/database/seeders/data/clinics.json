@@ -1,0 +1,282 @@
+[
+  {
+    "id": "CLINIC-LV-001",
+    "name": "Центр догляду за тваринами «Львів»",
+    "address": {
+      "street": "вул. Личаківська, 78",
+      "city": "Львів",
+      "postalCode": "79008",
+      "country": "Україна"
+    },
+    "phone": "+380322345678",
+    "email": "contact@petcarelviv.ua",
+    "specialty": "Ортопедія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-KV-001",
+    "name": "Клініка VetLife Київ",
+    "address": {
+      "street": "вул. Хрещатик, 22",
+      "city": "Київ",
+      "postalCode": "01001",
+      "country": "Україна"
+    },
+    "phone": "+380442234567",
+    "email": "info@vetlife.kiev.ua",
+    "specialty": "Загальна практика",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-OD-001",
+    "name": "Тваринна лікарня Одеса",
+    "address": {
+      "street": "вул. Дерибасівська, 15",
+      "city": "Одеса",
+      "postalCode": "65026",
+      "country": "Україна"
+    },
+    "phone": "+380482345678",
+    "email": "care@animalhospital.odesa.ua",
+    "specialty": "Екстрена та інтенсивна терапія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-KV-002",
+    "name": "Ветклініка «Веселі лапки»",
+    "address": {
+      "street": "вул. Велика Васильківська, 100",
+      "city": "Київ",
+      "postalCode": "03150",
+      "country": "Україна"
+    },
+    "phone": "+380443456789",
+    "email": "hello@happypaws.kiev.ua",
+    "specialty": "Стоматологія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-LV-002",
+    "name": "Клініка «Лапка і кіготь»",
+    "address": {
+      "street": "просп. Шевченка, 45",
+      "city": "Львів",
+      "postalCode": "79000",
+      "country": "Україна"
+    },
+    "phone": "+380322456789",
+    "email": "info@pawclaw.lviv.ua",
+    "specialty": "Хірургія",
+    "acceptsInsurance": false
+  },
+  {
+    "id": "CLINIC-DN-001",
+    "name": "Дніпровський ветеринарний центр",
+    "address": {
+      "street": "просп. Гагаріна, 56",
+      "city": "Дніпро",
+      "postalCode": "49000",
+      "country": "Україна"
+    },
+    "phone": "+380562567890",
+    "email": "contact@vetcenter.dnipro.ua",
+    "specialty": "Кардіологія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-KH-001",
+    "name": "Догляд за тваринами Харків",
+    "address": {
+      "street": "вул. Сумська, 89",
+      "city": "Харків",
+      "postalCode": "61000",
+      "country": "Україна"
+    },
+    "phone": "+380577890123",
+    "email": "info@animalcare.kharkiv.ua",
+    "specialty": "Дерматологія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-OD-002",
+    "name": "Ветклініка «Морський бриз»",
+    "address": {
+      "street": "бул. Французький, 77",
+      "city": "Одеса",
+      "postalCode": "65009",
+      "country": "Україна"
+    },
+    "phone": "+380487891234",
+    "email": "info@seabreezevet.ua",
+    "specialty": "Екзотичні тварини",
+    "acceptsInsurance": false
+  },
+  {
+    "id": "CLINIC-ZP-001",
+    "name": "Лікарня для тварин Запоріжжя",
+    "address": {
+      "street": "просп. Соборний, 123",
+      "city": "Запоріжжя",
+      "postalCode": "69000",
+      "country": "Україна"
+    },
+    "phone": "+380617123456",
+    "email": "hospital@zppet.ua",
+    "specialty": "Внутрішня медицина",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-KV-003",
+    "name": "Столична ветеринарна клініка",
+    "address": {
+      "street": "просп. Перемоги, 50",
+      "city": "Київ",
+      "postalCode": "03057",
+      "country": "Україна"
+    },
+    "phone": "+380449876543",
+    "email": "contact@capitalvet.kiev.ua",
+    "specialty": "Онкологія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-LV-003",
+    "name": "Західний медичний центр для тварин",
+    "address": {
+      "street": "вул. Городоцька, 200",
+      "city": "Львів",
+      "postalCode": "79040",
+      "country": "Україна"
+    },
+    "phone": "+380326543210",
+    "email": "info@westpet.lviv.ua",
+    "specialty": "Неврологія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-KH-002",
+    "name": "Ветеринарна досконалість Харків",
+    "address": {
+      "street": "просп. Науки, 17",
+      "city": "Харків",
+      "postalCode": "61166",
+      "country": "Україна"
+    },
+    "phone": "+380575432109",
+    "email": "excellence@vetkharkiv.ua",
+    "specialty": "Офтальмологія",
+    "acceptsInsurance": false
+  },
+  {
+    "id": "CLINIC-VN-001",
+    "name": "Вінницька тваринна клініка",
+    "address": {
+      "street": "вул. Соборна, 68",
+      "city": "Вінниця",
+      "postalCode": "21000",
+      "country": "Україна"
+    },
+    "phone": "+380432654321",
+    "email": "info@animalclinic.vn.ua",
+    "specialty": "Загальна практика",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-PL-001",
+    "name": "Полтавські ветеринарні послуги",
+    "address": {
+      "street": "вул. Соборності, 32",
+      "city": "Полтава",
+      "postalCode": "36000",
+      "country": "Україна"
+    },
+    "phone": "+380532765432",
+    "email": "services@vetpoltava.ua",
+    "specialty": "Репродуктивна медицина",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-KV-004",
+    "name": "Центр здоров'я тварин Київ",
+    "address": {
+      "street": "просп. Оболонський, 28",
+      "city": "Київ",
+      "postalCode": "04205",
+      "country": "Україна"
+    },
+    "phone": "+380448765432",
+    "email": "wellness@petwellness.kiev.ua",
+    "specialty": "Профілактичний догляд",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-IF-001",
+    "name": "Карпатська клініка для тварин",
+    "address": {
+      "street": "вул. Незалежності, 55",
+      "city": "Івано-Франківськ",
+      "postalCode": "76000",
+      "country": "Україна"
+    },
+    "phone": "+380342876543",
+    "email": "info@carpathianpet.if.ua",
+    "specialty": "Екстрена та інтенсивна терапія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-OD-003",
+    "name": "Ветклініка «Чорне море»",
+    "address": {
+      "street": "вул. Преображенська, 90",
+      "city": "Одеса",
+      "postalCode": "65000",
+      "country": "Україна"
+    },
+    "phone": "+380489876543",
+    "email": "contact@blackseavet.ua",
+    "specialty": "Хірургія",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-DN-002",
+    "name": "Тваринна лікарня «Річкове місто»",
+    "address": {
+      "street": "вул. Набережна Перемоги, 44",
+      "city": "Дніпро",
+      "postalCode": "49094",
+      "country": "Україна"
+    },
+    "phone": "+380567654321",
+    "email": "hospital@rivercity.dnipro.ua",
+    "specialty": "Ортопедія",
+    "acceptsInsurance": false
+  },
+  {
+    "id": "CLINIC-LT-001",
+    "name": "Луцький ветеринарний комплекс",
+    "address": {
+      "street": "вул. Володимирська, 12",
+      "city": "Луцьк",
+      "postalCode": "43000",
+      "country": "Україна"
+    },
+    "phone": "+380332543210",
+    "email": "complex@vetlutsk.ua",
+    "specialty": "Загальна практика",
+    "acceptsInsurance": true
+  },
+  {
+    "id": "CLINIC-KV-005",
+    "name": "Столичний догляд за тваринами",
+    "address": {
+      "street": "бул. Лесі Українки, 26",
+      "city": "Київ",
+      "postalCode": "01133",
+      "country": "Україна"
+    },
+    "phone": "+380441234567",
+    "email": "care@metropet.kiev.ua",
+    "specialty": "Поведінкова медицина",
+    "acceptsInsurance": true
+  }
+]

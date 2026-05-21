@@ -8,3 +8,5 @@ Route::get('/', fn () => Inertia::render('Home'))->name('home');
 Route::get('/appointments', fn () => Inertia::render('Appointments'))->name('appointments');
 
 Route::get('/admin', fn () => Inertia::render('Admin'))->name('admin');
+
+Route::get('/clinics', fn () => Inertia::render('Clinics'))->name('clinics');

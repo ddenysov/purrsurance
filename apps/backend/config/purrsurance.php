@@ -37,4 +37,9 @@ return [
         'PURRSURANCE_POLICIES_API_URL',
         env('NUXT_PUBLIC_POLICIES_API_URL', '/api/policies')
     ),
+
+    'clinics_api_url' => env(
+        'PURRSURANCE_CLINICS_API_URL',
+        env('NUXT_PUBLIC_CLINICS_API_URL', '/api/clinics')
+    ),
 ];
