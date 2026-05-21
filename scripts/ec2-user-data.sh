@@ -7,7 +7,7 @@
 #
 # Stack: Docker Compose in apps/backend only
 #   - Laravel + Inertia/Vue (Vite production build → public/build)
-#   - Postgres, Qdrant, nginx, queue worker
+#   - Postgres, nginx, queue worker
 #   - NO Nuxt storefront, NO S3/CloudFront, NO Vite dev server
 #
 # Before launch, edit the 3 variables in section [CONFIG] below.
