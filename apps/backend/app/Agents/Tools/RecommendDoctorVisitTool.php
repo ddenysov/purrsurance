@@ -29,7 +29,7 @@ class RecommendDoctorVisitTool extends Tool
             ToolProperty::make(
                 name: 'reason',
                 type: PropertyType::STRING,
-                description: 'Clear, concise reason for the visit (e.g. "Persistent vomiting and lethargy for 24+ hours").',
+                description: 'User-facing recommendation in the owner\'s language (e.g. Ukrainian: "Рекомендуємо візит до ветеринара: тривала блювота понад 24 години").',
                 required: true,
             ),
             ToolProperty::make(
@@ -70,7 +70,7 @@ class RecommendDoctorVisitTool extends Tool
                 'urgency' => $urgency,
                 'symptoms' => $symptoms,
                 'timestamp' => now()->toIso8601String(),
-                'message' => "We recommend scheduling a vet visit. Reason: {$reason}",
+                'message' => $reason,
             ],
             'nextSteps' => [
                 'Contact your veterinarian to schedule an appointment',

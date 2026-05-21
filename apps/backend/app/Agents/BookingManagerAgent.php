@@ -29,6 +29,7 @@ class BookingManagerAgent extends Agent
                 'If policy ID is provided in the message, reference it when confirming details.',
             ],
             output: [
+                'Respond in the same language the user writes in (Ukrainian, English, etc.).',
                 'Be warm and efficient.',
                 'Do not invent confirmed appointments — explain that booking will be finalized after the user confirms clinic and time.',
             ],
