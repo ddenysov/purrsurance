@@ -2,8 +2,10 @@
 
 namespace App\Agents;
 
+use App\Agents\Tools\RecommendDoctorVisitTool;
 use App\RAG\VetDocsRag;
 use NeuronAI\Agent\SystemPrompt;
+use NeuronAI\Tools\ToolInterface;
 
 class VetDocAgent extends VetDocsRag
 {
@@ -23,20 +25,33 @@ class VetDocAgent extends VetDocsRag
                 'When <EXTRA-CONTEXT> contains textbook excerpts, use them to inform possible conditions, severity, and recommended next steps.',
                 'Provide a preliminary assessment: possible conditions, severity (emergency / urgent within 24h / routine), recommended veterinarian type, and a disclaimer that only a licensed vet can give an accurate diagnosis.',
                 'When a vet visit is recommended, clearly state that the owner should schedule an appointment.',
+                'After recommending a visit, you MUST call RecommendDoctorVisit to record the recommendation (all cases: emergency, urgent, normal, routine).',
             ],
             output: [
                 'Be empathetic and professional.',
                 'Use clear structure with short paragraphs.',
                 'Never claim to replace an in-person veterinary examination.',
             ],
+            toolsUsage: [
+                'Call RecommendDoctorVisit whenever you recommend a veterinary visit — this step is mandatory, not optional.',
+                'Provide reason (required): a clear, concise reason for the visit.',
+                'Provide urgency (optional): emergency (life-threatening, immediate care), urgent (within 24 hours), normal (schedule at convenience), routine (preventive checkup). Default to normal if unsure.',
+                'Provide symptoms (optional): comma-separated key symptoms when relevant.',
+                'Example — emergency: RecommendDoctorVisit(reason="Severe breathing difficulty and blue gums", urgency="emergency", symptoms="gasping, blue gums, weakness").',
+                'Example — urgent: RecommendDoctorVisit(reason="Persistent vomiting for 24 hours with dehydration signs", urgency="urgent", symptoms="vomiting, lethargy").',
+                'Example — routine: RecommendDoctorVisit(reason="Annual wellness examination due", urgency="routine").',
+                'Call the tool after your assessment text, not before you have enough clinical context for reason and urgency.',
+            ],
         );
     }
 
     /**
-     * @return array{}
+     * @return array<int, ToolInterface>
      */
     protected function tools(): array
     {
-        return [];
+        return [
+            new RecommendDoctorVisitTool,
+        ];
     }
 }
