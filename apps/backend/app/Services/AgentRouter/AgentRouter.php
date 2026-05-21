@@ -33,6 +33,8 @@ class AgentRouter
     ): AgentRouterResult {
         $sessionId = $sessionId ?? $this->newSessionId();
         $this->chatSession->setGlobalSessionId($globalSessionId);
+        $this->chatSession->setPolicyId($policyId);
+        $this->chatSession->setSessionId($sessionId);
 
         $classification = $this->classify($message, $chatHistory);
 

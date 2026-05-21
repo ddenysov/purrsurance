@@ -11,6 +11,8 @@ class SessionEventPublisher
 
     public const EVENT_POLICY_DETAILS_RETRIEVED = 'PolicyDetailsRetrieved';
 
+    public const EVENT_APPOINTMENT_BOOKED = 'AppointmentBooked';
+
     public function __construct(
         private readonly SessionEventCollector $collector,
     ) {}
@@ -63,5 +65,13 @@ class SessionEventPublisher
     public function publishPolicyDetailsRetrieved(string $sessionId, array $policyPayload): void
     {
         $this->publish($sessionId, self::EVENT_POLICY_DETAILS_RETRIEVED, $policyPayload);
+    }
+
+    /**
+     * @param  array<string, mixed>  $appointmentPayload  Decoded JSON from BookVetClinic tool.
+     */
+    public function publishAppointmentBooked(string $sessionId, array $appointmentPayload): void
+    {
+        $this->publish($sessionId, self::EVENT_APPOINTMENT_BOOKED, $appointmentPayload);
     }
 }
