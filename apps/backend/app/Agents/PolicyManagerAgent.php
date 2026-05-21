@@ -61,7 +61,7 @@ class PolicyManagerAgent extends Agent
     protected function tools(): array
     {
         return [
-            new GetPolicyDetailsTool,
+            app(GetPolicyDetailsTool::class),
         ];
     }
 }

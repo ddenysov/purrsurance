@@ -3,14 +3,18 @@
 namespace App\Agents\Tools;
 
 use App\Models\Policy;
+use App\Services\Sse\ChatSessionContext;
+use App\Services\Sse\SessionEventPublisher;
 use NeuronAI\Tools\PropertyType;
 use NeuronAI\Tools\Tool;
 use NeuronAI\Tools\ToolProperty;
 
 class GetPolicyDetailsTool extends Tool
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly SessionEventPublisher $eventPublisher,
+        private readonly ChatSessionContext $chatSession,
+    ) {
         parent::__construct(
             name: 'GetPolicyDetails',
             description: 'Retrieves detailed information about an insurance policy by policy ID.',
@@ -72,6 +76,13 @@ class GetPolicyDetailsTool extends Tool
                 'version' => 1,
             ],
         ];
+
+        if ($this->chatSession->globalSessionId !== null) {
+            $this->eventPublisher->publishPolicyDetailsRetrieved(
+                $this->chatSession->globalSessionId,
+                $payload,
+            );
+        }
 
         return json_encode(
             $payload,

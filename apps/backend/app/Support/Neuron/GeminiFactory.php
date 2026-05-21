@@ -5,7 +5,6 @@ namespace App\Support\Neuron;
 use NeuronAI\HttpClient\GuzzleHttpClient;
 use NeuronAI\HttpClient\HttpClientInterface;
 use NeuronAI\Providers\AIProviderInterface;
-use NeuronAI\Providers\Gemini\Gemini;
 use NeuronAI\RAG\Embeddings\GeminiEmbeddingsProvider;
 
 final class GeminiFactory
@@ -36,7 +35,7 @@ final class GeminiFactory
         $model = (string) config('gemini.model');
 
         if (! config('gemini.retry.enabled', true)) {
-            return new Gemini($key, $model, httpClient: $httpClient);
+            return new PurrsuranceGemini($key, $model, httpClient: $httpClient);
         }
 
         return new ResilientGemini(

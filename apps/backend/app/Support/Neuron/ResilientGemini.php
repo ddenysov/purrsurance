@@ -7,10 +7,9 @@ use Illuminate\Support\Facades\Log;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Exceptions\HttpException;
 use NeuronAI\HttpClient\HttpClientInterface;
-use NeuronAI\Providers\Gemini\Gemini;
 use Throwable;
 
-class ResilientGemini extends Gemini
+class ResilientGemini extends PurrsuranceGemini
 {
     public function __construct(
         string $key,

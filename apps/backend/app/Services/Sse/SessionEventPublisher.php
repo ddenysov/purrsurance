@@ -9,6 +9,8 @@ class SessionEventPublisher
     /** Matches AWS tool + frontend listener (typo preserved). */
     public const EVENT_RECOMMEND_DOCTOR_VISIT = 'ReccomendDoctorVisit';
 
+    public const EVENT_POLICY_DETAILS_RETRIEVED = 'PolicyDetailsRetrieved';
+
     public function __construct(
         private readonly SessionEventStore $store,
     ) {}
@@ -53,5 +55,13 @@ class SessionEventPublisher
         }
 
         $this->publish($sessionId, self::EVENT_RECOMMEND_DOCTOR_VISIT, $data);
+    }
+
+    /**
+     * @param  array<string, mixed>  $policyPayload  Pet, owner, policy, medical, etc.
+     */
+    public function publishPolicyDetailsRetrieved(string $sessionId, array $policyPayload): void
+    {
+        $this->publish($sessionId, self::EVENT_POLICY_DETAILS_RETRIEVED, $policyPayload);
     }
 }

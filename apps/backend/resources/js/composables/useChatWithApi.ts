@@ -1,8 +1,7 @@
 import { readonly, ref } from 'vue';
 import type { ChatMessage } from '@/types';
-import { generateAIResponse, containsPolicyId } from '@/utils/aiReply';
+import { generateAIResponse } from '@/utils/aiReply';
 import { useChatApi } from './useApi'
-import { usePetProfile } from './usePetProfile'
 
 // Example of how to integrate the API client with existing chat functionality
 export const useChatWithApi = () => {
@@ -64,12 +63,6 @@ return
             sender: 'assistant'
           })
           
-          // Check if message contains policy ID and unlock pet details
-          if (containsPolicyId(text)) {
-            const { unlockPetDetails } = usePetProfile()
-            unlockPetDetails()
-          }
-          
           return
         }
       }
@@ -78,12 +71,6 @@ return
       await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
       
       const aiResponse = generateAIResponse(text)
-      
-      // Check if message contains policy ID and unlock pet details
-      if (containsPolicyId(text)) {
-        const { unlockPetDetails } = usePetProfile()
-        unlockPetDetails()
-      }
       
       // Add AI response
       addMessage({

@@ -9,8 +9,4 @@ export function generateFollowUpSuggestions(): string[] {
     return [];
 }
 
-export function containsPolicyId(text: string): boolean {
-    const policyIdPattern = /\b[A-Z]{2}-?\d{6,8}\b/i;
-
-    return policyIdPattern.test(text);
-}
+export { containsPolicyId, extractPolicyId, POLICY_ID_PATTERN } from '@/utils/policyId';

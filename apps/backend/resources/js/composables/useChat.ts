@@ -5,7 +5,6 @@ import type { ChatMessage, ChatSession } from '@/types';
 import type { SharedClientConfig } from '@/types/client';
 import { sendChatMessage } from '@/utils/chatService';
 import { parseMarkdown } from '@/utils/markdown';
-import { usePetProfile } from './usePetProfile';
 import { useSession } from './useSession';
 
 export const useChat = () => {
@@ -57,14 +56,6 @@ export const useChat = () => {
     }
     messages.value.push(newMessage)
     session.value.lastMessageTimestamp = newMessage.timestamp
-  }
-
-  // Check if message contains policy ID pattern
-  const containsPolicyId = (text: string): boolean => {
-    // Match patterns like PS-1234567 or similar
-    const policyIdPattern = /\b[A-Z]{2}-?\d{6,8}\b/i
-
-    return policyIdPattern.test(text)
   }
 
   // Send user message and get AI response from backend
@@ -155,12 +146,6 @@ return
       
       if (agentName) {
         console.log('[Chat] Message processed by agent:', agentName)
-      }
-      
-      // Check if message contains policy ID and unlock pet details
-      if (containsPolicyId(text)) {
-        const { unlockPetDetails } = usePetProfile()
-        unlockPetDetails()
       }
       
       // Hide typing indicator

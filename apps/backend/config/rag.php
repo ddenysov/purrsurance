@@ -5,7 +5,7 @@ return [
     'sources_path' => env('RAG_SOURCES_PATH', base_path('rag')),
 
     'vector_store' => [
-        'directory' => storage_path('app/rag'),
+        'directory' => storage_path('app/rag2'),
         'name' => env('RAG_VECTOR_STORE_NAME', 'vet-docs'),
     ],
 
