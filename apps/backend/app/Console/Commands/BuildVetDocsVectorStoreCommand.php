@@ -254,9 +254,31 @@ class BuildVetDocsVectorStoreCommand extends Command
     {
         $message = $exception->getMessage();
 
-        return str_contains($message, '503')
-            || str_contains($message, 'UNAVAILABLE')
-            || str_contains($message, 'Network error');
+        if (str_contains($message, 'Network error')) {
+            return true;
+        }
+
+        $transientPatterns = [
+            '502',
+            '503',
+            '504',
+            'UNAVAILABLE',
+            'BAD_GATEWAY',
+            'GATEWAY_TIMEOUT',
+            'SERVICE_UNAVAILABLE',
+            'Error 502 (Server Error)',
+            'Error 503',
+            'Error 504',
+            'temporary error and could not complete your request',
+        ];
+
+        foreach ($transientPatterns as $pattern) {
+            if (str_contains($message, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
