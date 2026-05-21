@@ -18,9 +18,8 @@ export default defineConfig({
                 changeOrigin: true,
             },
             '/api/vet-appointments': {
-                target: 'https://3ehcudxdblj37bv2ovnxakr5340pvqlz.lambda-url.us-east-1.on.aws/',
+                target: process.env.VITE_CHAT_PROXY_TARGET || 'http://127.0.0.1:80',
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, ''),
             },
         },
     },
