@@ -2,20 +2,13 @@
 
 namespace App\Agents;
 
+use App\Agents\Concerns\UsesGeminiProvider;
 use NeuronAI\Agent\Agent;
 use NeuronAI\Agent\SystemPrompt;
-use NeuronAI\Providers\AIProviderInterface;
-use NeuronAI\Providers\Gemini\Gemini;
 
 class ConsoleChatAgent extends Agent
 {
-    protected function provider(): AIProviderInterface
-    {
-        return new Gemini(
-            key: (string) config('gemini.api_key'),
-            model: (string) config('gemini.model'),
-        );
-    }
+    use UsesGeminiProvider;
 
     protected function instructions(): string
     {

@@ -2,10 +2,9 @@
 
 namespace App\RAG;
 
+use App\Support\Neuron\GeminiFactory;
 use NeuronAI\Providers\AIProviderInterface;
-use NeuronAI\Providers\Gemini\Gemini;
 use NeuronAI\RAG\Embeddings\EmbeddingsProviderInterface;
-use NeuronAI\RAG\Embeddings\GeminiEmbeddingsProvider;
 use NeuronAI\RAG\RAG;
 use NeuronAI\RAG\VectorStore\FileVectorStore;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
@@ -14,18 +13,12 @@ class VetDocsRag extends RAG
 {
     protected function provider(): AIProviderInterface
     {
-        return new Gemini(
-            key: (string) config('gemini.api_key'),
-            model: (string) config('gemini.model'),
-        );
+        return GeminiFactory::provider();
     }
 
     protected function embeddings(): EmbeddingsProviderInterface
     {
-        return new GeminiEmbeddingsProvider(
-            key: (string) config('gemini.api_key'),
-            model: (string) config('rag.embeddings.model'),
-        );
+        return GeminiFactory::embeddingsProvider((string) config('rag.embeddings.model'));
     }
 
     protected function vectorStore(): VectorStoreInterface

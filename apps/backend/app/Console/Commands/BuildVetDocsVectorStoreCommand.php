@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\RAG\VetDocsRag;
+use App\Support\Neuron\TransientLlmError;
 use Illuminate\Console\Command;
 use NeuronAI\RAG\DataLoader\FileDataLoader;
 use NeuronAI\RAG\Document;
@@ -252,33 +253,7 @@ class BuildVetDocsVectorStoreCommand extends Command
 
     private function isTransientServiceError(Throwable $exception): bool
     {
-        $message = $exception->getMessage();
-
-        if (str_contains($message, 'Network error')) {
-            return true;
-        }
-
-        $transientPatterns = [
-            '502',
-            '503',
-            '504',
-            'UNAVAILABLE',
-            'BAD_GATEWAY',
-            'GATEWAY_TIMEOUT',
-            'SERVICE_UNAVAILABLE',
-            'Error 502 (Server Error)',
-            'Error 503',
-            'Error 504',
-            'temporary error and could not complete your request',
-        ];
-
-        foreach ($transientPatterns as $pattern) {
-            if (str_contains($message, $pattern)) {
-                return true;
-            }
-        }
-
-        return false;
+        return TransientLlmError::isRetryable($exception);
     }
 
     /**

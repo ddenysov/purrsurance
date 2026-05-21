@@ -6,6 +6,7 @@ use App\Agents\DefaultAssistantAgent;
 use App\Agents\IntentionClassifierAgent;
 use App\Services\Sse\ChatSessionContext;
 use App\Support\Chat\ChatHistoryFormatter;
+use Illuminate\Support\Facades\Log;
 use NeuronAI\Agent\Agent;
 use NeuronAI\Chat\Messages\UserMessage;
 use Throwable;
@@ -46,8 +47,19 @@ class AgentRouter
 
         $agentInput = ChatHistoryFormatter::forAgent($message, $chatHistory, $policyId);
 
-        $response = $agent->chat(new UserMessage($agentInput))->getMessage();
-        $content = trim($response->getContent() ?? '');
+        try {
+            $response = $agent->chat(new UserMessage($agentInput))->getMessage();
+            $content = trim($response->getContent() ?? '');
+        } catch (Throwable $exception) {
+            Log::warning('Agent chat failed', [
+                'classification' => $classification,
+                'agent' => $agentClass,
+                'message' => $exception->getMessage(),
+                'exception' => $exception::class,
+            ]);
+
+            $content = (string) config('agents.fallback.unknown');
+        }
 
         if ($content === '') {
             $content = (string) config('agents.fallback.unknown');
@@ -76,7 +88,12 @@ class AgentRouter
         try {
             $response = $classifier->chat(new UserMessage($input))->getMessage();
             $raw = trim($response->getContent() ?? '');
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            Log::warning('Intention classifier failed', [
+                'message' => $exception->getMessage(),
+                'exception' => $exception::class,
+            ]);
+
             return 'AgentNotFoundException';
         }
 
