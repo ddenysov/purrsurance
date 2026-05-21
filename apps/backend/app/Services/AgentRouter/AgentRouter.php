@@ -10,6 +10,7 @@ use App\Support\Chat\ChatHistoryFormatter;
 use App\Support\Neuron\AgentMessageContent;
 use Illuminate\Support\Facades\Log;
 use NeuronAI\Agent\Agent;
+use NeuronAI\Agent\AgentState;
 use NeuronAI\Chat\Messages\UserMessage;
 use Throwable;
 
@@ -37,7 +38,21 @@ class AgentRouter
 
         $agentClass = config("agents.mapping.{$classification}");
 
+        Log::info('Agent routing decision', [
+            'sessionId' => $sessionId,
+            'globalSessionId' => $globalSessionId,
+            'policyId' => $policyId,
+            'classification' => $classification,
+            'agent' => is_string($agentClass) ? $agentClass : null,
+        ]);
+
         if (! is_string($agentClass) || ! class_exists($agentClass)) {
+            Log::info('Agent routing fallback', [
+                'sessionId' => $sessionId,
+                'classification' => $classification,
+                'reason' => ! is_string($agentClass) ? 'no_mapping' : 'class_not_found',
+            ]);
+
             return new AgentRouterResult(
                 response: (string) config('agents.fallback.unknown'),
                 sessionId: $sessionId,
@@ -52,8 +67,9 @@ class AgentRouter
         $agentInput = ChatHistoryFormatter::forAgent($message, $chatHistory, $policyId);
 
         try {
-            $response = $agent->chat(new UserMessage($agentInput))->getMessage();
-            $content = trim(AgentMessageContent::text($response));
+            /** @var AgentState $state */
+            $state = $agent->chat(new UserMessage($agentInput))->run();
+            $content = AgentMessageContent::displayText($state);
         } catch (Throwable $exception) {
             Log::warning('Agent chat failed', [
                 'classification' => $classification,
@@ -74,6 +90,13 @@ class AgentRouter
         $displayClassification = $classification === 'AgentNotFoundException'
             ? DefaultAssistantAgent::CLASSIFICATION
             : $classification;
+
+        Log::info('Agent routing completed', [
+            'sessionId' => $sessionId,
+            'classification' => $displayClassification,
+            'agent' => $agentClass,
+            'responseLength' => strlen($content),
+        ]);
 
         return new AgentRouterResult(
             response: $content,
@@ -111,6 +134,8 @@ class AgentRouter
 
         foreach ($allowed as $value) {
             if (strcasecmp($raw, $value) === 0) {
+                Log::info('Agent classification', ['raw' => $raw, 'classification' => $value]);
+
                 return $value;
             }
         }
@@ -119,10 +144,14 @@ class AgentRouter
             $matched = $matches[1];
             foreach ($allowed as $value) {
                 if (strcasecmp($matched, $value) === 0) {
+                    Log::info('Agent classification', ['raw' => $raw, 'classification' => $value, 'matched' => $matched]);
+
                     return $value;
                 }
             }
         }
+
+        Log::info('Agent classification', ['raw' => $raw, 'classification' => 'AgentNotFoundException']);
 
         return 'AgentNotFoundException';
     }

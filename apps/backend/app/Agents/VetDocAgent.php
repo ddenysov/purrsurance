@@ -42,6 +42,7 @@ class VetDocAgent extends VetDocsRag
                 'Example — urgent: RecommendDoctorVisit(reason="Persistent vomiting for 24 hours with dehydration signs", urgency="urgent", symptoms="vomiting, lethargy").',
                 'Example — routine: RecommendDoctorVisit(reason="Annual wellness examination due", urgency="routine").',
                 'Call the tool after your assessment text, not before you have enough clinical context for reason and urgency.',
+                'After calling RecommendDoctorVisit, do not send any additional user-facing text — the visit reason is shown separately in the UI.',
             ],
         );
     }

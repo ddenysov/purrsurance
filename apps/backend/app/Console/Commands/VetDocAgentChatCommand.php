@@ -6,6 +6,7 @@ use App\Agents\VetDocAgent;
 use App\Support\Neuron\AgentMessageContent;
 use App\Support\Neuron\ConsoleRagDebugObserver;
 use Illuminate\Console\Command;
+use NeuronAI\Agent\AgentState;
 use NeuronAI\Chat\Messages\UserMessage;
 use Throwable;
 
@@ -57,8 +58,9 @@ class VetDocAgentChatCommand extends Command
             }
 
             try {
-                $response = $agent->chat(new UserMessage($input))->getMessage();
-                $content = AgentMessageContent::text($response);
+                /** @var AgentState $state */
+                $state = $agent->chat(new UserMessage($input))->run();
+                $content = AgentMessageContent::displayText($state);
 
                 if ($ragDebug !== null) {
                     $this->newLine();
