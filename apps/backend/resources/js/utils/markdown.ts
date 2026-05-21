@@ -5,7 +5,7 @@ import MarkdownIt from 'markdown-it'
  * Configured for security and readability
  */
 const md = new MarkdownIt({
-  html: false,        // Disable HTML tags for security
+  html: true,
   xhtmlOut: false,    // Use HTML5 style
   breaks: true,       // Convert \n to <br>
   linkify: true,      // Auto-convert URLs to links
