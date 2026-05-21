@@ -47,6 +47,7 @@ class ChatController extends Controller
                     'agentId' => $result->agentId,
                     'timestamp' => now()->toIso8601String(),
                     'environment' => config('app.env'),
+                    'events' => $result->events,
                 ],
             ]);
         } catch (Throwable $exception) {

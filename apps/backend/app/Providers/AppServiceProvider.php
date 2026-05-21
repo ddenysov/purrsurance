@@ -2,7 +2,8 @@
 
 namespace App\Providers;
 
-use App\Services\Sse\ChatSessionContext;
+use App\Services\Chat\ChatSessionContext;
+use App\Services\Chat\SessionEventCollector;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(ChatSessionContext::class);
+        $this->app->scoped(SessionEventCollector::class);
     }
 
     /**

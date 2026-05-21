@@ -2,8 +2,8 @@
 
 namespace App\Agents\Tools;
 
-use App\Services\Sse\ChatSessionContext;
-use App\Services\Sse\SessionEventPublisher;
+use App\Services\Chat\ChatSessionContext;
+use App\Services\Chat\SessionEventPublisher;
 use NeuronAI\Tools\PropertyType;
 use NeuronAI\Tools\Tool;
 use NeuronAI\Tools\ToolProperty;

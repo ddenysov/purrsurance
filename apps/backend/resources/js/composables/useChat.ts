@@ -1,6 +1,8 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import type { SSEEvent } from '@/composables/useEventBus';
 import { usePetProfileStore } from '@/stores/petProfile';
+import { useEventQueueStore } from '@/stores/eventQueue';
 import type { ChatMessage, ChatSession } from '@/types';
 import type { SharedClientConfig } from '@/types/client';
 import { sendChatMessage } from '@/utils/chatService';
@@ -12,7 +14,8 @@ export const useChat = () => {
     const client = computed(() => page.props.client as SharedClientConfig);
 
     const { sessionId: globalSessionId } = useSession();
-  
+    const eventQueueStore = useEventQueueStore();
+
   // Get pet profile store to access policyId
   const petProfileStore = usePetProfileStore()
   
@@ -150,6 +153,14 @@ return
       
       // Hide typing indicator
       isTyping.value = false
+
+      const sideEffectEvents = response.metadata?.events ?? [];
+      if (sideEffectEvents.length > 0) {
+        console.log('[Chat] Processing side-effect events:', sideEffectEvents.length);
+        sideEffectEvents.forEach((event) => {
+          eventQueueStore.enqueueEvent(event as SSEEvent);
+        });
+      }
 
       const doctorVisitConfirmation = {
         yesLabel: 'Записатися до лікаря',

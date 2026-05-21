@@ -2,7 +2,7 @@
  * Session management composable
  * 
  * Generates and manages a unique session ID for each browser window/tab
- * This ensures that SSE events are isolated per session
+ * This ensures that chat side-effect events are isolated per session
  */
 
 import { ref, readonly } from 'vue'

@@ -9,10 +9,6 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     server: {
         proxy: {
-            '/stream': {
-                target: process.env.VITE_SSE_PROXY_TARGET || 'http://127.0.0.1:80',
-                changeOrigin: true,
-            },
             '/api/chat': {
                 target: process.env.VITE_CHAT_PROXY_TARGET || 'http://127.0.0.1:80',
                 changeOrigin: true,

@@ -15,16 +15,6 @@ return [
 
     'api_timeout' => env('PURRSURANCE_API_TIMEOUT', env('NUXT_PUBLIC_API_TIMEOUT', '10000')),
 
-    'sse_stream_url' => env('PURRSURANCE_SSE_STREAM_URL', env('NUXT_PUBLIC_SSE_STREAM_URL', '/stream')),
-
-    'sse_max_duration' => (int) env('PURRSURANCE_SSE_MAX_DURATION', 300),
-
-    'sse_mock_interval' => (int) env('PURRSURANCE_SSE_MOCK_INTERVAL', 5),
-
-    'sse_poll_interval' => (int) env('PURRSURANCE_SSE_POLL_INTERVAL', 1),
-
-    'sse_events_ttl_hours' => (int) env('PURRSURANCE_SSE_EVENTS_TTL_HOURS', 24),
-
     'chat_api_url' => env('PURRSURANCE_CHAT_API_URL', env('NUXT_PUBLIC_CHAT_API_URL', '/api/chat')),
 
     'chat_api_mock' => filter_var(

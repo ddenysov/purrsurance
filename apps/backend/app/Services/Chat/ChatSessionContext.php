@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Sse;
+namespace App\Services\Chat;
 
 class ChatSessionContext
 {

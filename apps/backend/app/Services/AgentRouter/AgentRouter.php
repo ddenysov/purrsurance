@@ -4,7 +4,8 @@ namespace App\Services\AgentRouter;
 
 use App\Agents\DefaultAssistantAgent;
 use App\Agents\IntentionClassifierAgent;
-use App\Services\Sse\ChatSessionContext;
+use App\Services\Chat\ChatSessionContext;
+use App\Services\Chat\SessionEventCollector;
 use App\Support\Chat\ChatHistoryFormatter;
 use App\Support\Neuron\AgentMessageContent;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +17,7 @@ class AgentRouter
 {
     public function __construct(
         private readonly ChatSessionContext $chatSession,
+        private readonly SessionEventCollector $eventCollector,
     ) {}
 
     /**
@@ -40,6 +42,7 @@ class AgentRouter
                 response: (string) config('agents.fallback.unknown'),
                 sessionId: $sessionId,
                 classification: $classification,
+                events: $this->eventCollector->all(),
             );
         }
 
@@ -77,6 +80,7 @@ class AgentRouter
             sessionId: $sessionId,
             classification: $displayClassification,
             agentId: $displayClassification,
+            events: $this->eventCollector->all(),
         );
     }
 

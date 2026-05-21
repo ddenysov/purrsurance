@@ -59,6 +59,13 @@ export interface LogEntry {
     [key: string]: unknown;
 }
 
+export interface ChatSideEffectEvent {
+    type: string;
+    id: string;
+    timestamp: number;
+    payload?: Record<string, unknown>;
+}
+
 export interface BackendChatResponse {
     message: string;
     data: {
@@ -72,6 +79,7 @@ export interface BackendChatResponse {
         logs?: LogEntry[];
         classification?: string;
         agentId?: string;
+        events?: ChatSideEffectEvent[];
     };
 }
 

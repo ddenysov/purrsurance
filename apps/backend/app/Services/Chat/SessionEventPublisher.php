@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Sse;
+namespace App\Services\Chat;
 
 use Illuminate\Support\Facades\Log;
 
@@ -12,7 +12,7 @@ class SessionEventPublisher
     public const EVENT_POLICY_DETAILS_RETRIEVED = 'PolicyDetailsRetrieved';
 
     public function __construct(
-        private readonly SessionEventStore $store,
+        private readonly SessionEventCollector $collector,
     ) {}
 
     /**
@@ -21,18 +21,18 @@ class SessionEventPublisher
     public function publish(string $sessionId, string $eventType, array $data): void
     {
         if ($sessionId === '') {
-            Log::warning('SSE event skipped: empty sessionId', ['eventType' => $eventType]);
+            Log::warning('Chat event skipped: empty sessionId', ['eventType' => $eventType]);
 
             return;
         }
 
-        $timestamp = $this->store->push($sessionId, $eventType, [
+        $timestamp = $this->collector->push($eventType, [
             'eventType' => $eventType,
             'timestamp' => (int) round(microtime(true) * 1000),
             'data' => $data,
         ]);
 
-        Log::info('SSE event published', [
+        Log::info('Chat event published', [
             'sessionId' => $sessionId,
             'eventType' => $eventType,
             'timestamp' => $timestamp,

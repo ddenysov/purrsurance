@@ -18,10 +18,6 @@ export const apiConfig = {
         Accept: 'application/json',
     },
 
-    get sseStreamUrl() {
-        return (env.VITE_SSE_STREAM_URL as string | undefined) || '/stream';
-    },
-
     endpoints: {
         auth: {
             login: '/auth/login',

@@ -29,13 +29,13 @@ function extractPolicyDetailsPayload(event: SSEEvent): PolicyDetailsPayload | nu
 }
 
 /**
- * Applies PolicyDetailsRetrieved SSE payload to the pet profile store and unlocks the sidebar.
+ * Applies PolicyDetailsRetrieved payload to the pet profile store and unlocks the sidebar.
  */
-export function usePolicyDetailsFromSse() {
+export function usePolicyDetailsFromEvent() {
     const petProfileStore = usePetProfileStore();
     const { unlockPetDetails } = usePetProfile();
 
-    const applyPolicyDetailsFromSseEvent = (event: SSEEvent): boolean => {
+    const applyPolicyDetailsFromEvent = (event: SSEEvent): boolean => {
         const eventData = extractPolicyDetailsPayload(event);
 
         if (!eventData) {
@@ -145,7 +145,7 @@ export function usePolicyDetailsFromSse() {
             profileData.audit = {
                 createdAt: audit.createdAt || new Date().toISOString(),
                 updatedAt: audit.updatedAt || new Date().toISOString(),
-                source: audit.source || 'sse-event',
+                source: audit.source || 'chat-event',
                 version: typeof audit.version === 'number' ? audit.version : 1,
             };
         }
@@ -157,10 +157,10 @@ export function usePolicyDetailsFromSse() {
         petProfileStore.updatePetProfile(profileData);
         unlockPetDetails();
 
-        console.log('[PetProfile] Applied PolicyDetailsRetrieved from SSE');
+        console.log('[PetProfile] Applied PolicyDetailsRetrieved from chat event');
 
         return true;
     };
 
-    return { applyPolicyDetailsFromSseEvent };
+    return { applyPolicyDetailsFromEvent };
 }
