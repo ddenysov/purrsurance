@@ -4,7 +4,59 @@
 
         <div class="min-h-screen bg-white">
             <!-- Content (not a nested <main> — layout already has one from AppLayout) -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 -mt-6 pt-3">
+                <div
+                    v-if="showUsageGuide"
+                    class="mb-6 rounded-xl border border-mint-200 bg-mint-50/90 p-4 shadow-sm"
+                    role="region"
+                    aria-label="Як користуватися"
+                >
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-mint-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-mint-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-3">
+                                <h2 class="text-base font-semibold text-gray-900">Як користуватися Вет Експертом</h2>
+                                <button
+                                    type="button"
+                                    class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+                                    aria-label="Закрити підказку"
+                                    @click="dismissUsageGuide"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <ol class="mt-2 space-y-1.5 text-sm leading-snug text-gray-700 list-decimal list-inside marker:font-semibold marker:text-mint-700">
+                                <li>
+                                    Відкрийте
+                                    <Link href="/admin" class="font-medium text-mint-700 hover:text-mint-800 underline underline-offset-2">
+                                        список улюбленців і полісів
+                                    </Link>,
+                                    знайдіть свого улюбленця та скопіюйте номер полісу (наприклад, <code class="text-xs bg-white/80 px-1.5 py-0.5 rounded border border-mint-200">POL-2025-123456</code>).
+                                </li>
+                                <li>
+                                    Поверніться в чат і напишіть номер полісу в повідомленні агенту — після цього дані улюбленця зліва розблокуються.
+                                </li>
+                                <li>
+                                    Опишіть ситуацію в чаті — агент допоможе з симптомами, питаннями щодо полісу, пошуком клініки та записом до ветеринара.
+                                </li>
+                                <li>
+                                    Записи до ветеринара переглядайте в розділі
+                                    <Link href="/appointments" class="font-medium text-mint-700 hover:text-mint-800 underline underline-offset-2">
+                                        «Записи»
+                                    </Link>
+                                    — дата, клініка, статус візиту.
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <!-- Pet profile: second on mobile, left column on lg+ -->
                     <div class="order-2 min-w-0 lg:order-1 lg:col-span-1">
@@ -36,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
 import ChatContainer from '@/components/chat/ChatContainer.vue';
 import PetProfile from '@/components/pet/PetProfile.vue';
@@ -59,6 +111,18 @@ const { emit: emitEvent, on: onEvent, publishToListeners } = useEventBus();
 const { sessionId } = useSession();
 
 const eventQueueStore = useEventQueueStore();
+
+const USAGE_GUIDE_STORAGE_KEY = 'vet-expert-usage-guide-dismissed';
+const showUsageGuide = ref(true);
+
+const dismissUsageGuide = () => {
+  showUsageGuide.value = false;
+  try {
+    localStorage.setItem(USAGE_GUIDE_STORAGE_KEY, '1');
+  } catch {
+    // ignore when storage is unavailable
+  }
+};
 
 // Reactive state for displaying events
 const latestClaimEvent = ref<SSEEvent | null>(null)
@@ -188,6 +252,14 @@ const handleRecommendDoctorVisit = (event: SSEEvent) => {
 }
 
 onMounted(() => {
+  try {
+    if (localStorage.getItem(USAGE_GUIDE_STORAGE_KEY) === '1') {
+      showUsageGuide.value = false;
+    }
+  } catch {
+    // ignore when storage is unavailable
+  }
+
   eventQueueStore.setPublishCallback((event: SSEEvent) => {
     publishToListeners(event.type, event)
   })
