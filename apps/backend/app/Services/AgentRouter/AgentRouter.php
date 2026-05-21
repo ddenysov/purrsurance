@@ -8,6 +8,7 @@ use App\Services\Chat\ChatSessionContext;
 use App\Services\Chat\SessionEventCollector;
 use App\Support\Chat\ChatHistoryFormatter;
 use App\Support\Neuron\AgentMessageContent;
+use App\Support\Neuron\StructuredAgentResult;
 use Illuminate\Support\Facades\Log;
 use NeuronAI\Agent\Agent;
 use NeuronAI\Chat\Messages\UserMessage;
@@ -51,9 +52,10 @@ class AgentRouter
 
         $agentInput = ChatHistoryFormatter::forAgent($message, $chatHistory, $policyId);
 
+        $structured = null;
+
         try {
-            $response = $agent->chat(new UserMessage($agentInput))->getMessage();
-            $content = trim(AgentMessageContent::text($response));
+            [$content, $structured] = $this->runAgent($agent, $agentClass, $agentInput);
         } catch (Throwable $exception) {
             Log::warning('Agent chat failed', [
                 'classification' => $classification,
@@ -81,6 +83,7 @@ class AgentRouter
             classification: $displayClassification,
             agentId: $displayClassification,
             events: $this->eventCollector->all(),
+            structured: $structured,
         );
     }
 
@@ -125,6 +128,36 @@ class AgentRouter
         }
 
         return 'AgentNotFoundException';
+    }
+
+    /**
+     * @return array{0: string, 1: array<string, mixed>|null}
+     */
+    private function runAgent(Agent $agent, string $agentClass, string $agentInput): array
+    {
+        /** @var array<string, class-string> $structuredAgents */
+        $structuredAgents = (array) config('agents.structured', []);
+
+        if (isset($structuredAgents[$agentClass])) {
+            try {
+                $output = $agent->structured(new UserMessage($agentInput), maxRetries: 2);
+                $parsed = StructuredAgentResult::fromOutput($output);
+
+                if ($parsed['content'] !== '') {
+                    return [$parsed['content'], $parsed['structured']];
+                }
+            } catch (Throwable $exception) {
+                Log::warning('Agent structured output failed, falling back to chat', [
+                    'agent' => $agentClass,
+                    'message' => $exception->getMessage(),
+                    'exception' => $exception::class,
+                ]);
+            }
+        }
+
+        $response = $agent->chat(new UserMessage($agentInput))->getMessage();
+
+        return [trim(AgentMessageContent::text($response)), null];
     }
 
     private function newSessionId(): string

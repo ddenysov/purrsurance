@@ -23,12 +23,14 @@ export interface Appointment {
     time: string;
 }
 
+import type { PolicyAgentStructured } from './structured';
+
 export interface ChatMessage {
     id: string;
     content: string;
     sender: 'user' | 'assistant';
     timestamp: Date;
-    type?: 'text' | 'confirmation' | 'choice' | 'form';
+    type?: 'text' | 'confirmation' | 'choice' | 'form' | 'policy_summary';
     metadata?: MessageMetadata;
     visible?: boolean;
     agentName?: string;
@@ -45,6 +47,7 @@ export interface MessageMetadata {
     choiceOptions?: {
         options: Array<{ label: string; value: string; event: string }>;
     };
+    policyStructured?: PolicyAgentStructured;
 }
 
 export interface ChatSession {
@@ -71,6 +74,7 @@ export interface BackendChatResponse {
     data: {
         response: string;
         sessionId: string;
+        structured?: PolicyAgentStructured | null;
     };
     metadata: {
         requestId: string;

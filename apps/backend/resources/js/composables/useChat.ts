@@ -4,6 +4,7 @@ import type { SSEEvent } from '@/composables/useEventBus';
 import { usePetProfileStore } from '@/stores/petProfile';
 import { useEventQueueStore } from '@/stores/eventQueue';
 import type { ChatMessage, ChatSession } from '@/types';
+import { isPolicyAgentStructured } from '@/types/structured';
 import type { SharedClientConfig } from '@/types/client';
 import { sendChatMessage } from '@/utils/chatService';
 import { parseMarkdown } from '@/utils/markdown';
@@ -170,6 +171,12 @@ return
         eventPayload: { source: 'doctor_kotry_chat' },
       } as const
 
+      const structured = response.data.structured ?? null;
+
+      if (structured) {
+        console.log('[Chat] Structured response:', structured.schema, structured.intent);
+      }
+
       // Доктор Котик: текст + кнопки запису до ветеринара
       if (agentName === 'DoctorKotryAgent') {
         addMessage({
@@ -181,11 +188,24 @@ return
             confirmationOptions: { ...doctorVisitConfirmation },
           },
         })
+      } else if (isPolicyAgentStructured(structured) && structured.display) {
+        addMessage({
+          content: parsedResponse,
+          sender: 'assistant',
+          type: 'policy_summary',
+          agentName,
+          metadata: {
+            policyStructured: structured,
+          },
+        })
       } else {
         addMessage({
           content: parsedResponse,
           sender: 'assistant',
           agentName: agentName,
+          ...(isPolicyAgentStructured(structured)
+            ? { metadata: { policyStructured: structured } }
+            : {}),
         })
       }
 

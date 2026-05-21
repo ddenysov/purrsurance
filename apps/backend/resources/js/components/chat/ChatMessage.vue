@@ -65,6 +65,7 @@ import { getAgentDisplayName } from '@/utils/agentMapper'
 import { formatTime } from '@/utils/dateFormatter'
 import AssistantAvatar from './AssistantAvatar.vue'
 import ConfirmationMessage from './message-types/ConfirmationMessage.vue'
+import PolicySummaryMessage from './message-types/PolicySummaryMessage.vue'
 import TextMessage from './message-types/TextMessage.vue'
 
 interface Props {
@@ -79,6 +80,8 @@ const messageComponent = computed(() => {
   switch (type) {
     case 'confirmation':
       return ConfirmationMessage
+    case 'policy_summary':
+      return PolicySummaryMessage
     case 'text':
     default:
       return TextMessage

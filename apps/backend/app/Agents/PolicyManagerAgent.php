@@ -3,6 +3,7 @@
 namespace App\Agents;
 
 use App\Agents\Concerns\UsesGeminiProvider;
+use App\Agents\Output\PolicyAgentResponse;
 use App\Agents\Tools\GetPolicyDetailsTool;
 use App\Support\Neuron\SafeTokenCounter;
 use NeuronAI\Agent\Agent;
@@ -48,6 +49,8 @@ class PolicyManagerAgent extends Agent
                 'Use the pet gender correctly (he/she/they) based on pet.sex.',
                 'Reference the pet species naturally (cat, dog, etc.) from pet.species.',
                 'Be conversational and natural — avoid corporate or templated language.',
+                'Structured output: put the conversational reply in message. Set intent to ask_policy_id when policy ID is missing; greeting_after_lookup after successful GetPolicyDetails greeting; policy_info when answering specific policy questions; error on lookup failure.',
+                'When GetPolicyDetails succeeds, set policyId and fill display with ownerName, petName, plan, and status from tool data.',
             ],
             toolsUsage: [
                 'Always call GetPolicyDetails when you have a policy ID before answering policy-specific questions.',
@@ -64,5 +67,10 @@ class PolicyManagerAgent extends Agent
         return [
             app(GetPolicyDetailsTool::class),
         ];
+    }
+
+    protected function getOutputClass(): string
+    {
+        return PolicyAgentResponse::class;
     }
 }
