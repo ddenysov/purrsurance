@@ -14,6 +14,10 @@ class BuildVetDocsVectorStoreCommand extends Command
 {
     private const RATE_LIMIT_WAIT_SECONDS = 120;
 
+    private const TRANSIENT_RETRY_MAX = 10;
+
+    private const TRANSIENT_RETRY_WAIT_SECONDS = 60;
+
     private const BATCH_SIZE = 10;
 
     protected $signature = 'rag:build-vet-docs
@@ -116,13 +120,13 @@ class BuildVetDocsVectorStoreCommand extends Command
 
         $bar = $this->output->createProgressBar(count($pendingDocuments));
         $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% — %message%');
-        $bar->setMessage('работа');
+        $bar->setMessage('working');
         $bar->start();
 
         try {
             foreach (array_chunk($pendingDocuments, self::BATCH_SIZE) as $chunk) {
-                $this->runWithRateLimitRetry(function () use ($rag, $chunk, $bar): void {
-                    $bar->setMessage('работа');
+                $this->runWithRetry(function () use ($rag, $chunk, $bar): void {
+                    $bar->setMessage('working');
                     $rag->addDocuments($chunk, self::BATCH_SIZE);
                     $bar->advance(count($chunk));
                 }, $bar);
@@ -246,34 +250,68 @@ class BuildVetDocsVectorStoreCommand extends Command
             || str_contains($message, 'RESOURCE_EXHAUSTED');
     }
 
+    private function isTransientServiceError(Throwable $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, '503')
+            || str_contains($message, 'UNAVAILABLE')
+            || str_contains($message, 'Network error');
+    }
+
     /**
      * @param  callable(): void  $callback
      */
-    private function runWithRateLimitRetry(callable $callback, ProgressBar $bar): void
+    private function runWithRetry(callable $callback, ProgressBar $bar): void
     {
+        $transientAttempts = 0;
+
         while (true) {
             try {
                 $callback();
 
                 return;
             } catch (Throwable $exception) {
-                if (! $this->isRateLimitExceeded($exception)) {
+                if ($this->isRateLimitExceeded($exception)) {
+                    $this->waitAndResume($bar, sprintf(
+                        'Rate limit (429), waiting %d sec...',
+                        self::RATE_LIMIT_WAIT_SECONDS,
+                    ), self::RATE_LIMIT_WAIT_SECONDS);
+
+                    continue;
+                }
+
+                if (! $this->isTransientServiceError($exception)) {
                     throw $exception;
                 }
 
-                $bar->clear();
-                $this->newLine();
-                $this->warn(sprintf(
-                    'Ожидание: rate limit (429), пауза %d сек...',
-                    self::RATE_LIMIT_WAIT_SECONDS,
-                ));
-                $bar->setMessage('ожидание');
+                $transientAttempts++;
 
-                sleep(self::RATE_LIMIT_WAIT_SECONDS);
+                if ($transientAttempts > self::TRANSIENT_RETRY_MAX) {
+                    throw $exception;
+                }
 
-                $this->line('Работа: продолжаем индексацию...');
-                $bar->display();
+                $this->waitAndResume($bar, sprintf(
+                    'Service unavailable, retry %d/%d in %d sec...',
+                    $transientAttempts,
+                    self::TRANSIENT_RETRY_MAX,
+                    self::TRANSIENT_RETRY_WAIT_SECONDS,
+                ), self::TRANSIENT_RETRY_WAIT_SECONDS);
             }
         }
+    }
+
+    private function waitAndResume(ProgressBar $bar, string $message, int $seconds): void
+    {
+        $bar->clear();
+        $this->newLine();
+        $this->warn($message);
+        $bar->setMessage('waiting');
+
+        sleep($seconds);
+
+        $this->line('Resuming indexing...');
+        $bar->setMessage('working');
+        $bar->display();
     }
 }
