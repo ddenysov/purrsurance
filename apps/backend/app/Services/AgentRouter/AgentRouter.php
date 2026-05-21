@@ -57,6 +57,8 @@ class AgentRouter
                 'agent' => $agentClass,
                 'message' => $exception->getMessage(),
                 'exception' => $exception::class,
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
             ]);
 
             $content = (string) config('agents.fallback.unknown');
@@ -93,6 +95,8 @@ class AgentRouter
             Log::warning('Intention classifier failed', [
                 'message' => $exception->getMessage(),
                 'exception' => $exception::class,
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
             ]);
 
             return 'AgentNotFoundException';

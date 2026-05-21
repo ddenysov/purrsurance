@@ -16,6 +16,13 @@ final class GeminiFactory
             connectTimeout: (float) config('gemini.http.connect_timeout', 10),
         );
 
+        if (config('gemini.log_llm', true)) {
+            $client = new LoggingHttpClient(
+                inner: $client,
+                enabled: true,
+            );
+        }
+
         if (! config('gemini.retry.enabled', true)) {
             return $client;
         }

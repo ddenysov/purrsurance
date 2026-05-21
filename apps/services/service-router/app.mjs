@@ -165,7 +165,7 @@ async function routeToAgent(classification, message, sessionId, globalSessionId,
   if (!agentConfig) {
     logger.warn('Agent configuration not found for classification', { requestId, classification });
     return {
-      completion: 'I apologize, but I\'m not sure how to help with that. Could you please rephrase your question? I can assist with insurance policies or pet health concerns.',
+      completion: 'OLOLOLO I apologize, but I\'m not sure how to help with that. Could you please rephrase your question? I can assist with insurance policies or pet health concerns.',
       sessionId: sessionId || `session-${Date.now()}`,
       contentType: 'text/plain',
     };

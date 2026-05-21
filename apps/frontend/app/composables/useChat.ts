@@ -164,8 +164,8 @@ export const useChat = () => {
         eventPayload: { source: 'doctor_kotry_chat' },
       } as const
 
-      // Доктор Котик: текст + кнопки запису до ветеринара
-      if (agentName === 'DoctorKotryAgent') {
+      // Vet consultant: reply text + booking confirmation buttons
+      if (agentName === 'VetDocAgent') {
         addMessage({
           content: parsedResponse,
           sender: 'assistant',

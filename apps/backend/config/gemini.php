@@ -18,4 +18,6 @@ return [
         'max_delay_ms' => (int) env('GEMINI_RETRY_MAX_DELAY_MS', 30000),
     ],
 
+    'log_llm' => (bool) env('GEMINI_LOG_LLM', true),
+
 ];
