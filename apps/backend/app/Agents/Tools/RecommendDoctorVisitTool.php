@@ -2,14 +2,18 @@
 
 namespace App\Agents\Tools;
 
+use App\Services\Sse\ChatSessionContext;
+use App\Services\Sse\SessionEventPublisher;
 use NeuronAI\Tools\PropertyType;
 use NeuronAI\Tools\Tool;
 use NeuronAI\Tools\ToolProperty;
 
 class RecommendDoctorVisitTool extends Tool
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly SessionEventPublisher $eventPublisher,
+        private readonly ChatSessionContext $chatSession,
+    ) {
         parent::__construct(
             name: 'RecommendDoctorVisit',
             description: 'Records an official recommendation for the pet owner to visit a veterinarian.',
@@ -58,7 +62,7 @@ class RecommendDoctorVisitTool extends Tool
         $urgency = $urgency !== null && $urgency !== '' ? trim($urgency) : 'normal';
         $symptoms = $symptoms !== null && $symptoms !== '' ? trim($symptoms) : '';
 
-        return json_encode([
+        $payload = [
             'status' => 'recorded',
             'recommendation' => [
                 'type' => 'doctor_visit',
@@ -73,6 +77,18 @@ class RecommendDoctorVisitTool extends Tool
                 'Prepare information about symptoms and pet behavior',
                 'Bring your pet\'s medical records if available',
             ],
-        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        ];
+
+        if ($this->chatSession->globalSessionId !== null) {
+            $this->eventPublisher->publishRecommendDoctorVisit(
+                $this->chatSession->globalSessionId,
+                $payload,
+            );
+        }
+
+        return json_encode(
+            $payload,
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE,
+        );
     }
 }

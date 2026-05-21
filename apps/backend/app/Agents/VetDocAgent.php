@@ -51,7 +51,7 @@ class VetDocAgent extends VetDocsRag
     protected function tools(): array
     {
         return [
-            new RecommendDoctorVisitTool,
+            app(RecommendDoctorVisitTool::class),
         ];
     }
 }

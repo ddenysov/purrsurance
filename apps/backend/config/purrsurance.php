@@ -21,6 +21,10 @@ return [
 
     'sse_mock_interval' => (int) env('PURRSURANCE_SSE_MOCK_INTERVAL', 5),
 
+    'sse_poll_interval' => (int) env('PURRSURANCE_SSE_POLL_INTERVAL', 1),
+
+    'sse_events_ttl_hours' => (int) env('PURRSURANCE_SSE_EVENTS_TTL_HOURS', 24),
+
     'chat_api_url' => env('PURRSURANCE_CHAT_API_URL', env('NUXT_PUBLIC_CHAT_API_URL', '/api/chat')),
 
     'chat_api_mock' => filter_var(

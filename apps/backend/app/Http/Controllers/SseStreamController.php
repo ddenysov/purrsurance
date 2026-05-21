@@ -2,22 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Sse\SessionEventStore;
 use App\Support\Sse\SseFormatter;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SseStreamController extends Controller
 {
-    private const MOCK_EVENT_TYPES = ['claim_status', 'policy_updated', 'message', 'notification'];
+    public function __construct(
+        private readonly SessionEventStore $eventStore,
+    ) {}
 
     public function __invoke(Request $request): StreamedResponse
     {
-        $sessionId = $request->query('sessionId', 'anonymous');
+        $sessionId = (string) $request->query('sessionId', 'anonymous');
         $maxDurationSeconds = (int) config('purrsurance.sse_max_duration', 300);
-        $mockIntervalSeconds = (int) config('purrsurance.sse_mock_interval', 5);
+        $pollIntervalSeconds = (int) config('purrsurance.sse_poll_interval', 1);
 
         return response()->stream(
-            function () use ($sessionId, $maxDurationSeconds, $mockIntervalSeconds): void {
+            function () use ($sessionId, $maxDurationSeconds, $pollIntervalSeconds): void {
                 if (ob_get_level()) {
                     ob_end_clean();
                 }
@@ -25,6 +28,7 @@ class SseStreamController extends Controller
                 $requestId = uniqid('sse-', true);
                 $startedAt = time();
                 $eventCount = 0;
+                $lastTimestamp = (int) round(microtime(true) * 1000) - 60_000;
 
                 echo SseFormatter::format([
                     'connectionId' => $requestId,
@@ -39,26 +43,28 @@ class SseStreamController extends Controller
                         break;
                     }
 
-                    $eventCount++;
-                    $eventType = self::MOCK_EVENT_TYPES[($eventCount - 1) % count(self::MOCK_EVENT_TYPES)];
+                    $newEvents = $this->eventStore->getSince($sessionId, $lastTimestamp);
 
-                    echo SseFormatter::format([
-                        'type' => $eventType,
-                        'id' => "mock-{$eventCount}",
-                        'timestamp' => (int) round(microtime(true) * 1000),
-                        'payload' => [
-                            'eventType' => $eventType,
-                            'timestamp' => (int) round(microtime(true) * 1000),
-                            'data' => [
-                                'message' => "Mock event {$eventCount} - {$eventType}",
-                                'count' => $eventCount,
-                                'sessionId' => $sessionId,
-                            ],
-                        ],
-                    ], id: $eventCount);
-                    $this->flush();
+                    foreach ($newEvents as $item) {
+                        if (connection_aborted()) {
+                            break 2;
+                        }
 
-                    sleep($mockIntervalSeconds);
+                        $eventCount++;
+                        if ($item['timestamp'] > $lastTimestamp) {
+                            $lastTimestamp = $item['timestamp'];
+                        }
+
+                        echo SseFormatter::format([
+                            'type' => $item['eventType'],
+                            'id' => $item['requestId'],
+                            'timestamp' => $item['timestamp'],
+                            'payload' => $item['payload'],
+                        ], id: $eventCount);
+                        $this->flush();
+                    }
+
+                    sleep(max(1, $pollIntervalSeconds));
                 }
 
                 echo SseFormatter::format([

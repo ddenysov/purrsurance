@@ -31,6 +31,7 @@ class ChatController extends Controller
                 chatHistory: $request->validated('chatHistory') ?? [],
                 sessionId: $request->validated('sessionId'),
                 policyId: $request->validated('policyId'),
+                globalSessionId: $request->validated('globalSessionId'),
             );
 
             return response()->json([

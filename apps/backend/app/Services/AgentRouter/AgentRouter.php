@@ -4,6 +4,7 @@ namespace App\Services\AgentRouter;
 
 use App\Agents\DefaultAssistantAgent;
 use App\Agents\IntentionClassifierAgent;
+use App\Services\Sse\ChatSessionContext;
 use App\Support\Chat\ChatHistoryFormatter;
 use NeuronAI\Agent\Agent;
 use NeuronAI\Chat\Messages\UserMessage;
@@ -11,6 +12,10 @@ use Throwable;
 
 class AgentRouter
 {
+    public function __construct(
+        private readonly ChatSessionContext $chatSession,
+    ) {}
+
     /**
      * @param  array<int, array{content: string, sender: string}>  $chatHistory
      */
@@ -19,8 +24,10 @@ class AgentRouter
         array $chatHistory = [],
         ?string $sessionId = null,
         ?string $policyId = null,
+        ?string $globalSessionId = null,
     ): AgentRouterResult {
         $sessionId = $sessionId ?? $this->newSessionId();
+        $this->chatSession->setGlobalSessionId($globalSessionId);
 
         $classification = $this->classify($message, $chatHistory);
 
