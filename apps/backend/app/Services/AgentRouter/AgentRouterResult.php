@@ -13,7 +13,5 @@ readonly class AgentRouterResult
         public string $classification,
         public ?string $agentId = null,
         public array $events = [],
-        /** @var array<string, mixed>|null */
-        public ?array $structured = null,
     ) {}
 }

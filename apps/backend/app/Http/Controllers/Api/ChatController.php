@@ -34,18 +34,12 @@ class ChatController extends Controller
                 globalSessionId: $request->validated('globalSessionId'),
             );
 
-            $data = [
-                'response' => $result->response,
-                'sessionId' => $result->sessionId,
-            ];
-
-            if ($result->structured !== null) {
-                $data['structured'] = $result->structured;
-            }
-
             return response()->json([
                 'message' => 'Success',
-                'data' => $data,
+                'data' => [
+                    'response' => $result->response,
+                    'sessionId' => $result->sessionId,
+                ],
                 'metadata' => [
                     'requestId' => $requestId,
                     'classification' => $result->classification,
